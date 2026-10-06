@@ -3,6 +3,7 @@ import { zOf, type Racer } from '../sim/physics';
 import type { Race } from '../sim/race';
 import { BASE_SPEED } from '../sim/vehicles';
 import { Minimap } from './minimap';
+import { isTouch } from '../device';
 
 const METERS_PER_SEGMENT = 4;
 const $ = (id: string) => document.getElementById(id)!;
@@ -43,12 +44,12 @@ export class Hud {
     $('hud-best').textContent = p.bestLap === null ? '--:--.--' : fmtTime(p.bestLap);
     $('hud-speed').textContent = String(Math.round((p.speed / BASE_SPEED) * 160));
     ($('hud-turbo') as HTMLElement).style.width = `${(p.turboLeft > 0 ? 1 : p.turbo) * 100}%`;
-    $('hud-turbo-label').textContent = p.turboLeft > 0 ? 'TURBO ACTIVO' : p.turbo >= 1 ? 'TURBO LISTO [ESPACIO]' : 'TURBO CARGANDO';
+    $('hud-turbo-label').textContent = p.turboLeft > 0 ? 'TURBO ACTIVO' : p.turbo >= 1 ? (isTouch ? 'TURBO LISTO' : 'TURBO LISTO [ESPACIO]') : 'TURBO CARGANDO';
 
     const drift = $('hud-drift');
     const c = p.drift.charge;
     drift.className = 'drift ' + (!p.drift.active ? '' : c >= 1.4 ? 'orange' : c >= 0.6 ? 'blue' : 'on');
-    drift.textContent = !p.drift.active ? 'DERRAPE [SHIFT]' : c >= 1.4 ? 'MINI-TURBO ★★' : c >= 0.6 ? 'MINI-TURBO ★' : 'DERRAPANDO...';
+    drift.textContent = !p.drift.active ? (isTouch ? 'DERRAPE' : 'DERRAPE [SHIFT]') : c >= 1.4 ? 'MINI-TURBO ★★' : c >= 0.6 ? 'MINI-TURBO ★' : 'DERRAPANDO...';
 
     this.updateStandings(ranking, p);
     this.updateWarning(race, p);

@@ -2,7 +2,10 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#11131c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
     <title>Michi Racer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -11,6 +14,7 @@
     />
     <link rel="stylesheet" href="/src/style.css" />
     <link rel="stylesheet" href="/src/screens.css" />
+    <link rel="stylesheet" href="/src/mobile.css" />
   </head>
   <body>
     <!-- ============ BIENVENIDA ============ -->
@@ -48,7 +52,7 @@
 
           <div class="card">
             <div class="card-head pink">📡 CREAR SALA MULTIJUGADOR <span class="pill">ROOM MASTER</span></div>
-            <p class="muted">Crea una sala, comparte el link y arranca cuando todos estén listos. Los lugares vacíos se rellenan con bots.</p>
+            <p class="muted create-desc">Crea una sala, comparte el link y arranca cuando todos estén listos. Los lugares vacíos se rellenan con bots.</p>
             <button id="w-create" class="btn btn-primary xl">CREAR SALA Y JUGAR →</button>
           </div>
 
@@ -228,7 +232,16 @@
         </div>
         <div id="results" class="results"></div>
       </div>
+      <!-- controles táctiles: solo en dispositivos táctiles (ver src/input/touch.ts) -->
+      <div id="touch-controls" class="touch-controls" hidden></div>
     </section>
+
+    <!-- celular en vertical: pedir girarlo -->
+    <div id="rotate-overlay" class="rotate-overlay">
+      <div class="rotate-phone"><span></span></div>
+      <div class="rotate-title">GIRA TU CELULAR</div>
+      <div class="rotate-text">Michi Racer se juega en horizontal 🐾</div>
+    </div>
 
     <div id="toast" class="toast" hidden></div>
     <script type="module" src="/src/main.ts"></script>

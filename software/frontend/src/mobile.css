@@ -1,0 +1,586 @@
+/* =====================================================================
+   Versión móvil
+   - html.touch: dispositivo táctil (src/device.ts)
+   - aviso para girar el celular en vertical
+   - menús compactos para pantallas horizontales bajas (celular)
+   - controles táctiles de carrera
+   ===================================================================== */
+
+/* ---------- aviso de orientación ---------- */
+.rotate-overlay {
+  display: none;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  html.touch .rotate-overlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 24px;
+    text-align: center;
+    background:
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 2px, transparent 2px 4px),
+      var(--surface);
+  }
+}
+
+.rotate-phone {
+  width: 64px;
+  height: 108px;
+  border: 5px solid var(--primary);
+  border-radius: 12px;
+  box-shadow: 6px 6px 0 #0c0e17;
+  position: relative;
+  animation: rotate-hint 2.4s ease-in-out infinite;
+}
+
+.rotate-phone span {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  width: 14px;
+  height: 4px;
+  margin-left: -7px;
+  background: var(--primary);
+}
+
+@keyframes rotate-hint {
+  0%,
+  25% {
+    transform: rotate(0deg);
+  }
+  55%,
+  85% {
+    transform: rotate(-90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.rotate-title {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.08em;
+  color: var(--tertiary);
+}
+
+.rotate-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  color: #b9cacb;
+}
+
+/* en táctil no tiene sentido mostrar la ayuda de teclado */
+html.touch .controls-card,
+html.touch #hud-hint {
+  display: none;
+}
+
+/* ---------- menús en celular horizontal (pantalla baja) ---------- */
+@media (orientation: landscape) and (max-height: 520px), (max-width: 760px) {
+  .screen {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .topbar {
+    padding: 6px max(12px, env(safe-area-inset-right)) 6px max(12px, env(safe-area-inset-left));
+    gap: 8px;
+  }
+
+  .brand-icon,
+  .brand.small .brand-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    box-shadow: 2px 2px 0 var(--surface-lowest);
+  }
+
+  .brand-name,
+  .brand.small .brand-name {
+    font-size: 20px;
+  }
+
+  .brand-name .tag,
+  .brand-sub,
+  .marquee,
+  .footbar {
+    display: none;
+  }
+
+  .crumbs {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .chip {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+
+  .welcome-grid,
+  .lobby-grid,
+  .garage-grid {
+    gap: 10px;
+    padding: 10px max(12px, env(safe-area-inset-right)) 14px max(12px, env(safe-area-inset-left));
+  }
+
+  .welcome-grid {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.25fr) minmax(0, 1fr);
+  }
+
+  .lobby-grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.55fr) minmax(0, 0.8fr);
+  }
+
+  .garage-grid {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.3fr) minmax(0, 0.9fr);
+  }
+
+  .col {
+    gap: 10px;
+  }
+
+  .card {
+    padding: 10px;
+    box-shadow: 3px 3px 0 var(--surface-lowest);
+  }
+
+  .card-head {
+    font-size: 10px;
+    padding: 6px 8px;
+    margin: -2px -2px 8px;
+  }
+
+  .pill {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+
+  .muted {
+    font-size: 11px;
+  }
+
+  .create-desc {
+    display: none;
+  }
+
+  .field-label {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  .input {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .input.big {
+    font-size: 18px;
+  }
+
+  .btn {
+    font-size: 11px;
+    padding: 9px 10px;
+    box-shadow: 3px 3px 0 var(--surface-lowest);
+  }
+
+  .btn.xl {
+    font-size: 15px;
+    padding: 12px;
+    margin-top: 6px;
+  }
+
+  .btn.sm {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .michi-preview {
+    max-width: 120px;
+    margin: 6px auto 2px;
+  }
+
+  .michi-preview.large {
+    max-width: 230px;
+  }
+
+  .invite-code {
+    font-size: 30px;
+  }
+
+  .error {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+
+  /* pista */
+  .track-img {
+    max-height: 84px;
+    object-fit: cover;
+  }
+
+  .track-title {
+    font-size: 16px;
+    margin-top: 6px;
+  }
+
+  .track-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  #w-track-tag,
+  #l-track-tag,
+  .card-head .pill {
+    display: none;
+  }
+
+  .track-stats div {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  .track-picker {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .track-option {
+    font-size: 8px;
+    padding: 3px;
+  }
+
+  .track-option img {
+    max-height: 40px;
+    object-fit: cover;
+  }
+
+  /* lobby */
+  .grid-title {
+    font-size: 18px;
+  }
+
+  .start-box {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+
+  .grid-list {
+    gap: 5px;
+  }
+
+  .grid-list li {
+    gap: 8px;
+    padding: 5px 8px;
+  }
+
+  .slot {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  .p-name {
+    font-size: 12px;
+  }
+
+  .p-sub {
+    font-size: 9px;
+  }
+
+  .state {
+    font-size: 9px;
+    padding: 3px 5px;
+  }
+
+  .lobby-actions,
+  .garage-actions {
+    gap: 8px;
+  }
+
+  .lobby-actions .btn-primary {
+    font-size: 13px;
+  }
+
+  .toggle-row,
+  .param-row {
+    font-size: 10px;
+    padding: 6px 0;
+  }
+
+  .vehicle-name {
+    font-size: 16px;
+  }
+
+  /* en el lobby las barras de stats sobran (están en el garaje) */
+  #l-stats {
+    display: none;
+  }
+
+  .stats {
+    gap: 5px;
+    margin-top: 8px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+
+  .stat-bar {
+    height: 5px;
+  }
+
+  /* garaje */
+  .garage-title {
+    font-size: 24px;
+  }
+
+  .color-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .color-list li {
+    font-size: 11px;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .color-list li .color-dot {
+    width: 14px;
+    height: 14px;
+  }
+
+  .color-list .taken {
+    font-size: 8px;
+  }
+
+  .muted.small {
+    margin-top: 8px;
+  }
+
+  .toast {
+    font-size: 12px;
+    padding: 8px 12px;
+    bottom: max(14px, env(safe-area-inset-bottom));
+  }
+}
+
+/* pantallas muy angostas (p. ej. tablet en vertical que no bloqueamos): una sola columna */
+@media (max-width: 560px) {
+  .welcome-grid,
+  .lobby-grid,
+  .garage-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- carrera en táctil ---------- */
+html.touch .race-screen {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* el velocímetro pasa a la izquierda, bajo la posición (abajo están los controles y arriba al centro el semáforo) */
+html.touch .hud-speed {
+  top: 25%;
+  bottom: auto;
+  right: auto;
+  left: 2%;
+  min-width: 0;
+  font-size: 2.2cqw;
+  padding: 0.4cqw 1cqw;
+}
+
+html.touch .hud-speed .bar {
+  width: 12cqw;
+}
+
+html.touch .hud-speed .label,
+html.touch .net-info {
+  display: none;
+}
+
+html.touch .drift {
+  margin-top: 0.3cqw;
+}
+
+html.touch .warning {
+  bottom: auto;
+  top: 30%;
+}
+
+/* ---------- controles táctiles ---------- */
+.touch-controls {
+  --tc-side: max(36px, calc(env(safe-area-inset-left) + 20px));
+  --tc-side-r: max(36px, calc(env(safe-area-inset-right) + 20px));
+  --tc-bottom: max(30px, calc(env(safe-area-inset-bottom) + 18px));
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  font-family: 'Space Mono', monospace;
+}
+
+.touch-controls[hidden] {
+  display: none;
+}
+
+.touch-controls > * {
+  pointer-events: auto;
+}
+
+.tc-stick {
+  position: absolute;
+  left: var(--tc-side);
+  bottom: var(--tc-bottom);
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  background: rgba(12, 14, 23, 0.35);
+  border: 3px solid rgba(0, 240, 255, 0.45);
+  box-shadow: inset 0 0 0 10px rgba(0, 240, 255, 0.06);
+  display: grid;
+  place-items: center;
+  touch-action: none;
+}
+
+.tc-stick.active {
+  border-color: rgba(0, 240, 255, 0.8);
+}
+
+.tc-knob {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(0, 240, 255, 0.55);
+  border: 3px solid #dbfcff;
+  box-shadow: 0 3px 0 rgba(12, 14, 23, 0.6);
+  pointer-events: none;
+}
+
+/* derecha: DRIFT y GAS lado a lado, TURBO (más chico) encima, con separación cómoda */
+.tc-buttons {
+  position: absolute;
+  right: var(--tc-side-r);
+  bottom: var(--tc-bottom);
+  display: grid;
+  grid-template-columns: 62px 70px;
+  grid-template-rows: 48px 70px;
+  column-gap: 26px;
+  row-gap: 22px;
+  align-items: center;
+  justify-items: center;
+}
+
+.tc-btn {
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.75);
+  color: #fff;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 4px 0 rgba(12, 14, 23, 0.55);
+  opacity: 0.88;
+  transition: transform 0.05s;
+}
+
+.tc-btn.pressed {
+  transform: translateY(3px) scale(0.96);
+  box-shadow: 0 1px 0 rgba(12, 14, 23, 0.55);
+  opacity: 1;
+}
+
+.tc-gas {
+  grid-column: 2;
+  grid-row: 2;
+  width: 70px;
+  height: 70px;
+  font-size: 13px;
+  background: rgba(255, 80, 110, 0.75);
+}
+
+.tc-drift {
+  grid-column: 1;
+  grid-row: 2;
+  width: 62px;
+  height: 62px;
+  font-size: 11px;
+  background: rgba(0, 105, 112, 0.8);
+  border-color: rgba(0, 240, 255, 0.8);
+}
+
+.tc-turbo {
+  grid-column: 1 / span 2;
+  grid-row: 1;
+  width: 48px;
+  height: 48px;
+  font-size: 8px;
+  background: rgba(243, 219, 0, 0.75);
+  color: #201c00;
+}
+
+/* salir: arriba del joystick, lejos del kart (centro) y de los botones */
+.tc-exit {
+  position: absolute;
+  left: calc(var(--tc-side) + 43px);
+  bottom: calc(var(--tc-bottom) + 116px + 26px);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: rgba(12, 14, 23, 0.6);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* pantallas táctiles muy chicas: todo un poco más compacto, manteniendo la separación */
+@media (max-height: 360px) {
+  .tc-stick {
+    width: 100px;
+    height: 100px;
+  }
+
+  .tc-knob {
+    width: 42px;
+    height: 42px;
+  }
+
+  .tc-buttons {
+    grid-template-columns: 56px 62px;
+    grid-template-rows: 42px 62px;
+    column-gap: 22px;
+    row-gap: 16px;
+  }
+
+  .tc-gas {
+    width: 62px;
+    height: 62px;
+  }
+
+  .tc-drift {
+    width: 56px;
+    height: 56px;
+  }
+
+  .tc-turbo {
+    width: 42px;
+    height: 42px;
+  }
+}

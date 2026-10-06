@@ -1,6 +1,8 @@
 // Flujo completo: Bienvenida → Crear/Unirse (link) → Lobby ⇄ Garaje → Carrera → Resultados → Lobby.
 import { KART_COLORS, swatch } from './colors';
 import { Controls } from './input/controls';
+import { TouchControls } from './input/touch';
+import { enterFullscreen, exitFullscreen, isTouch } from './device';
 import { GameConnection, createRoom, fetchRoom } from './net/connection';
 import type { JoinResponse, RaceStartDto, ResultsDto, RoomStateDto } from './net/protocol';
 import { KartFrames, loadKart } from './render/sprites';
@@ -47,6 +49,10 @@ export async function startApp() {
     return tracks.get(def.id)!;
   };
   const controls = new Controls();
+  // controles táctiles (joystick + GAS/DRIFT/TURBO) solo en celular/tablet
+  const touch = isTouch ? new TouchControls($('touch-controls')) : null;
+  controls.touch = touch;
+  if (import.meta.env.DEV) (window as unknown as { __controls: Controls }).__controls = controls; // depuración
   const raceView = new RaceView($('game') as HTMLCanvasElement);
   const previews = {
     welcome: new MichiPreview($('w-preview') as HTMLCanvasElement),
@@ -66,6 +72,14 @@ export async function startApp() {
 
   const show = (id: ScreenId) => {
     for (const s of ['welcome', 'lobby', 'garage', 'race']) $(`screen-${s}`).classList.toggle('active', s === id);
+    // en táctil: controles visibles solo en carrera; al salir de la carrera se deja la pantalla completa
+    touch?.setVisible(id === 'race');
+    if (id !== 'race') exitFullscreen();
+  };
+  /** Fin de carrera (resultados): se ocultan los controles y se sale de pantalla completa. */
+  const raceFinished = () => {
+    touch?.setVisible(false);
+    exitFullscreen();
   };
   const toast = (msg: string) => {
     const t = $('toast');
@@ -257,7 +271,10 @@ export async function startApp() {
   $('l-ready').onclick = () =>
     lobbyAction(async () => {
       if (!conn || !room) return;
-      if (room.ownerId === myId) await conn.startRace();
+      if (room.ownerId === myId) {
+        enterFullscreen();
+        await conn.startRace();
+      }
       else await conn.setReady(!room.players.find((p) => p.id === myId)?.ready);
     });
   $<HTMLInputElement>('l-bots').onchange = (e) => lobbyAction(() => conn!.setFillBots((e.target as HTMLInputElement).checked));
@@ -329,6 +346,7 @@ export async function startApp() {
   let currentOnline: OnlineSession | null = null;
 
   function showOnlineResults(results: ResultsDto) {
+    raceFinished();
     showResults({
       trackName: results.trackName,
       rows: results.rows.map((r) => ({ name: r.name, place: r.place, finishTime: r.finishTime, bestLap: r.bestLap, me: r.id === myId })),
@@ -344,6 +362,7 @@ export async function startApp() {
   // ---------------- práctica local ----------------
   async function startPractice() {
     mode = 'practice';
+    enterFullscreen(); // dentro del gesto (clic en PRÁCTICA / REVANCHA)
     const theme = await loadTheme(localTrack);
     const session = new PracticeSession(getTrack(localTrack), controls, playerName());
     const frames = new Map<string, KartFrames>([[session.player.id, kartFrames[localColor]]]);
@@ -352,6 +371,7 @@ export async function startApp() {
     $('hud-hint').textContent = '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO turbo · 🎮 gamepad · ESC salir';
     raceView.onEvent = (e) => {
       if (e.type !== 'end') return;
+      raceFinished();
       showResults({
         trackName: session.race.track.def.name,
         rows: session.race.ranking().map((r, i) => ({ name: r.name, place: i + 1, finishTime: r.finishTime, bestLap: r.bestLap, me: r === session.player })),
@@ -363,9 +383,9 @@ export async function startApp() {
     show('race');
   }
 
-  // ESC: sale de la práctica; en online pide confirmación (segundo ESC) porque abandona la sala.
+  // ESC (o ✕ en táctil): sale de la práctica; en online pide confirmación porque abandona la sala.
   let escArmedUntil = 0;
-  controls.keyboard.onPress('Escape', () => {
+  const exitRace = (again: string) => {
     if (mode === 'practice') {
       raceView.stop();
       mode = null;
@@ -373,14 +393,20 @@ export async function startApp() {
     } else if (mode === 'online' && $('screen-race').classList.contains('active')) {
       if (performance.now() > escArmedUntil) {
         escArmedUntil = performance.now() + 2000;
-        toast('Presiona ESC otra vez para salir de la sala');
+        toast(again);
         return;
       }
       raceView.stop();
       mode = null;
       leaveRoom();
     }
-  });
+  };
+  controls.keyboard.onPress('Escape', () => exitRace('Presiona ESC otra vez para salir de la sala'));
+  if (touch) {
+    touch.onExit = () => exitRace('Toca ✕ otra vez para salir de la sala');
+    // los invitados entran a la carrera sin gesto propio: el primer toque activa la pantalla completa
+    touch.onFirstTouch = () => enterFullscreen();
+  }
 
   // ---------------- arranque ----------------
   // La invitación solo se muestra si el servidor confirma que la sala sigue abierta.
