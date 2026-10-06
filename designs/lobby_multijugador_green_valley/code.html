@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_blank" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#0c0e17;}body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}.crt-overlay{background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,0.35) 50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06));background-size:100% 3px,6px 100%;pointer-events:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "background": "#11131c", "on-tertiary-container": "#6b5f00", "tertiary": "#fff6d1", "error-container": "#93000a", "on-primary-fixed": "#002022", "secondary-fixed-dim": "#ffb2b8", "surface-container-highest": "#32343e", "on-primary-container": "#006970", "on-secondary-fixed-variant": "#91002d", "secondary-fixed": "#ffdadb", "on-tertiary": "#373100", "on-secondary-container": "#5b0018", "on-primary": "#00363a", "outline": "#849495", "on-background": "#e1e1ef", "outline-variant": "#3b494b", "surface-container-high": "#282933", "secondary-container": "#ff506e", "on-secondary-fixed": "#40000f", "surface-tint": "#00dbe9", "surface-variant": "#32343e", "on-tertiary-fixed-variant": "#504700", "on-tertiary-fixed": "#201c00", "primary-fixed": "#7df4ff", "on-primary-fixed-variant": "#004f54", "tertiary-fixed": "#fde400", "surface-dim": "#11131c", "on-secondary": "#67001d", "tertiary-container": "#f3db00", "inverse-surface": "#e1e1ef", "surface-container": "#1d1f29", "surface": "#11131c", "inverse-primary": "#006970", "tertiary-fixed-dim": "#dec800", "on-surface": "#e1e1ef", "error": "#ffb4ab", "on-error": "#690005", "inverse-on-surface": "#2e303a", "primary-container": "#00f0ff", "secondary": "#ffb2b8", "surface-container-lowest": "#0c0e17", "on-error-container": "#ffdad6", "surface-bright": "#373943", "surface-container-low": "#191b24", "primary-fixed-dim": "#00dbe9", "on-surface-variant": "#b9cacb", "primary": "#dbfcff" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "gutter": "1rem", "gutter-desktop": "1.5rem", "space-lg": "1.5rem", "margin-desktop": "2rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "space-md": "1rem", "margin": "1rem", "space-xl": "2.5rem" }, fontFamily: { "label-md": ["Space Mono"], "label-lg": ["Space Mono"], "label-sm": ["Space Mono"], "headline-md": ["Space Grotesk"], "body-lg": ["Space Grotesk"], "headline-lg": ["Space Grotesk"], "body-md": ["Space Grotesk"], "headline-lg-mobile": ["Space Grotesk"], "display-lg": ["Space Mono"], "display-lg-mobile": ["Space Mono"], "display-xl": ["Space Mono"], "display-xl-mobile": ["Space Mono"] }, fontSize: { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.08em", "fontWeight": "700" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.12em", "fontWeight": "700" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0.01em", "fontWeight": "500" }], "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "400" }], "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "0em", "fontWeight": "700" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "display-xl": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.05em", "fontWeight": "700" }], "display-xl-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.04em", "fontWeight": "700" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface-container-lowest text-on-surface antialiased overflow-hidden min-h-screen"><div class="fixed inset-0 crt-overlay z-40"></div><header class="fixed top-0 w-full z-50 pt-safe pointer-events-none"><div class="h-12 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm pointer-events-auto bg-surface-container-lowest/85 backdrop-blur-md px-2.5 py-1 rounded shadow-[0_2px_12px_rgba(0,0,0,0.6)]"><div class="flex items-center gap-1.5 font-label-sm text-label-sm"><span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span><span class="text-primary font-bold">60 FPS</span></div><span class="text-outline-variant font-label-sm">|</span><div class="flex items-center gap-1 font-label-sm text-label-sm"><span class="material-symbols-outlined text-[13px] text-tertiary-fixed">sensors</span><span class="text-tertiary-fixed font-bold">18ms</span></div><span class="text-outline-variant font-label-sm">|</span><div class="font-label-sm text-label-sm text-on-surface-variant font-bold">RM:<span class="text-primary-container ml-0.5">ABCD123</span></div></div><div class="flex items-center gap-space-xs pointer-events-auto bg-surface-container-lowest/85 backdrop-blur-md px-1.5 py-1 rounded shadow-[0_2px_12px_rgba(0,0,0,0.6)]"><button aria-label="Sound Toggle" class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[18px]">volume_up</span></button><button aria-label="Pause Game" class="w-8 h-8 rounded flex items-center justify-center text-secondary-container hover:text-secondary transition-colors"><span class="material-symbols-outlined text-[18px]">pause</span></button></div></div></header><main class="relative w-full h-screen bg-surface-container-lowest overflow-hidden"><div class="flex flex-col w-full px-margin pb-24 text-on-surface">
+<div class="flex items-center justify-between mt-2 mb-3">
+<div class="flex items-center gap-2">
+<span class="inline-block w-2.5 h-2.5 bg-primary-container animate-ping rounded-none"></span>
+<h2 class="font-label-md text-label-md text-primary tracking-widest uppercase">Lobby Multijugador</h2>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container px-2 py-0.5 shadow-[2px_2px_0px_#000000]">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Tipo:</span>
+<span class="font-label-sm text-label-sm text-tertiary-fixed font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">lock_open</span> PÚBLICA
+      </span>
+</div>
+</div>
+<section class="bg-surface-container-low p-3 mb-4 shadow-[4px_4px_0px_#000000] relative overflow-hidden">
+<div class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant block leading-tight">CÓDIGO DE SALA</span>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-wider" id="roomCodeDisplay">ABCD123</span>
+<span class="font-label-sm text-label-sm bg-surface-container-high text-tertiary-fixed px-1.5 py-0.5">HOST: GASTÓN</span>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary-container px-3 py-2 font-label-md text-label-md flex items-center gap-1.5 shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-transform" id="copyBtn" onclick="copyRoomLink()">
+<span class="material-symbols-outlined text-[16px]">share</span>
+<span>COMPARTIR</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest p-2">
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-primary-container">groups</span>
+            PILOTOS CONECTADOS
+          </span>
+<span class="font-label-sm text-label-sm text-primary font-bold">8 / 20</span>
+</div>
+<div class="grid grid-cols-10 gap-1 h-2 bg-surface-container-high p-0.5">
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-surface-container-highest"></div>
+<div class="bg-surface-container-highest"></div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-low p-3 mb-4 shadow-[4px_4px_0px_#000000]">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-label-sm text-primary-fixed uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">sports_score</span>
+        PISTA DE CARRERA
+      </span>
+<span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-1.5 py-0.5 font-bold uppercase">
+        VOTACIÓN ABIERTA
+      </span>
+</div>
+<div class="relative w-full h-36 bg-surface-container-lowest mb-3 overflow-hidden shadow-[2px_2px_0px_#000000]">
+<div class="bg-cover bg-center w-full h-full" data-alt="Retro 16-bit pixel art of Green Valley race track with winding asphalt highway, lush pine trees, rolling mountains under an intense twilight orange and neon sky, arcade racing game perspective" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDEYvAadvNv7G5-njPqhHU4EtUfs2TFIU_6hmhXVqlZRWWTMtdHEt-EuUEegQiPjmnijmYkrsj2MCwtm5_whoI3FeTxIsLVURdacK01AzbYjKdqxC0SaNO7X0BkPQvyyDk8hdacihQyhbc2pGIb_qP843nnPDDlX2OH0K7-GVahqgsRAWUCsHeHXNb5rgQuKDb1uBZ2G4vC66xM23KSD6QZuZRrAi51k_qBrdAnL6M')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/30 to-transparent flex flex-col justify-end p-2.5">
+<div class="flex items-baseline justify-between">
+<div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary leading-tight">GREEN VALLEY 🌲</h3>
+<div class="flex items-center gap-1 text-tertiary-fixed text-[12px]">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-1">MEDIO • 3 VUELTAS</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">RÉCORD PISTA</span>
+<span class="font-label-sm text-label-sm text-tertiary-container font-bold">01:12.40</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-1.5 overflow-x-auto pb-1 mb-2.5">
+<button class="bg-primary-container text-on-primary-container px-2.5 py-1.5 font-label-sm text-label-sm font-bold whitespace-nowrap shadow-[2px_2px_0px_#000000]">
+        VALLEY 🌲 (5)
+      </button>
+<button class="bg-surface-container-high text-on-surface-variant hover:text-primary px-2.5 py-1.5 font-label-sm text-label-sm whitespace-nowrap shadow-[2px_2px_0px_#000000]">
+        NEON CITY 🌆 (2)
+      </button>
+<button class="bg-surface-container-high text-on-surface-variant hover:text-primary px-2.5 py-1.5 font-label-sm text-label-sm whitespace-nowrap shadow-[2px_2px_0px_#000000]">
+        DESERT RUN 🏜️ (1)
+      </button>
+<button class="bg-surface-container-high text-on-surface-variant hover:text-primary px-2.5 py-1.5 font-label-sm text-label-sm whitespace-nowrap shadow-[2px_2px_0px_#000000]">
+        ICE MOUNTAIN ❄️ (0)
+      </button>
+<button class="bg-surface-container-high text-on-surface-variant hover:text-primary px-2.5 py-1.5 font-label-sm text-label-sm whitespace-nowrap shadow-[2px_2px_0px_#000000]">
+        COASTAL 🌊 (0)
+      </button>
+</div>
+<button class="w-full bg-surface-container text-primary-fixed hover:bg-surface-container-high py-1.5 font-label-sm text-label-sm flex items-center justify-center gap-1 shadow-[2px_2px_0px_#000000]">
+<span class="material-symbols-outlined text-[14px]">how_to_vote</span>
+      VOTAR POR OTRA PISTA
+    </button>
+</section>
+<section class="bg-surface-container-low p-3 mb-4 shadow-[4px_4px_0px_#000000]">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-label-sm text-primary-fixed uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">directions_car</span>
+        TU MÁQUINA DE CARRERAS
+      </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">P1 (TÚ)</span>
+</div>
+<div class="bg-surface-container-lowest p-3 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="w-28 h-16 bg-surface-container-high relative flex items-center justify-center shadow-[2px_2px_0px_#000000] overflow-hidden">
+<div class="bg-cover bg-center w-full h-full" data-alt="Chunky 16-bit pixel art side-isometric view of a neon cyan futuristic cyber sport racing car with glowing exhausts and aerodynamic spoiler" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD-yDfhCyqz3KWI6AaSjE4GmG9-W5h8c-2YPJOUbzAsT9mYZWfzr5ArM15APo8YljUUladdWQ8ReUJbC0m0bwA-nRJIOdkDGZ-P9I25bq14xEBPH1LKWyUwlTGHgmpDX59Hua9BfFFVdRw9FfIC27r3AH44V1ERfduvLfFTT5J0Ez2-R7z9TF8M1Sdwknd52jO8xMKrcm3v-ELhiUQzaKDgqxDaLS855B2wZ5QIev4')"></div>
+<span class="absolute top-1 left-1 font-label-sm text-[8px] bg-surface-container-lowest text-primary px-1">CLASS A</span>
+</div>
+<div class="flex-1 ml-3 min-w-0">
+<div class="flex items-center justify-between">
+<h4 class="font-label-md text-label-md text-primary font-bold truncate">CYBER SPORT GT</h4>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant block mb-1.5">LIVERY: NEON CIAN</span>
+<div class="flex gap-1.5">
+<button class="w-5 h-5 bg-primary-container shadow-[1px_1px_0px_#000000]"></button>
+<button class="w-5 h-5 bg-secondary-container shadow-[1px_1px_0px_#000000]"></button>
+<button class="w-5 h-5 bg-tertiary-container shadow-[1px_1px_0px_#000000]"></button>
+<button class="w-5 h-5 bg-surface-bright shadow-[1px_1px_0px_#000000]"></button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2 pt-1 font-label-sm text-label-sm">
+<div class="bg-surface-container p-1.5">
+<span class="text-on-surface-variant block text-[9px]">VELOCIDAD</span>
+<div class="flex items-center justify-between mt-0.5">
+<div class="flex gap-0.5">
+<span class="w-1.5 h-2.5 bg-primary-container"></span>
+<span class="w-1.5 h-2.5 bg-primary-container"></span>
+<span class="w-1.5 h-2.5 bg-primary-container"></span>
+<span class="w-1.5 h-2.5 bg-surface-container-highest"></span>
+</div>
+<span class="text-primary font-bold">85%</span>
+</div>
+</div>
+<div class="bg-surface-container p-1.5">
+<span class="text-on-surface-variant block text-[9px]">ACEL.</span>
+<div class="flex items-center justify-between mt-0.5">
+<div class="flex gap-0.5">
+<span class="w-1.5 h-2.5 bg-tertiary-fixed"></span>
+<span class="w-1.5 h-2.5 bg-tertiary-fixed"></span>
+<span class="w-1.5 h-2.5 bg-tertiary-fixed"></span>
+<span class="w-1.5 h-2.5 bg-tertiary-fixed"></span>
+</div>
+<span class="text-tertiary-fixed font-bold">90%</span>
+</div>
+</div>
+<div class="bg-surface-container p-1.5">
+<span class="text-on-surface-variant block text-[9px]">MANEJO</span>
+<div class="flex items-center justify-between mt-0.5">
+<div class="flex gap-0.5">
+<span class="w-1.5 h-2.5 bg-secondary"></span>
+<span class="w-1.5 h-2.5 bg-secondary"></span>
+<span class="w-1.5 h-2.5 bg-surface-container-highest"></span>
+<span class="w-1.5 h-2.5 bg-surface-container-highest"></span>
+</div>
+<span class="text-secondary font-bold">78%</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-low p-3 shadow-[4px_4px_0px_#000000]">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-sm text-label-sm text-primary-fixed uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">format_list_numbered</span>
+        PARRILLA DE SALIDA (8/20)
+      </span>
+<span class="font-label-sm text-label-sm text-tertiary-fixed">6 LISTOS</span>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between bg-surface-container p-2 shadow-[2px_2px_0px_#000000]">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-5 font-label-sm text-label-sm text-tertiary-fixed font-bold">#1</span>
+<div class="w-6 h-6 bg-primary-container/20 flex items-center justify-center text-primary text-xs">
+<span class="material-symbols-outlined text-[16px]">stars</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-primary font-bold truncate">👑 GASTÓN</span>
+<span class="text-[9px] bg-primary text-on-primary font-bold px-1">HOST</span>
+</div>
+<span class="text-[10px] text-on-surface-variant font-label-sm block truncate">Cyber Sport GT (Cian)</span>
+</div>
+</div>
+<span class="font-label-sm text-[10px] bg-surface-container-highest text-primary-fixed px-2 py-0.5 font-bold uppercase animate-pulse">
+          LISTO
+        </span>
+</div>
+<div class="flex items-center justify-between bg-surface-container p-2 shadow-[2px_2px_0px_#000000]">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-5 font-label-sm text-label-sm text-on-surface-variant">#2</span>
+<div class="w-6 h-6 bg-secondary-container/20 flex items-center justify-center text-secondary text-xs">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-bold truncate block">ApexViper</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm block truncate">Formula Turbo (Rojo)</span>
+</div>
+</div>
+<span class="font-label-sm text-[10px] bg-surface-container-highest text-primary-fixed px-2 py-0.5 font-bold uppercase">
+          LISTO
+        </span>
+</div>
+<div class="flex items-center justify-between bg-surface-container p-2 shadow-[2px_2px_0px_#000000]">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-5 font-label-sm text-label-sm text-on-surface-variant">#3</span>
+<div class="w-6 h-6 bg-tertiary-container/20 flex items-center justify-center text-tertiary-fixed text-xs">
+<span class="material-symbols-outlined text-[16px]">pets</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-bold truncate block">TurboCat</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm block truncate">Compact Sprint (Amarillo)</span>
+</div>
+</div>
+<span class="font-label-sm text-[10px] bg-surface-container-highest text-primary-fixed px-2 py-0.5 font-bold uppercase">
+          LISTO
+        </span>
+</div>
+<div class="flex items-center justify-between bg-surface-container p-2 shadow-[2px_2px_0px_#000000]">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-5 font-label-sm text-label-sm text-on-surface-variant">#4</span>
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-on-surface-variant text-xs">
+<span class="material-symbols-outlined text-[16px]">build</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-bold truncate block">SpeedDemon</span>
+<span class="text-[10px] text-secondary font-label-sm block truncate">Elegir coche...</span>
+</div>
+</div>
+<span class="font-label-sm text-[10px] bg-surface-container-lowest text-secondary-container px-2 py-0.5 font-bold uppercase">
+          TALLER...
+        </span>
+</div>
+<div class="flex items-center justify-between bg-surface-container p-2 shadow-[2px_2px_0px_#000000]">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-5 font-label-sm text-label-sm text-on-surface-variant">#5</span>
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-primary-fixed text-xs">
+<span class="material-symbols-outlined text-[16px]">shield</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-bold truncate block">Racer99</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm block truncate">Heavy Tanker (Verde)</span>
+</div>
+</div>
+<span class="font-label-sm text-[10px] bg-surface-container-highest text-primary-fixed px-2 py-0.5 font-bold uppercase">
+          LISTO
+        </span>
+</div>
+<div class="flex items-center justify-between bg-surface-container p-2 shadow-[2px_2px_0px_#000000]">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-5 font-label-sm text-label-sm text-on-surface-variant">#6</span>
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-on-surface-variant text-xs">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-bold truncate block">PixelRider</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm block truncate">Cyber Sport GT (Blanco)</span>
+</div>
+</div>
+<span class="font-label-sm text-[10px] bg-surface-container-lowest text-on-surface-variant px-2 py-0.5 font-bold uppercase">
+          ESPERANDO
+        </span>
+</div>
+<div class="flex items-center justify-between bg-surface-container p-2 shadow-[2px_2px_0px_#000000]">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-5 font-label-sm text-label-sm text-on-surface-variant">#7</span>
+<div class="w-6 h-6 bg-primary-container/20 flex items-center justify-center text-primary-fixed text-xs">
+<span class="material-symbols-outlined text-[16px]">speed</span>
+</div>
+<div class="min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-bold truncate block">NeonDrifter</span>
+<span class="text-[10px] text-on-surface-variant font-label-sm block truncate">Compact Sprint (Azul)</span>
+</div>
+</div>
+<span class="font-label-sm text-[10px] bg-surface-container-highest text-primary-fixed px-2 py-0.5 font-bold uppercase">
+          LISTO
+        </span>
+</div>
+<div class="flex items-center justify-between bg-surface-container p-2 shadow-[2px_2px_0px_#000000]">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-5 font-label-sm text-label-sm text-on-surface-variant">#8</span>
+<div class="w-6 h-6 bg-surface-container-high flex items-center justify-center text-on-surface-variant text-xs">
+<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-on-surface font-bold truncate">Bot_Retro</span>
+<span class="text-[8px] bg-surface-container-highest text-on-surface-variant px-1 font-bold">IA</span>
+</div>
+<span class="text-[10px] text-on-surface-variant font-label-sm block truncate">Muscle V8 (Gris)</span>
+</div>
+</div>
+<span class="font-label-sm text-[10px] bg-surface-container-highest text-primary-fixed px-2 py-0.5 font-bold uppercase">
+          LISTO
+        </span>
+</div>
+<div class="p-2.5 bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline">hourglass_empty</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Slots 9-20 libres para pilotos</span>
+</div>
+<button class="bg-surface-container-high text-primary px-2 py-1 font-label-sm text-[10px] flex items-center gap-1 shadow-[1px_1px_0px_#000000]">
+<span class="material-symbols-outlined text-[12px]">add</span> + BOT IA
+        </button>
+</div>
+</div>
+</section>
+<aside class="fixed bottom-0 left-0 right-0 z-50 bg-surface-container-lowest/95 backdrop-blur-md p-3 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.8)]">
+<div class="max-w-md mx-auto flex items-center gap-2">
+<button aria-label="Abandonar sala" class="w-12 h-12 bg-surface-container-high text-secondary hover:text-secondary-fixed flex items-center justify-center shadow-[3px_3px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</button>
+<button class="flex-1 h-12 bg-surface-container text-primary-container font-label-md text-label-md flex flex-col items-center justify-center leading-tight shadow-[3px_3px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none" id="readyToggleBtn" onclick="togglePlayerReady()">
+<span class="font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> <span id="readyLabel">¡ESTOY LISTO!</span>
+</span>
+<span class="text-[9px] text-on-surface-variant">TOGGLE ESTADO</span>
+</button>
+<button class="flex-[1.4] h-12 bg-secondary-container text-on-secondary-container font-label-md text-label-md flex flex-col items-center justify-center leading-tight shadow-[3px_3px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none animate-pulse" id="startRaceBtn" onclick="startCountdown()">
+<span class="font-bold flex items-center gap-1 uppercase tracking-wider">
+<span class="material-symbols-outlined text-[18px]">sports_motorsports</span> INICIAR CARRERA
+        </span>
+<span class="text-[9px] text-on-secondary font-bold">6/8 PILOTOS LISTOS</span>
+</button>
+</div>
+</aside>
+</div>
+<script>
+  let isReady = true;
+
+  function togglePlayerReady() {
+    isReady = !isReady;
+    const readyLabel = document.getElementById('readyLabel');
+    const readyBtn = document.getElementById('readyToggleBtn');
+    if (isReady) {
+      readyLabel.innerText = '¡ESTOY LISTO!';
+      readyBtn.className = 'flex-1 h-12 bg-surface-container text-primary-container font-label-md text-label-md flex flex-col items-center justify-center leading-tight shadow-[3px_3px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none';
+    } else {
+      readyLabel.innerText = 'EN ESPERA...';
+      readyBtn.className = 'flex-1 h-12 bg-surface-container-high text-on-surface-variant font-label-md text-label-md flex flex-col items-center justify-center leading-tight shadow-[3px_3px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none';
+    }
+  }
+
+  function copyRoomLink() {
+    const code = document.getElementById('roomCodeDisplay').innerText;
+    const url = 'https://pixelgrandprix.game/room/' + code;
+    const copyBtn = document.getElementById('copyBtn');
+    
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+    }
+    
+    copyBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">done</span><span>¡COPIADO!</span>';
+    setTimeout(() => {
+      copyBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">share</span><span>COMPARTIR</span>';
+    }, 1800);
+  }
+
+  function startCountdown() {
+    const btn = document.getElementById('startRaceBtn');
+    btn.innerHTML = '<span class="font-bold flex items-center gap-1 uppercase tracking-wider text-primary">LANZANDO (3)...</span>';
+    let counter = 3;
+    const interval = setInterval(() => {
+      counter--;
+      if (counter > 0) {
+        btn.innerHTML = '<span class="font-bold flex items-center gap-1 uppercase tracking-wider text-primary">LANZANDO (' + counter + ')...</span>';
+      } else {
+        clearInterval(interval);
+        btn.innerHTML = '<span class="font-bold flex items-center gap-1 uppercase tracking-wider text-tertiary-fixed">¡ARRANCANDO!</span>';
+      }
+    }, 1000);
+  }
+</script></main></body></html>

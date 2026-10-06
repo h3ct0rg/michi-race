@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_blank" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;min-height:100vh;margin:0;padding:0;background-color:#11131c;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}.arcade-scanlines{background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,0.3) 50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02));background-size:100% 3px,3px 100%;pointer-events:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-tertiary-fixed":"#201c00","outline":"#849495","surface-tint":"#00dbe9","secondary-container":"#ff506e","error":"#ffb4ab","on-secondary-fixed":"#40000f","on-error":"#690005","on-tertiary-fixed-variant":"#504700","surface-container-high":"#282933","primary-fixed":"#7df4ff","inverse-primary":"#006970","tertiary":"#fff6d1","surface-container-low":"#191b24","surface-container-highest":"#32343e","tertiary-fixed-dim":"#dec800","secondary":"#ffb2b8","surface-bright":"#373943","tertiary-container":"#f3db00","surface-container":"#1d1f29","primary-fixed-dim":"#00dbe9","on-error-container":"#ffdad6","on-tertiary":"#373100","on-secondary-container":"#5b0018","on-primary":"#00363a","secondary-fixed-dim":"#ffb2b8","tertiary-fixed":"#fde400","on-background":"#e1e1ef","on-surface-variant":"#b9cacb","outline-variant":"#3b494b","surface-dim":"#11131c","surface-variant":"#32343e","on-secondary":"#67001d","on-tertiary-container":"#6b5f00","on-secondary-fixed-variant":"#91002d","on-primary-fixed-variant":"#004f54","inverse-on-surface":"#2e303a","secondary-fixed":"#ffdadb","background":"#11131c","primary":"#dbfcff","error-container":"#93000a","on-primary-fixed":"#002022","surface-container-lowest":"#0c0e17","surface":"#11131c","inverse-surface":"#e1e1ef","on-surface":"#e1e1ef","primary-container":"#00f0ff","on-primary-container":"#006970"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"space-lg":"1.5rem","gutter-desktop":"1.5rem","space-md":"1rem","space-xl":"2.5rem","margin":"1rem","margin-desktop":"2rem","space-sm":"0.5rem","space-xs":"0.25rem","gutter":"1rem"},fontFamily:{"display-xl-mobile":["Space Mono"],"headline-lg":["Space Grotesk"],"headline-md":["Space Grotesk"],"label-lg":["Space Mono"],"label-sm":["Space Mono"],"body-md":["Space Grotesk"],"display-lg-mobile":["Space Mono"],"body-lg":["Space Grotesk"],"display-xl":["Space Mono"],"display-lg":["Space Mono"],"headline-lg-mobile":["Space Grotesk"],"label-md":["Space Mono"]},fontSize:{"display-xl-mobile":["36px",{"lineHeight":"44px","letterSpacing":"-0.04em","fontWeight":"700"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"0em","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"18px","letterSpacing":"0.08em","fontWeight":"700"}],"label-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.12em","fontWeight":"700"}],"body-md":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"400"}],"display-lg-mobile":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","letterSpacing":"0.01em","fontWeight":"500"}],"display-xl":["56px",{"lineHeight":"64px","letterSpacing":"-0.05em","fontWeight":"700"}],"display-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.03em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"0em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.1em","fontWeight":"700"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased relative min-h-screen selection:bg-primary-container selection:text-on-primary"><div class="fixed inset-0 arcade-scanlines z-40 pointer-events-none"></div><main class="relative z-10 w-full min-h-screen bg-surface flex flex-col pt-safe pb-safe"><div class="flex flex-col w-full text-on-surface select-none pb-12 overflow-hidden relative">
+<!-- Confetti Canvas Particle Layer -->
+<canvas class="absolute inset-0 w-full h-full pointer-events-none z-30" id="podium-confetti"></canvas>
+<!-- 1. Header Arcade Superior -->
+<header class="w-full px-space-md py-space-sm bg-surface-container-lowest flex items-center justify-between shadow-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-2.5 h-2.5 rounded-full bg-primary-container shadow-[0_0_8px_#00f0ff] animate-ping"></div>
+<span class="font-label-sm text-label-sm text-primary-fixed tracking-widest uppercase">
+        60 FPS <span class="text-outline-variant">|</span> 18MS <span class="text-outline-variant">|</span> RM: ABCD123
+      </span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary-fixed hover:bg-surface-bright active:scale-95 transition-transform" id="mute-btn" title="Silenciar Audio">
+<span class="material-symbols-outlined text-body-lg">volume_up</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-secondary-container flex items-center justify-center text-on-secondary-container hover:brightness-110 active:scale-95 transition-transform shadow-[0_0_8px_rgba(255,80,110,0.4)]" id="share-btn" title="Compartir Victoria">
+<span class="material-symbols-outlined text-body-lg">share</span>
+</button>
+</div>
+</header>
+<!-- 2. Banner de Finalización -->
+<section class="w-full px-space-md pt-space-md pb-space-xs text-center flex flex-col items-center">
+<div class="w-full max-w-md bg-surface-container-high py-space-xs px-space-md rounded-xl relative overflow-hidden shadow-lg">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-tertiary-container/10 to-transparent animate-pulse"></div>
+<div class="inline-flex items-center gap-space-xs">
+<span class="text-tertiary-container animate-bounce">🏁</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-tertiary-container uppercase tracking-wider drop-shadow-[0_0_10px_rgba(243,219,0,0.6)]">
+          CARRERA FINALIZADA
+        </h1>
+<span class="text-tertiary-container animate-bounce">🏁</span>
+</div>
+<p class="font-label-sm text-label-sm text-primary-fixed mt-1 tracking-widest uppercase">
+        CIRCUITO: GREEN VALLEY • 3 VUELTAS • 8 PILOTOS
+      </p>
+</div>
+</section>
+<!-- 3. Escenario del Podio 2.5D -->
+<section class="w-full px-space-md pt-space-sm pb-space-md">
+<div class="w-full max-w-md mx-auto bg-surface-container-low rounded-xl p-space-md relative overflow-hidden shadow-xl">
+<!-- Glow & Ambient Aura -->
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-tertiary-container/15 rounded-full blur-2xl pointer-events-none"></div>
+<!-- Podio Layout 3 Columnas -->
+<div class="grid grid-cols-3 gap-space-xs items-end relative z-10 pt- space-md">
+<!-- P2: ApexViper (Izquierda) -->
+<div class="flex flex-col items-center">
+<div class="relative mb-space-xs flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-bold">🥈 2º</span>
+<div class="w-10 h-10 rounded-full bg-surface-bright flex items-center justify-center shadow-md mt-1">
+<span class="material-symbols-outlined text-primary-container text-body-lg">sports_motorsports</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface truncate max-w-[85px] mt-1">ApexViper</span>
+<span class="font-label-sm text-label-sm text-outline">+01.45s</span>
+</div>
+<!-- Pedestal P2 -->
+<div class="w-full h-24 bg-surface-container rounded-t-lg flex flex-col items-center justify-between py-space-xs shadow-inner">
+<span class="font-headline-md text-headline-md text-primary-fixed">2</span>
+<span class="font-label-sm text-label-sm text-outline-variant">FORMULA</span>
+</div>
+</div>
+<!-- P1: Gastón_99 (Centro - Más Alto) -->
+<div class="flex flex-col items-center">
+<div class="relative mb-space-xs flex flex-col items-center">
+<!-- Corona y Trofeo Dorado -->
+<span class="text-tertiary-container drop-shadow-[0_0_8px_#ffd600] animate-pulse text-display-lg-mobile leading-none">👑</span>
+<div class="w-14 h-14 rounded-full bg-tertiary-container flex items-center justify-center shadow-[0_0_18px_rgba(243,219,0,0.5)] mt-1 relative">
+<span class="material-symbols-outlined text-on-tertiary-container text-display-lg-mobile" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+</div>
+<div class="bg-tertiary-container px-space-xs py-0.5 rounded-full mt-1">
+<span class="font-label-sm text-label-sm text-on-tertiary-container uppercase">¡CAMPEÓN!</span>
+</div>
+<span class="font-label-md text-label-md text-tertiary font-bold truncate max-w-[105px] mt-0.5">Gastón_99</span>
+<span class="font-label-sm text-label-sm text-primary-container">03:42.18</span>
+</div>
+<!-- Pedestal P1 -->
+<div class="w-full h-36 bg-surface-container-high rounded-t-xl flex flex-col items-center justify-between py-space-sm shadow-[0_0_20px_rgba(0,240,255,0.15)]">
+<span class="font-display-lg-mobile text-display-lg-mobile text-tertiary-container drop-shadow-[0_0_6px_#ffd600]">1</span>
+<span class="font-label-sm text-label-sm text-primary-container tracking-wider">CYBER GT</span>
+</div>
+</div>
+<!-- P3: TurboCat (Derecha) -->
+<div class="flex flex-col items-center">
+<div class="relative mb-space-xs flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-secondary-fixed-dim font-bold">🥉 3º</span>
+<div class="w-10 h-10 rounded-full bg-surface-bright flex items-center justify-center shadow-md mt-1">
+<span class="material-symbols-outlined text-secondary-container text-body-lg">local_fire_department</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface truncate max-w-[85px] mt-1">TurboCat</span>
+<span class="font-label-sm text-label-sm text-outline">+03.12s</span>
+</div>
+<!-- Pedestal P3 -->
+<div class="w-full h-20 bg-surface-container rounded-t-lg flex flex-col items-center justify-between py-space-xs shadow-inner">
+<span class="font-headline-md text-headline-md text-secondary-fixed">3</span>
+<span class="font-label-sm text-label-sm text-outline-variant">MUSCLE</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Desglose de Rendimiento Personal -->
+<section class="w-full px-space-md mb-space-md">
+<div class="w-full max-w-md mx-auto bg-surface-container rounded-xl p-space-md shadow-lg flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container">speed</span>
+<h2 class="font-headline-md text-headline-md text-primary">RENDIMIENTO</h2>
+</div>
+<span class="bg-surface-container-highest text-primary-container font-label-md text-label-md px-space-xs py-1 rounded-lg">
+          POSICIÓN: 1º / 8
+        </span>
+</div>
+<!-- Quick Metrics Grid -->
+<div class="grid grid-cols-2 gap-space-xs mt-1">
+<!-- Mejor Vuelta -->
+<div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">MEJOR VUELTA</span>
+<span class="material-symbols-outlined text-tertiary-container text-body-md" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-tertiary mt-1">01:12.04</span>
+<div class="bg-tertiary-container/20 text-tertiary font-label-sm text-label-sm px-1.5 py-0.5 rounded mt-1 inline-block w-fit">
+            ¡NUEVO RÉCORD!
+          </div>
+</div>
+<!-- Vel Maxima -->
+<div class="bg-surface-container-low p-space-sm rounded-lg flex flex-col">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">VEL. MÁXIMA</span>
+<span class="material-symbols-outlined text-primary-fixed-dim text-body-md">bolt</span>
+</div>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary mt-1">286 <span class="text-body-md font-body-md">KM/H</span></span>
+<span class="font-label-sm text-label-sm text-outline-variant mt-1.5">TURBO APEX ACTIVO</span>
+</div>
+</div>
+<!-- Powerups & Recompensas Bento Row -->
+<div class="bg-surface-container-low p-space-sm rounded-lg flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-outline block">POWER-UPS USADOS</span>
+<span class="font-label-lg text-label-lg text-on-surface">6x <span class="text-primary font-label-sm text-label-sm">(83% Precisión)</span></span>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-outline block">RECOMPENSAS</span>
+<span class="font-label-md text-label-md text-tertiary-container block">+850 CR • +450 XP</span>
+</div>
+</div>
+<!-- Nivel de Conductor Progress -->
+<div class="bg-surface-container-lowest p-space-sm rounded-lg flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">RANGO DE PILOTO</span>
+<span class="font-label-sm text-label-sm text-primary-container font-bold">¡SUBE A NIVEL 13!</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[82%] rounded-full shadow-[0_0_8px_#00f0ff] transition-all duration-1000"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. Tabla de Clasificación Completa -->
+<section class="w-full px-space-md mb-space-lg">
+<div class="w-full max-w-md mx-auto bg-surface-container-low rounded-xl p-space-md shadow-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between pb-space-xs">
+<span class="font-headline-md text-headline-md text-primary">CLASIFICACIÓN</span>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">GREEN VALLEY GP</span>
+</div>
+<!-- Header Columnas -->
+<div class="grid grid-cols-12 gap-1 px-space-xs py-1 text-outline font-label-sm text-label-sm uppercase">
+<span class="col-span-2">POS</span>
+<span class="col-span-5">PILOTO</span>
+<span class="col-span-3 text-right">TIEMPO</span>
+<span class="col-span-2 text-right">BEST</span>
+</div>
+<!-- Lista de Pilotos -->
+<div class="flex flex-col gap-1.5">
+<!-- P1: Gastón_99 (Highlight) -->
+<div class="grid grid-cols-12 gap-1 items-center bg-primary-container text-on-primary-container px-space-xs py-2 rounded-lg font-bold shadow-md">
+<span class="col-span-2 font-label-lg text-label-lg flex items-center gap-1">1º 👑</span>
+<span class="col-span-5 truncate font-label-md text-label-md">Gastón_99</span>
+<span class="col-span-3 text-right font-label-sm text-label-sm">03:42.18</span>
+<span class="col-span-2 text-right font-label-sm text-label-sm">01:12.0</span>
+</div>
+<!-- P2: ApexViper -->
+<div class="grid grid-cols-12 gap-1 items-center bg-surface-container px-space-xs py-2 rounded-lg text-on-surface">
+<span class="col-span-2 font-label-md text-label-md text-primary-fixed">2º</span>
+<span class="col-span-5 truncate font-label-sm text-label-sm">ApexViper</span>
+<span class="col-span-3 text-right font-label-sm text-label-sm text-outline">+01.45s</span>
+<span class="col-span-2 text-right font-label-sm text-label-sm text-outline-variant">01:13.2</span>
+</div>
+<!-- P3: TurboCat -->
+<div class="grid grid-cols-12 gap-1 items-center bg-surface-container px-space-xs py-2 rounded-lg text-on-surface">
+<span class="col-span-2 font-label-md text-label-md text-secondary-fixed">3º</span>
+<span class="col-span-5 truncate font-label-sm text-label-sm">TurboCat</span>
+<span class="col-span-3 text-right font-label-sm text-label-sm text-outline">+03.12s</span>
+<span class="col-span-2 text-right font-label-sm text-label-sm text-outline-variant">01:14.0</span>
+</div>
+<!-- P4: Octane99 -->
+<div class="grid grid-cols-12 gap-1 items-center bg-surface-container px-space-xs py-2 rounded-lg text-on-surface">
+<span class="col-span-2 font-label-md text-label-md text-outline">4º</span>
+<span class="col-span-5 truncate font-label-sm text-label-sm">Octane99</span>
+<span class="col-span-3 text-right font-label-sm text-label-sm text-outline">+04.89s</span>
+<span class="col-span-2 text-right font-label-sm text-label-sm text-outline-variant">01:14.8</span>
+</div>
+<!-- P5: MechaRacer -->
+<div class="grid grid-cols-12 gap-1 items-center bg-surface-container px-space-xs py-2 rounded-lg text-on-surface">
+<span class="col-span-2 font-label-md text-label-md text-outline">5º</span>
+<span class="col-span-5 truncate font-label-sm text-label-sm">MechaRacer</span>
+<span class="col-span-3 text-right font-label-sm text-label-sm text-outline">+06.21s</span>
+<span class="col-span-2 text-right font-label-sm text-label-sm text-outline-variant">01:15.1</span>
+</div>
+<!-- P6: CyberDrift -->
+<div class="grid grid-cols-12 gap-1 items-center bg-surface-container px-space-xs py-2 rounded-lg text-on-surface">
+<span class="col-span-2 font-label-md text-label-md text-outline">6º</span>
+<span class="col-span-5 truncate font-label-sm text-label-sm">CyberDrift</span>
+<span class="col-span-3 text-right font-label-sm text-label-sm text-outline">+08.40s</span>
+<span class="col-span-2 text-right font-label-sm text-label-sm text-outline-variant">01:16.0</span>
+</div>
+<!-- P7: RetroRider -->
+<div class="grid grid-cols-12 gap-1 items-center bg-surface-container px-space-xs py-2 rounded-lg text-on-surface">
+<span class="col-span-2 font-label-md text-label-md text-outline">7º</span>
+<span class="col-span-5 truncate font-label-sm text-label-sm">RetroRider</span>
+<span class="col-span-3 text-right font-label-sm text-label-sm text-outline">+10.15s</span>
+<span class="col-span-2 text-right font-label-sm text-label-sm text-outline-variant">01:17.4</span>
+</div>
+<!-- P8: PhantomX (DNF) -->
+<div class="grid grid-cols-12 gap-1 items-center bg-surface-container px-space-xs py-2 rounded-lg text-on-surface opacity-75">
+<span class="col-span-2 font-label-md text-label-md text-error">8º</span>
+<span class="col-span-5 truncate font-label-sm text-label-sm">PhantomX</span>
+<span class="col-span-3 text-right font-label-sm text-label-sm text-error">DNF</span>
+<span class="col-span-2 text-right font-label-sm text-label-sm text-outline-variant">--:--</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. Barra de Acciones Inferior Fija -->
+<nav class="sticky bottom-0 z-40 w-full bg-surface-container-lowest/95 backdrop-blur-md px-space-md py-space-sm shadow-[0_-4px_16px_rgba(0,0,0,0.6)]">
+<div class="w-full max-w-md mx-auto flex items-center justify-between gap-space-xs">
+<!-- Botón Volver al Lobby -->
+<button class="flex-1 bg-surface-container text-primary-fixed hover:bg-surface-bright active:scale-95 py-space-sm px-space-xs rounded-xl flex flex-col items-center justify-center transition-all shadow-md">
+<span class="material-symbols-outlined text-body-lg">arrow_back</span>
+<span class="font-label-sm text-label-sm uppercase mt-0.5">LOBBY</span>
+</button>
+<!-- Botón Primario: Revancha Inmediata -->
+<button class="flex-[2] bg-secondary-container text-on-secondary-container hover:brightness-110 active:scale-95 py-space-sm px-space-sm rounded-xl flex flex-col items-center justify-center transition-all shadow-[0_0_15px_rgba(255,80,110,0.5)]" id="rematch-btn">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-body-lg animate-spin" style="animation-duration: 4s;">replay</span>
+<span class="font-label-md text-label-md uppercase tracking-wider font-bold">REVANCHA</span>
+</div>
+<span class="font-label-sm text-label-sm opacity-90 mt-0.5" id="countdown-timer">Votación: 12s</span>
+</button>
+<!-- Botón Garaje -->
+<button class="flex-1 bg-surface-container text-tertiary-container hover:bg-surface-bright active:scale-95 py-space-sm px-space-xs rounded-xl flex flex-col items-center justify-center transition-all shadow-md">
+<span class="material-symbols-outlined text-body-lg">garage</span>
+<span class="font-label-sm text-label-sm uppercase mt-0.5">GARAJE</span>
+</button>
+</div>
+</nav>
+</div>
+<script>
+  (function() {
+    // 1. Contador de Revancha regresivo
+    let timeLeft = 12;
+    const timerElem = document.getElementById('countdown-timer');
+    if (timerElem) {
+      const countdown = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+          timerElem.textContent = 'Votación: ' + timeLeft + 's';
+        } else {
+          timerElem.textContent = 'Iniciando...';
+          clearInterval(countdown);
+        }
+      }, 1000);
+    }
+
+    // 2. Confeti Pixel Art Procedural Canvas
+    const canvas = document.getElementById('podium-confetti');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const colors = ['#ffd600', '#00f0ff', '#ff506e', '#ffffff'];
+      const particles = [];
+      const particleCount = 45;
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height - height,
+          size: Math.floor(Math.random() * 4) + 4, // Bloques cuadrados estilo pixel
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vy: Math.random() * 2 + 1.5,
+          vx: (Math.random() - 0.5) * 1.5
+        });
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => {
+          ctx.fillStyle = p.color;
+          ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
+          p.y += p.vy;
+          p.x += p.vx;
+
+          if (p.y > height) {
+            p.y = -10;
+            p.x = Math.random() * width;
+          }
+        });
+        requestAnimationFrame(render);
+      }
+      render();
+    }
+  })();
+</script></main></body></html>

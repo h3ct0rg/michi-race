@@ -1,0 +1,16 @@
+# configuración local del editor / herramientas
+.claude/
+.vs/
+.vscode/
+*.user
+
+# dependencias y builds
+node_modules/
+dist/
+bin/
+obj/
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log

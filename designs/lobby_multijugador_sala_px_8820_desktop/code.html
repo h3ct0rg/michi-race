@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}.scanline-fx{background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,0.25) 50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03));background-size:100% 2px,3px 100%;pointer-events:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"on-secondary-fixed-variant":"#91002d","outline":"#849495","surface-dim":"#11131c","secondary-fixed-dim":"#ffb2b8","surface-bright":"#373943","on-background":"#e1e1ef","on-primary-fixed":"#002022","on-secondary":"#67001d","surface-container-highest":"#32343e","on-surface":"#e1e1ef","primary-fixed-dim":"#00dbe9","inverse-on-surface":"#2e303a","tertiary-container":"#f3db00","on-tertiary-fixed-variant":"#504700","outline-variant":"#3b494b","background":"#11131c","on-secondary-container":"#5b0018","primary-fixed":"#7df4ff","tertiary-fixed":"#fde400","surface-container-lowest":"#0c0e17","error-container":"#93000a","inverse-surface":"#e1e1ef","surface-container":"#1d1f29","on-primary-fixed-variant":"#004f54","on-tertiary-fixed":"#201c00","on-tertiary-container":"#6b5f00","tertiary":"#fff6d1","tertiary-fixed-dim":"#dec800","on-primary":"#00363a","surface-tint":"#00dbe9","surface":"#11131c","primary-container":"#00f0ff","secondary-fixed":"#ffdadb","on-error":"#690005","secondary-container":"#ff506e","surface-variant":"#32343e","on-tertiary":"#373100","error":"#ffb4ab","primary":"#dbfcff","surface-container-high":"#282933","on-error-container":"#ffdad6","secondary":"#ffb2b8","on-secondary-fixed":"#40000f","surface-container-low":"#191b24","inverse-primary":"#006970","on-surface-variant":"#b9cacb","on-primary-container":"#006970"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xl":"2.5rem","space-xs":"0.25rem","space-sm":"0.5rem","space-md":"1rem","gutter":"1rem","space-lg":"1.5rem","margin-desktop":"2rem","margin":"1rem","gutter-desktop":"1.5rem"},"fontFamily":{"label-lg":["Space Mono"],"display-lg-mobile":["Space Mono"],"display-xl":["Space Mono"],"label-md":["Space Mono"],"display-xl-mobile":["Space Mono"],"body-lg":["Space Grotesk"],"body-md":["Space Grotesk"],"headline-md":["Space Grotesk"],"label-sm":["Space Mono"],"headline-lg":["Space Grotesk"],"headline-lg-mobile":["Space Grotesk"],"display-lg":["Space Mono"]},"fontSize":{"label-lg":["14px",{"lineHeight":"18px","letterSpacing":"0.08em","fontWeight":"700"}],"display-lg-mobile":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"700"}],"display-xl":["56px",{"lineHeight":"64px","letterSpacing":"-0.05em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.1em","fontWeight":"700"}],"display-xl-mobile":["36px",{"lineHeight":"44px","letterSpacing":"-0.04em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","letterSpacing":"0.01em","fontWeight":"500"}],"body-md":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"400"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"0em","fontWeight":"600"}],"label-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.12em","fontWeight":"700"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"0em","fontWeight":"700"}],"display-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.03em","fontWeight":"700"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface min-h-screen relative selection:bg-primary-container selection:text-on-primary-container"><div class="fixed inset-0 scanline-fx z-40"></div><header class="fixed top-0 w-full z-30 bg-surface-container-lowest/90 backdrop-blur-md"><div class="h-16 max-w-7xl mx-auto px-margin flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-primary-container animate-pulse">sports_motorsports</span><span class="font-headline-lg text-headline-lg text-primary tracking-wider uppercase drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">PIXEL GRAND PRIX</span></div><div class="hidden sm:flex items-center gap-space-xs px-space-xs py-0.5 bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-primary-container animate-ping"></span><span class="font-label-sm text-label-sm text-primary">ONLINE</span></div><div class="hidden md:flex items-center gap-space-xs px-space-sm py-1 bg-surface-container-high"><span class="material-symbols-outlined text-outline text-[16px]">wifi</span><span class="font-label-sm text-label-sm text-on-surface-variant">18 MS</span></div><div class="hidden lg:flex items-center gap-space-xs px-space-sm py-1 bg-surface-container-high"><span class="font-label-sm text-label-sm text-outline">ROOM:</span><span class="font-label-md text-label-md text-tertiary-fixed tracking-widest">#GP-9082</span></div></div><nav class="hidden xl:flex items-center gap-space-sm" data-active-classes="bg-surface-container-highest text-primary font-bold"><a aria-current="page" class="px-space-sm py-1 bg-surface-container-highest text-primary font-bold" data-path="race-lobby" href="#">LOBBY</a><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface px-space-sm py-1" data-path="garage" href="#">GARAGE</a><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface px-space-sm py-1" data-path="leaderboard" href="#">RECORDS</a><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface px-space-sm py-1" data-path="controls" href="#">CONTROLS</a></nav><div class="flex items-center gap-space-xs"><button aria-label="Toggle Audio" class="w-8 h-8 flex items-center justify-center bg-surface-container-high text-on-surface-variant hover:text-primary-container transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">volume_up</span></button><button aria-label="Toggle Fullscreen" class="w-8 h-8 flex items-center justify-center bg-surface-container-high text-on-surface-variant hover:text-primary-container transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">fullscreen</span></button><button aria-label="Settings" class="w-8 h-8 flex items-center justify-center bg-surface-container-high text-on-surface-variant hover:text-primary-container transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">settings</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface relative z-10"><div class="max-w-7xl mx-auto px-margin py-space-md"><div class="w-full bg-surface-container-lowest p-space-xs"><div class="flex flex-col w-full text-on-surface">
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-md w-full items-start">
+<!-- COLUMNA IZQUIERDA: PISTA & CONFIGURACIÓN -->
+<div class="xl:col-span-3 flex flex-col gap-space-md w-full">
+<!-- TARJETA PISTA ACTIVA -->
+<div class="bg-surface-container-low p-space-md shadow-2xl relative overflow-hidden group">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 bg-primary-container inline-block"></span>
+<span class="font-label-sm text-label-sm text-primary tracking-widest uppercase">MAPA PRINCIPAL</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary-fixed bg-surface-container-highest px-space-xs py-0.5">GP-02</span>
+</div>
+<div class="relative w-full h-44 bg-surface-container-lowest overflow-hidden my-space-xs shadow-inner">
+<img class="w-full h-full object-cover opacity-85" data-alt="Retro 16-bit arcade racing circuit named Green Valley GP during a vibrant neon sunset. The winding pixelated asphalt road cuts through pine forest hills under an orange, violet and cyan synthwave gradient sky. CRT raster scanlines texture with glowing yellow track apex markers." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLah2j07v10v3ZLEcNiyRL1oFgD3iyfCkRVpa90O-wfnWg4n2bdsPXi6Blr_4Au60Kvl37xihr495YTF4Wum0fPstMyqZZvnb0MLYQ3_sYjBezkOLzoDvBORiENEulqvv0-1XWF7HqE-hV8aqQgEhc2jy6_vpAaGNogkQmPlm5n-i8EPNmmJGavpkRQJNEKQR4HTl6cOLWqbQduF8TGJNAGT1NJK27pbDglmG6w6M"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="absolute top-space-xs right-space-xs bg-surface-container-lowest/90 px-space-xs py-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[14px]">wb_twilight</span>
+<span class="font-label-sm text-label-sm text-on-surface">ATARDECER</span>
+</div>
+<div class="absolute bottom-space-xs left-space-xs right-space-xs">
+<p class="font-label-md text-label-md text-primary-container uppercase">CIRCUITO 02</p>
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight leading-none uppercase">GREEN VALLEY GP</h2>
+</div>
+</div>
+<!-- TRACK METRICS & SPECS -->
+<div class="grid grid-cols-2 gap-space-xs pt-space-xs">
+<div class="bg-surface-container p-space-xs">
+<span class="font-label-sm text-label-sm text-outline block">VUELTAS</span>
+<span class="font-label-md text-label-md text-on-surface">3 LAPS</span>
+</div>
+<div class="bg-surface-container p-space-xs">
+<span class="font-label-sm text-label-sm text-outline block">LONGITUD</span>
+<span class="font-label-md text-label-md text-primary-fixed">4.2 KM</span>
+</div>
+<div class="bg-surface-container p-space-xs">
+<span class="font-label-sm text-label-sm text-outline block">CLIMA / ASIS.</span>
+<span class="font-label-md text-label-md text-on-surface">DESPEJADO / LEVE</span>
+</div>
+<div class="bg-surface-container p-space-xs">
+<span class="font-label-sm text-label-sm text-outline block">DIFICULTAD</span>
+<span class="font-label-md text-label-md text-tertiary-fixed">★★★☆☆</span>
+</div>
+</div>
+</div>
+<!-- SISTEMA DE VOTACIÓN -->
+<div class="bg-surface-container-low p-space-md shadow-xl flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">VOTACIÓN DE CIRCUITO</span>
+<span class="font-label-sm text-label-sm text-primary-container animate-pulse">TERMINA: 18s</span>
+</div>
+<!-- Opción 1: Seleccionada -->
+<button class="w-full text-left bg-surface-container-highest p-space-xs flex items-center justify-between transition-all hover:bg-surface-bright">
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-3 bg-primary-container"></span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface">GREEN VALLEY GP</p>
+<span class="font-label-sm text-label-sm text-primary">5 VOTOS (LÍDER)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary-container text-[18px]">how_to_reg</span>
+</button>
+<!-- Opción 2 -->
+<button class="w-full text-left bg-surface-container p-space-xs flex items-center justify-between transition-all hover:bg-surface-container-high opacity-80 hover:opacity-100">
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-3 bg-surface-container-highest"></span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface">CYBER TOKYO</p>
+<span class="font-label-sm text-label-sm text-outline">2 VOTOS</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">VOTAR</span>
+</button>
+<!-- Opción 3 -->
+<button class="w-full text-left bg-surface-container p-space-xs flex items-center justify-between transition-all hover:bg-surface-container-high opacity-80 hover:opacity-100">
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-3 bg-surface-container-highest"></span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface">NEON CANYON</p>
+<span class="font-label-sm text-label-sm text-outline">1 VOTO</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">VOTAR</span>
+</button>
+</div>
+<!-- REGLAS DE SALA -->
+<div class="bg-surface-container-low p-space-md flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">PARÁMETROS DE CARRERA</span>
+<div class="flex items-center justify-between py-1 bg-surface-container px-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">COLISIONES</span>
+<span class="font-label-sm text-label-sm text-primary-container">ACTIVADAS (ON)</span>
+</div>
+<div class="flex items-center justify-between py-1 bg-surface-container px-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">POWER-UPS</span>
+<span class="font-label-sm text-label-sm text-tertiary-fixed">CLASE A + B</span>
+</div>
+<div class="flex items-center justify-between py-1 bg-surface-container px-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">MÁXIMO PILOTOS</span>
+<span class="font-label-sm text-label-sm text-on-surface">8 JUGADORES</span>
+</div>
+</div>
+</div>
+<!-- COLUMNA CENTRAL: PARRILLA DE SALIDA -->
+<div class="xl:col-span-6 flex flex-col gap-space-md w-full">
+<!-- CABECERA DE PARRILLA -->
+<div class="bg-surface-container-low p-space-md flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm shadow-xl">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 bg-primary-container animate-ping"></span>
+<div>
+<h1 class="font-headline-lg text-headline-lg-mobile sm:text-headline-lg text-on-surface tracking-tight uppercase leading-none">
+              PARRILLA DE SALIDA
+            </h1>
+<p class="font-label-sm text-label-sm text-outline mt-1">6/8 PILOTOS SINCRONIZADOS</p>
+</div>
+</div>
+<div class="bg-secondary-container px-space-md py-space-xs self-start sm:self-center shadow-lg">
+<span class="font-label-sm text-label-sm text-on-secondary-container uppercase block tracking-widest text-center">INICIO EN</span>
+<span class="font-display-lg text-display-lg-mobile sm:text-display-lg text-white font-bold leading-none block text-center" id="countdown-val">18s</span>
+</div>
+</div>
+<!-- LISTADO DE SLOTS / JUGADORES -->
+<div class="flex flex-col gap-space-xs">
+<!-- Slot 1: Host / Tu -->
+<div class="bg-surface-container-high p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs shadow-md transition-all">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 bg-tertiary-container text-on-tertiary font-label-md text-label-md flex items-center justify-center font-bold">
+              P1
+            </div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm px-1 font-bold">👑 HOST</span>
+<span class="font-label-md text-label-md text-primary font-bold">GASTÓN_99 (TÚ)</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline block">CYBER SPORT GT • 18 MS</span>
+</div>
+</div>
+<div class="bg-primary-container/20 text-primary-container px-space-sm py-1 self-start sm:self-center flex items-center gap-1 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>LISTO ✓</span>
+</div>
+</div>
+<!-- Slot 2 -->
+<div class="bg-surface-container p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs shadow-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 bg-surface-container-highest text-on-surface-variant font-label-md text-label-md flex items-center justify-center">
+              P2
+            </div>
+<div>
+<span class="font-label-md text-label-md text-on-surface">APEXVIPER</span>
+<span class="font-label-sm text-label-sm text-outline block">FORMULA APEX • 24 MS</span>
+</div>
+</div>
+<div class="bg-primary-container/20 text-primary-container px-space-sm py-1 self-start sm:self-center flex items-center gap-1 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>LISTO ✓</span>
+</div>
+</div>
+<!-- Slot 3 -->
+<div class="bg-surface-container p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs shadow-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 bg-surface-container-highest text-on-surface-variant font-label-md text-label-md flex items-center justify-center">
+              P3
+            </div>
+<div>
+<span class="font-label-md text-label-md text-on-surface">TURBOCAT</span>
+<span class="font-label-sm text-label-sm text-outline block">RETRO MUSCLE 77 • 32 MS</span>
+</div>
+</div>
+<div class="bg-primary-container/20 text-primary-container px-space-sm py-1 self-start sm:self-center flex items-center gap-1 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>LISTO ✓</span>
+</div>
+</div>
+<!-- Slot 4: Eligiendo Coche -->
+<div class="bg-surface-container p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs shadow-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 bg-surface-container-highest text-on-surface-variant font-label-md text-label-md flex items-center justify-center">
+              P4
+            </div>
+<div>
+<span class="font-label-md text-label-md text-on-surface">OCTANE99</span>
+<span class="font-label-sm text-label-sm text-outline block">CONFIGURANDO GARAJE... • 45 MS</span>
+</div>
+</div>
+<div class="bg-tertiary-container/20 text-tertiary-fixed px-space-sm py-1 self-start sm:self-center flex items-center gap-1 font-label-sm text-label-sm animate-pulse">
+<span class="material-symbols-outlined text-[14px]">cached</span>
+<span>ELIGE COCHE...</span>
+</div>
+</div>
+<!-- Slot 5 -->
+<div class="bg-surface-container p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs shadow-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 bg-surface-container-highest text-on-surface-variant font-label-md text-label-md flex items-center justify-center">
+              P5
+            </div>
+<div>
+<span class="font-label-md text-label-md text-on-surface">MECHARACER</span>
+<span class="font-label-sm text-label-sm text-outline block">HEAVY TITAN • 20 MS</span>
+</div>
+</div>
+<div class="bg-primary-container/20 text-primary-container px-space-sm py-1 self-start sm:self-center flex items-center gap-1 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>LISTO ✓</span>
+</div>
+</div>
+<!-- Slot 6: No Listo -->
+<div class="bg-surface-container p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs shadow-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 bg-surface-container-highest text-on-surface-variant font-label-md text-label-md flex items-center justify-center">
+              P6
+            </div>
+<div>
+<span class="font-label-md text-label-md text-on-surface">CYBERDRIFT</span>
+<span class="font-label-sm text-label-sm text-outline block">COMPACT RACER • 58 MS</span>
+</div>
+</div>
+<div class="bg-surface-container-highest text-secondary-container px-space-sm py-1 self-start sm:self-center flex items-center gap-1 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">cancel</span>
+<span>NO LISTO ✗</span>
+</div>
+</div>
+<!-- Slot 7: Invitar amigo -->
+<div class="bg-surface-container-lowest p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs shadow-inner">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 bg-surface-container-low text-outline font-label-md text-label-md flex items-center justify-center">
+              P7
+            </div>
+<div>
+<span class="font-label-md text-label-md text-outline">[SLOT DISPONIBLE]</span>
+<span class="font-label-sm text-label-sm text-outline-variant block">SALA CÓDIGO: PX-8820</span>
+</div>
+</div>
+<button class="bg-surface-container-highest hover:bg-surface-bright text-on-surface px-space-sm py-1 self-start sm:self-center font-label-sm text-label-sm flex items-center gap-1 transition-colors" id="invite-btn">
+<span class="material-symbols-outlined text-[14px]">person_add</span>
+<span>+ INVITAR AMIGO</span>
+</button>
+</div>
+<!-- Slot 8: Buscando -->
+<div class="bg-surface-container-lowest p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs shadow-inner">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 bg-surface-container-low text-outline font-label-md text-label-md flex items-center justify-center">
+              P8
+            </div>
+<div>
+<span class="font-label-md text-label-md text-outline-variant italic">BUSCANDO PILOTO AUTOMÁTICO...</span>
+<span class="font-label-sm text-label-sm text-outline-variant block">EMPAREJAMIENTO REGIONAL ACTIVO</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-outline font-label-sm text-label-sm px-space-sm py-1">
+<span class="material-symbols-outlined text-[14px] animate-spin">sync</span>
+<span>EN COLA</span>
+</div>
+</div>
+</div>
+<!-- BARRA DE ACCIÓN INFERIOR -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-space-sm pt-space-xs">
+<button class="md:col-span-4 bg-surface-container-high hover:bg-surface-bright text-on-surface px-space-md py-space-sm flex items-center justify-center gap-space-xs shadow-lg transition-transform active:translate-y-0.5">
+<span class="material-symbols-outlined text-primary-container">tune</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">CAMBIAR VEHÍCULO</span>
+</button>
+<button class="md:col-span-8 bg-secondary-container hover:bg-secondary-fixed-dim text-white font-label-lg text-label-lg px-space-md py-space-sm flex items-center justify-center gap-space-sm shadow-xl transition-all active:scale-[0.99] uppercase tracking-widest" id="ready-toggle-btn">
+<span class="material-symbols-outlined text-[20px]">sports_score</span>
+<span id="ready-status-text">¡LISTO PARA CORRER!</span>
+<span class="text-tertiary-fixed font-display-lg-mobile leading-none ml-2">⚡</span>
+</button>
+</div>
+</div>
+<!-- COLUMNA DERECHA: LOADOUT DEL PILOTO & CHAT ARCADE -->
+<div class="xl:col-span-3 flex flex-col gap-space-md w-full">
+<!-- SHOWCASE VEHÍCULO PROPIO -->
+<div class="bg-surface-container-low p-space-md shadow-2xl flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">TU BÓLIDO</span>
+<span class="font-label-sm text-label-sm text-outline">CLASE-S</span>
+</div>
+<div class="relative w-full h-36 bg-surface-container-lowest overflow-hidden shadow-inner flex items-center justify-center p-space-xs">
+<img class="w-full h-full object-contain" data-alt="Detailed side profile pixel art illustration of a futuristic cyberpunk racing sports car named Cyber Sport GT. Vivid neon cyan and hot magenta decals, glowing rim underglow, chunky pixel edges, retro 90s arcade coin-op game graphic style on a dark grid backdrop." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoztgzntl_5qI7RRE5kD5iMg03-H40VIjV_ee6ONHsDTEVzqQCOc5_asLTt_hFj-LC5k50ICCROF1NqtsPzDT3ElYHxcOgx36qf9FDHgOksvNxAVGiXblLNu7MIHLVzH1huDqxnvRaSMj8kKdPNSKyT8DyfdJ4HFB0wxfwMDE7IdPWUyuUBQFTVsJAJf2kURjYejZULCEIBs4EI4eXdrzs8siCHj4I-kUNtAIFRhI"/>
+<div class="absolute bottom-1 right-2 font-label-sm text-label-sm text-tertiary-fixed bg-surface-container-lowest/80 px-1">
+            TUNED V8
+          </div>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface uppercase leading-none">CYBER SPORT GT</h3>
+<span class="font-label-sm text-label-sm text-outline">TRACCIÓN TRASERA • TURBO INTERCOOLER</span>
+</div>
+<!-- BARRAS DE ESTADÍSTICAS -->
+<div class="flex flex-col gap-1.5 pt-space-xs">
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-0.5">
+<span class="text-outline">VELOCIDAD</span>
+<span class="text-primary-container">85%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest">
+<div class="h-full bg-primary-container" style="width: 85%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-0.5">
+<span class="text-outline">ACELERACIÓN</span>
+<span class="text-primary-container">90%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest">
+<div class="h-full bg-primary-container" style="width: 90%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-0.5">
+<span class="text-outline">MANEJO</span>
+<span class="text-tertiary-fixed">78%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest">
+<div class="h-full bg-tertiary-fixed" style="width: 78%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-0.5">
+<span class="text-outline">NITRO BOOST</span>
+<span class="text-secondary">95%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest">
+<div class="h-full bg-secondary" style="width: 95%;"></div>
+</div>
+</div>
+</div>
+<!-- POWER-UPS ACTIVOS -->
+<div class="pt-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase block mb-1">EQUIPAMIENTO CARGADO</span>
+<div class="grid grid-cols-2 gap-space-xs">
+<div class="bg-surface-container p-space-xs flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary-fixed text-[16px]">bolt</span>
+<span class="font-label-sm text-label-sm text-on-surface">MEGA TURBO</span>
+</div>
+<div class="bg-surface-container p-space-xs flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-[16px]">shield</span>
+<span class="font-label-sm text-label-sm text-on-surface">PULSO EMP</span>
+</div>
+</div>
+</div>
+</div>
+<!-- CHAT DE LA SALA MULTIJUGADOR -->
+<div class="bg-surface-container-low p-space-md shadow-2xl flex flex-col gap-space-xs flex-1">
+<div class="flex items-center justify-between pb-1">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">COMUNICADOR DE SALA</span>
+<span class="font-label-sm text-label-sm text-primary">RADIO ON</span>
+</div>
+<!-- MENSAJES -->
+<div class="h-32 overflow-y-auto bg-surface-container-lowest p-space-xs flex flex-col gap-1.5 text-left text-xs font-body-md" id="chat-messages">
+<div class="leading-tight">
+<span class="font-label-sm text-label-sm text-secondary font-bold">[ApexViper]:</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm ml-1">¡Voy con la Formula a fondo!</span>
+</div>
+<div class="leading-tight">
+<span class="font-label-sm text-label-sm text-tertiary-fixed font-bold">[TurboCat]:</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm ml-1">Ojo en la curva 3 con los turbos</span>
+</div>
+<div class="leading-tight">
+<span class="font-label-sm text-label-sm text-primary font-bold">[Gastón_99]:</span>
+<span class="text-on-surface font-label-sm text-label-sm ml-1">¡Listos todos!</span>
+</div>
+</div>
+<!-- EMOTES RÁPIDOS ARCADE -->
+<div class="grid grid-cols-3 gap-1 pt-1">
+<button class="quick-emote-btn bg-surface-container hover:bg-surface-container-high py-1 text-center font-label-sm text-label-sm text-on-surface truncate" data-msg="🏁 ¡A CORRER!">
+            🏁 ¡A CORRER!
+          </button>
+<button class="quick-emote-btn bg-surface-container hover:bg-surface-container-high py-1 text-center font-label-sm text-label-sm text-on-surface truncate" data-msg="⚡ VOY CON TODO">
+            ⚡ VOY TODO
+          </button>
+<button class="quick-emote-btn bg-surface-container hover:bg-surface-container-high py-1 text-center font-label-sm text-label-sm text-on-surface truncate" data-msg="😈 GG">
+            😈 GG
+          </button>
+</div>
+<!-- INPUT DE CHAT -->
+<form class="flex items-center gap-space-xs pt-1 mt-auto" id="chat-form">
+<input class="w-full bg-surface-container-lowest px-space-xs py-1 text-on-surface font-label-sm text-label-sm placeholder:text-outline-variant focus:outline-none focus:bg-surface-container" id="chat-input" placeholder="Escribe en la sala..." type="text"/>
+<button class="bg-primary-container text-on-primary-container px-space-xs py-1 flex items-center justify-center hover:opacity-90" type="submit">
+<span class="material-symbols-outlined text-[16px]">send</span>
+</button>
+</form>
+</div>
+</div>
+</div>
+<script>
+    // Temporizador de cuenta atrás reactivo
+    let secondsLeft = 18;
+    const countdownElement = document.getElementById('countdown-val');
+    const timerInterval = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft < 0) {
+        clearInterval(timerInterval);
+        if (countdownElement) countdownElement.innerText = "00s";
+      } else {
+        if (countdownElement) countdownElement.innerText = (secondsLeft < 10 ? '0' : '') + secondsLeft + 's';
+      }
+    }, 1000);
+
+    // Toggle de estado Listo
+    const readyBtn = document.getElementById('ready-toggle-btn');
+    const readyText = document.getElementById('ready-status-text');
+    let isReady = true;
+
+    if (readyBtn && readyText) {
+      readyBtn.addEventListener('click', () => {
+        isReady = !isReady;
+        if (isReady) {
+          readyBtn.classList.remove('bg-surface-container-high', 'text-on-surface');
+          readyBtn.classList.add('bg-secondary-container', 'text-white');
+          readyText.innerText = "¡LISTO PARA CORRER!";
+        } else {
+          readyBtn.classList.remove('bg-secondary-container', 'text-white');
+          readyBtn.classList.add('bg-surface-container-high', 'text-on-surface');
+          readyText.innerText = "CANCELAR ESPERA (NO LISTO)";
+        }
+      });
+    }
+
+    // Chat instantáneo
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    function appendMessage(user, text, colorClass) {
+      if (!chatMessages) return;
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'leading-tight';
+      msgDiv.innerHTML = `<span class="font-label-sm text-label-sm ${colorClass} font-bold">[${user}]:</span> <span class="text-on-surface font-label-sm text-label-sm ml-1">${text}</span>`;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    if (chatForm && chatInput) {
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const msg = chatInput.value.trim();
+        if (msg) {
+          appendMessage('Gastón_99', msg, 'text-primary');
+          chatInput.value = '';
+        }
+      });
+    }
+
+    // Botones de frases rápidas arcade
+    document.querySelectorAll('.quick-emote-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const msg = btn.getAttribute('data-msg');
+        if (msg) {
+          appendMessage('Gastón_99', msg, 'text-primary');
+        }
+      });
+    });
+
+    // Copiar código de sala
+    const inviteBtn = document.getElementById('invite-btn');
+    if (inviteBtn) {
+      inviteBtn.addEventListener('click', () => {
+        navigator.clipboard?.writeText('PX-8820');
+        const originalText = inviteBtn.innerHTML;
+        inviteBtn.innerHTML = `<span class="material-symbols-outlined text-[14px] text-primary-container">check</span> <span class="text-primary-container">¡CÓDIGO COPIADO!</span>`;
+        setTimeout(() => {
+          inviteBtn.innerHTML = originalText;
+        }, 2000);
+      });
+    }
+  </script>
+</div></div></div></main><footer class="w-full bg-surface-container-lowest py-space-md relative z-10"><div class="max-w-7xl mx-auto px-margin flex flex-col md:flex-row items-center justify-between gap-space-md"><div class="flex items-center gap-space-md"><span class="font-label-sm text-label-sm text-outline">© 1989-2025 RETRO CYBERNETIC MOTORSPORTS</span><span class="font-label-sm text-label-sm text-tertiary-fixed">INSERT COIN [02/02]</span></div><div class="flex items-center gap-space-lg"><span class="font-label-sm text-label-sm text-on-surface-variant">REGION: US-EAST-CRT</span><span class="font-label-sm text-label-sm text-secondary-container">TICKRATE: 60 HZ</span></div></div></footer></body></html>

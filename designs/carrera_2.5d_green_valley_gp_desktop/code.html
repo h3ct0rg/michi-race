@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_blank" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@100..900&amp;family=Space+Mono:wght@100..900&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"error-container":"#93000a","secondary":"#ffb2b8","on-surface-variant":"#b9cacb","primary-container":"#00f0ff","error":"#ffb4ab","primary-fixed-dim":"#00dbe9","surface-container":"#1d1f29","inverse-surface":"#e1e1ef","on-error":"#690005","on-secondary-fixed-variant":"#91002d","on-tertiary":"#373100","on-background":"#e1e1ef","on-tertiary-container":"#6b5f00","on-secondary-container":"#5b0018","surface-container-lowest":"#0c0e17","surface-tint":"#00dbe9","surface-dim":"#11131c","outline":"#849495","on-secondary":"#67001d","secondary-fixed":"#ffdadb","background":"#11131c","outline-variant":"#3b494b","on-secondary-fixed":"#40000f","on-surface":"#e1e1ef","secondary-container":"#ff506e","inverse-on-surface":"#2e303a","primary":"#dbfcff","tertiary-fixed":"#fde400","on-primary-fixed-variant":"#004f54","tertiary":"#fff6d1","on-primary-container":"#006970","inverse-primary":"#006970","on-primary":"#00363a","surface-bright":"#373943","surface-container-highest":"#32343e","on-tertiary-fixed-variant":"#504700","tertiary-fixed-dim":"#dec800","surface-container-low":"#191b24","secondary-fixed-dim":"#ffb2b8","surface":"#11131c","on-primary-fixed":"#002022","on-error-container":"#ffdad6","primary-fixed":"#7df4ff","surface-container-high":"#282933","tertiary-container":"#f3db00","surface-variant":"#32343e","on-tertiary-fixed":"#201c00"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-sm":"0.5rem","gutter":"1rem","space-xs":"0.25rem","margin":"1rem","space-lg":"1.5rem","space-xl":"2.5rem","margin-desktop":"2rem","gutter-desktop":"1.5rem","space-md":"1rem"},"fontFamily":{"headline-lg-mobile":["Space Grotesk"],"label-md":["Space Mono"],"display-xl-mobile":["Space Mono"],"display-lg-mobile":["Space Mono"],"body-lg":["Space Grotesk"],"display-xl":["Space Mono"],"headline-lg":["Space Grotesk"],"label-sm":["Space Mono"],"body-md":["Space Grotesk"],"display-lg":["Space Mono"],"headline-md":["Space Grotesk"],"label-lg":["Space Mono"]},"fontSize":{"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"0em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.1em","fontWeight":"700"}],"display-xl-mobile":["36px",{"lineHeight":"44px","letterSpacing":"-0.04em","fontWeight":"700"}],"display-lg-mobile":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","letterSpacing":"0.01em","fontWeight":"500"}],"display-xl":["56px",{"lineHeight":"64px","letterSpacing":"-0.05em","fontWeight":"700"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.12em","fontWeight":"700"}],"body-md":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"400"}],"display-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.03em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"0em","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"18px","letterSpacing":"0.08em","fontWeight":"700"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased select-none"><main class="w-full min-h-screen bg-surface flex items-center justify-center"><div class="flex flex-col w-full">
+<!-- MAIN COCKPIT VIEWPORT (ARCADE 16:9 CONTAINER) -->
+<div class="relative w-full aspect-[16/9] max-h-[942px] min-h-[640px] overflow-hidden bg-surface-container-lowest select-none shadow-2xl flex flex-col justify-between">
+<!-- CRT SCANLINE & RETRO MESH OVERLAYS -->
+<div class="pointer-events-none absolute inset-0 z-40 bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(12,14,23,0.85)_100%)]"></div>
+<div class="pointer-events-none absolute inset-0 z-40 bg-[linear-gradient(rgba(0,240,255,0.03)_50%,rgba(0,0,0,0.3)_50%)] bg-[length:100%_4px]"></div>
+<!-- BACKGROUND 2.5D SKY & SYNTHWAVE HORIZON -->
+<div class="absolute inset-0 z-0 bg-gradient-to-b from-[#160228] via-[#480d46] to-[#ff506e] overflow-hidden">
+<!-- Cyber Sun -->
+<div class="absolute bottom-[44%] left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-gradient-to-t from-tertiary-container via-secondary-container to-secondary shadow-[0_0_90px_rgba(255,80,110,0.6)] flex flex-col justify-between p-1 overflow-hidden opacity-90">
+<div class="w-full h-1 bg-surface-container-lowest/80 mt-28"></div>
+<div class="w-full h-2 bg-surface-container-lowest/85"></div>
+<div class="w-full h-3 bg-surface-container-lowest/90"></div>
+<div class="w-full h-4 bg-surface-container-lowest"></div>
+<div class="w-full h-6 bg-surface-container-lowest"></div>
+<div class="w-full h-8 bg-surface-container-lowest"></div>
+</div>
+<!-- Vector Neon Mountains & Cyber Skyline Silhouette -->
+<svg class="absolute bottom-[44%] left-0 w-full h-40 opacity-70" preserveaspectratio="none" viewbox="0 0 1440 220">
+<polygon fill="#200636" points="0,220 80,140 180,190 280,90 390,180 520,70 680,210 790,110 930,195 1070,60 1200,175 1320,115 1440,220"></polygon>
+<polyline fill="none" points="0,220 80,140 180,190 280,90 390,180 520,70 680,210 790,110 930,195 1070,60 1200,175 1320,115 1440,220" stroke="#00f0ff" stroke-opacity="0.4" stroke-width="2"></polyline>
+</svg>
+<!-- Neon Palms & Laser Utility Poles Horizon Scale -->
+<div class="absolute bottom-[44%] left-12 w-16 h-28 opacity-80 flex flex-col items-center">
+<span class="material-symbols-outlined text-secondary-container text-5xl">nature</span>
+<div class="w-0.5 h-16 bg-secondary-container"></div>
+</div>
+<div class="absolute bottom-[44%] right-16 w-16 h-28 opacity-80 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary-fixed-dim text-5xl">nature</span>
+<div class="w-0.5 h-16 bg-primary-fixed-dim"></div>
+</div>
+</div>
+<!-- 2.5D PSEUDO-3D TRACK & ASPHALT CANVAS LAYER -->
+<div class="absolute inset-x-0 bottom-0 top-[54%] z-10 overflow-hidden bg-[#0c0e17] [perspective:600px]">
+<!-- Curved Pseudo-3D Road Surface -->
+<div class="w-full h-full relative [transform-origin:50%_0%] [transform:rotateX(68deg)]">
+<!-- Track Base (Curving Right) -->
+<div class="absolute -inset-x-32 top-0 bottom-0 bg-gradient-to-b from-[#11131c] to-[#1c1f2b] shadow-inner flex justify-center">
+<!-- Outer Curbs Striping (Red/White Alternating Segments) -->
+<div class="w-[82%] h-full flex justify-between relative">
+<!-- Left Curb -->
+<div class="w-10 h-full bg-[repeating-linear-gradient(to_bottom,#ff506e_0px,#ff506e_40px,#e1e1ef_40px,#e1e1ef_80px)] shadow-[0_0_15px_rgba(255,80,110,0.5)]"></div>
+<!-- Lane Dividers & High-speed Centerline Glow -->
+<div class="w-2.5 h-full bg-[repeating-linear-gradient(to_bottom,#00f0ff_0px,#00f0ff_60px,transparent_60px,transparent_130px)] shadow-[0_0_12px_#00f0ff]"></div>
+<div class="w-2.5 h-full bg-[repeating-linear-gradient(to_bottom,#fde400_0px,#fde400_40px,transparent_40px,transparent_110px)] shadow-[0_0_10px_#fde400]"></div>
+<!-- Right Curb (Curving Apex) -->
+<div class="w-12 h-full bg-[repeating-linear-gradient(to_bottom,#ff506e_0px,#ff506e_40px,#e1e1ef_40px,#e1e1ef_80px)] shadow-[0_0_15px_rgba(255,80,110,0.5)]"></div>
+</div>
+</div>
+<!-- Drift Rubber Skidmarks on Apex -->
+<div class="absolute right-[22%] top-1/4 w-16 h-3/4 border-r-8 border-surface-container-lowest/80 rounded-r-full blur-[1px]"></div>
+</div>
+</div>
+<!-- ===================== COCHES EN PISTA (CAPA 2.5D INTERMEDIA Z-25) ===================== -->
+<div class="absolute inset-0 pointer-events-none z-25 overflow-hidden">
+<!-- RIVAL P4: 'MechaRacer' (A lo lejos en el horizonte) -->
+<div class="absolute top-[52%] left-[51%] -translate-x-1/2 flex flex-col items-center drop-shadow-[0_0_10px_#ff506e] transition-transform">
+<div class="bg-surface-container-lowest/90 px-1.5 py-0.5 rounded text-[8px] font-label-sm text-secondary-container flex items-center gap-1 border border-secondary/40 shadow-sm mb-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container animate-ping"></span>
+<span>P4 MechaRacer</span>
+<span class="text-on-surface-variant">[95m]</span>
+</div>
+<!-- Mini SVG Vector Bólido Compacto P4 -->
+<svg fill="none" height="24" viewbox="0 0 44 24" width="44">
+<!-- Sombra -->
+<ellipse cx="22" cy="22" fill="#000" opacity="0.6" rx="18" ry="2"></ellipse>
+<!-- Chasis -->
+<rect fill="#32343e" height="12" rx="2" stroke="#ff506e" stroke-width="1" width="32" x="6" y="8"></rect>
+<path d="M12 8 L16 3 L28 3 L32 8 Z" fill="#1d1f29" stroke="#ff506e" stroke-width="0.8"></path>
+<!-- Luces LED traseras parpadeantes -->
+<rect class="animate-pulse" fill="#ff506e" height="3" width="8" x="8" y="14"></rect>
+<rect class="animate-pulse" fill="#ff506e" height="3" width="8" x="28" y="14"></rect>
+<rect fill="#00f0ff" height="2" width="8" x="18" y="15"></rect>
+<!-- Neumáticos -->
+<rect fill="#0c0e17" height="9" rx="1" width="4" x="2" y="11"></rect>
+<rect fill="#0c0e17" height="9" rx="1" width="4" x="38" y="11"></rect>
+</svg>
+</div>
+<!-- RIVAL P3: 'TurboCat' (Retro Muscle - Distancia Media-Lejana a la Derecha) -->
+<div class="absolute top-[56%] left-[68%] -translate-x-1/2 flex flex-col items-center drop-shadow-[0_6px_14px_rgba(255,80,110,0.45)]">
+<!-- Etiqueta Flotante P3 -->
+<div class="bg-surface-container-lowest/95 px-2 py-0.5 rounded shadow-lg mb-1 flex items-center gap-1.5 border-l-2 border-secondary-container border border-outline-variant/30">
+<span class="font-label-sm text-[9px] text-secondary-container font-bold uppercase">P3</span>
+<span class="font-label-sm text-[9px] text-on-surface font-semibold">TurboCat</span>
+<span class="font-label-sm text-[8px] text-tertiary-fixed font-bold">[42m]</span>
+</div>
+<!-- SVG Detallado Retro Muscle Car visto desde atrás -->
+<svg fill="none" height="66" viewbox="0 0 108 66" width="108">
+<defs>
+<lineargradient id="p3body" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#ff7b54"></stop>
+<stop offset="40%" stop-color="#e63946"></stop>
+<stop offset="100%" stop-color="#800f2f"></stop>
+</lineargradient>
+<lineargradient id="p3glass" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#2a0845"></stop>
+<stop offset="100%" stop-color="#0c0e17"></stop>
+</lineargradient>
+</defs>
+<!-- Sombra Asfalto -->
+<ellipse cx="54" cy="62" fill="#000" filter="blur(1px)" opacity="0.7" rx="46" ry="4"></ellipse>
+<!-- Humo de escape lateral sutil -->
+<circle cx="10" cy="54" fill="#b9cacb" opacity="0.35" r="5"></circle>
+<circle cx="98" cy="54" fill="#b9cacb" opacity="0.35" r="5"></circle>
+<!-- Neumáticos anchos -->
+<rect fill="#08090e" height="28" rx="3" stroke="#282933" stroke-width="1" width="13" x="6" y="32"></rect>
+<rect fill="#08090e" height="28" rx="3" stroke="#282933" stroke-width="1" width="13" x="89" y="32"></rect>
+<!-- Guardabarros anchos & Chasis Principal -->
+<path d="M12 40 L16 26 L26 24 L82 24 L92 26 L96 40 L94 54 L14 54 Z" fill="url(#p3body)" stroke="#ffdadb" stroke-width="1"></path>
+<!-- Franjas de competición dobles blancas/crema -->
+<rect fill="#fff6d1" height="44" opacity="0.85" width="5" x="47" y="10"></rect>
+<rect fill="#fff6d1" height="44" opacity="0.85" width="5" x="56" y="10"></rect>
+<!-- Cabina y Luneta Trasera Angulada Retro Muscle -->
+<path d="M26 24 L34 10 L74 10 L82 24 Z" fill="url(#p3glass)" stroke="#32343e" stroke-width="1"></path>
+<!-- Supercargador / Blower sobresaliendo del capó -->
+<rect fill="#e1e1ef" height="6" rx="1" stroke="#000" stroke-width="0.8" width="8" x="50" y="4"></rect>
+<circle cx="54" cy="7" fill="#ff506e" r="1.5"></circle>
+<!-- Spoiler Cola de Pato Retro -->
+<rect fill="#5b0018" height="4" rx="1" stroke="#ff506e" stroke-width="1" width="72" x="18" y="22"></rect>
+<!-- Panel Trasero & Luces Ópticas Neón Carmesí/Ámbar -->
+<rect fill="#0c0e17" height="12" rx="2" stroke="#3b494b" stroke-width="1" width="64" x="22" y="36"></rect>
+<!-- Pilotos Triples Clásicos -->
+<rect fill="#ff506e" height="6" rx="1" stroke="#ffdadb" stroke-width="0.5" width="6" x="26" y="39"></rect>
+<rect fill="#ff506e" height="6" rx="1" stroke="#ffdadb" stroke-width="0.5" width="6" x="34" y="39"></rect>
+<rect fill="#ff506e" height="6" rx="1" stroke="#ffdadb" stroke-width="0.5" width="6" x="42" y="39"></rect>
+<rect fill="#ff506e" height="6" rx="1" stroke="#ffdadb" stroke-width="0.5" width="6" x="60" y="39"></rect>
+<rect fill="#ff506e" height="6" rx="1" stroke="#ffdadb" stroke-width="0.5" width="6" x="68" y="39"></rect>
+<rect fill="#ff506e" height="6" rx="1" stroke="#ffdadb" stroke-width="0.5" width="6" x="76" y="39"></rect>
+<!-- Escape Cromado Doble con Chispas -->
+<rect fill="#849495" height="4" rx="1" width="7" x="24" y="52"></rect>
+<rect fill="#849495" height="4" rx="1" width="7" x="77" y="52"></rect>
+<circle cx="27" cy="56" fill="#fde400" r="2"></circle>
+<circle cx="80" cy="56" fill="#fde400" r="2"></circle>
+</svg>
+</div>
+<!-- RIVAL P2: 'ApexViper' (Formula Apex Neon Green/Yellow - A media distancia a la izquierda) -->
+<div class="absolute top-[60%] left-[28%] -translate-x-1/2 flex flex-col items-center drop-shadow-[0_8px_20px_rgba(253,228,0,0.5)]">
+<!-- Etiqueta Flotante P2 con Distancia 18m -->
+<div class="bg-surface-container-lowest/95 px-2.5 py-1 rounded shadow-xl mb-1.5 flex items-center gap-2 border-l-4 border-tertiary-fixed border border-outline-variant/40">
+<span class="font-label-sm text-xs text-tertiary-fixed font-black tracking-wide">P2</span>
+<span class="font-label-md text-xs text-on-surface font-bold tracking-wider">ApexViper</span>
+<span class="font-label-sm text-[10px] text-primary-container font-black">[18m]</span>
+<span class="font-label-sm text-[9px] text-tertiary-fixed bg-tertiary-fixed/20 px-1 py-0.2 rounded font-bold">ADELANTANDO</span>
+</div>
+<!-- SVG Detallado Monoplaza Formula Apex -->
+<svg fill="none" height="88" viewbox="0 0 152 88" width="152">
+<defs>
+<lineargradient id="p2body" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#bbf200"></stop>
+<stop offset="50%" stop-color="#70a400"></stop>
+<stop offset="100%" stop-color="#2a4500"></stop>
+</lineargradient>
+<lineargradient id="p2wing" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0%" stop-color="#fde400"></stop>
+<stop offset="50%" stop-color="#00f0ff"></stop>
+<stop offset="100%" stop-color="#fde400"></stop>
+</lineargradient>
+</defs>
+<!-- Sombra Suelo -->
+<ellipse cx="76" cy="82" fill="#000" filter="blur(2px)" opacity="0.75" rx="66" ry="6"></ellipse>
+<!-- Ruedas Abiertas de Competición Fórmula (Exposed Slicks) -->
+<rect fill="#080a10" height="42" rx="4" stroke="#3b494b" stroke-width="1.5" width="22" x="2" y="38"></rect>
+<rect fill="#1d1f29" height="30" rx="1" width="4" x="7" y="44"></rect>
+<rect fill="#080a10" height="42" rx="4" stroke="#3b494b" stroke-width="1.5" width="22" x="128" y="38"></rect>
+<rect fill="#1d1f29" height="30" rx="1" width="4" x="141" y="44"></rect>
+<!-- Humo de derrape dinámico bajo neumáticos -->
+<circle cx="8" cy="78" fill="#e1e1ef" opacity="0.25" r="8"></circle>
+<circle cx="144" cy="78" fill="#e1e1ef" opacity="0.25" r="8"></circle>
+<!-- Brazos de Suspensión Triangulares Cromados -->
+<line stroke="#849495" stroke-width="2.5" x1="24" x2="52" y1="52" y2="58"></line>
+<line stroke="#849495" stroke-width="2.5" x1="24" x2="52" y1="68" y2="68"></line>
+<line stroke="#849495" stroke-width="2.5" x1="128" x2="100" y1="52" y2="58"></line>
+<line stroke="#849495" stroke-width="2.5" x1="128" x2="100" y1="68" y2="68"></line>
+<!-- Alerón Trasero Superior Masivo de Fibra con Pilares -->
+<rect fill="url(#p2wing)" height="9" rx="2" stroke="#0c0e17" stroke-width="1" width="120" x="16" y="8"></rect>
+<rect fill="#fde400" height="15" rx="1" width="6" x="12" y="5"></rect>
+<rect fill="#fde400" height="15" rx="1" width="6" x="134" y="5"></rect>
+<!-- Placas terminales y texto del alerón -->
+<text fill="#0c0e17" font-family="Space Mono" font-size="7" font-weight="900" letter-spacing="1" text-anchor="middle" x="76" y="15">VIPER APEX • FORMULA 02</text>
+<!-- Soportes / Pylons de carbono -->
+<polygon fill="#191b24" points="56,17 60,17 58,40 54,40"></polygon>
+<polygon fill="#191b24" points="96,17 92,17 94,40 98,40"></polygon>
+<!-- Chasis Central Conic Monoplaza & Sidepods -->
+<path d="M48 42 L52 24 L100 24 L104 42 L112 56 L108 76 L44 76 L40 56 Z" fill="url(#p2body)" stroke="#fde400" stroke-width="1.2"></path>
+<!-- Airbox Superior / Toma de Aire de Motor -->
+<path d="M68 24 L72 16 L80 16 L84 24 Z" fill="#0c0e17" stroke="#fde400" stroke-width="1"></path>
+<ellipse cx="76" cy="21" fill="#fde400" rx="4" ry="2.5"></ellipse>
+<!-- Cockpit / Casco del Piloto visible -->
+<circle cx="76" cy="32" fill="#fde400" r="6" stroke="#000" stroke-width="1"></circle>
+<path d="M72 32 Q76 30 80 32" fill="none" stroke="#00f0ff" stroke-width="2"></path>
+<!-- Halo de Seguridad Titanio -->
+<path d="M66 36 Q76 28 86 36" fill="none" stroke="#e1e1ef" stroke-width="2"></path>
+<!-- Difusor Inferior & Luz de Lluvia / Alerta F1 LED Destellante -->
+<rect fill="#0c0e17" height="7" rx="1" stroke="#282933" stroke-width="1" width="28" x="62" y="70"></rect>
+<rect class="animate-pulse" fill="#ff506e" filter="drop-shadow(0 0 6px #ff506e)" height="4" rx="1" width="10" x="71" y="72"></rect>
+</svg>
+</div>
+<!-- JUGADOR COCKPIT VEHICLE: 'CYBER SPORT GT' (Primer Plano Abajo al Centro) -->
+<div class="absolute bottom-[2%] left-1/2 -translate-x-1/2 flex flex-col items-center z-30 drop-shadow-[0_12px_30px_rgba(0,240,255,0.6)]">
+<!-- Etiqueta de Identidad del Jugador Gastón_99 [TÚ] -->
+<div class="bg-surface-container-lowest/95 px-4 py-1 rounded-t-md shadow-2xl mb-1 flex items-center gap-2 border-t-2 border-x border-primary-container">
+<span class="material-symbols-outlined text-primary-container text-base animate-spin" style="animation-duration: 4s;">stars</span>
+<span class="font-label-md text-sm text-primary tracking-widest font-black uppercase drop-shadow-[0_0_8px_#00f0ff]">GASTÓN_99 [TÚ]</span>
+<span class="bg-primary-container/20 text-primary-fixed text-[10px] font-label-sm px-1.5 py-0.5 rounded font-bold border border-primary-container/50">LÍDER P1</span>
+</div>
+<!-- SVG Principal de Alta Calidad: Bólido Cyber Sport GT (Vista Trasera en Perspectiva) -->
+<svg class="overflow-visible" fill="none" height="186" viewbox="0 0 340 186" width="340">
+<defs>
+<!-- Degradados Carrocería & Neón -->
+<lineargradient id="carBody" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#282933"></stop>
+<stop offset="25%" stop-color="#1d1f29"></stop>
+<stop offset="70%" stop-color="#141620"></stop>
+<stop offset="100%" stop-color="#0c0e17"></stop>
+</lineargradient>
+<lineargradient id="cyanCyber" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0%" stop-color="#00f0ff"></stop>
+<stop offset="50%" stop-color="#ffffff"></stop>
+<stop offset="100%" stop-color="#00f0ff"></stop>
+</lineargradient>
+<lineargradient id="nitroFlameL" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#ffffff"></stop>
+<stop offset="20%" stop-color="#00f0ff"></stop>
+<stop offset="60%" stop-color="#3a86ff"></stop>
+<stop offset="100%" stop-color="transparent"></stop>
+</lineargradient>
+<lineargradient id="nitroFlameR" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#ffffff"></stop>
+<stop offset="20%" stop-color="#00f0ff"></stop>
+<stop offset="60%" stop-color="#3a86ff"></stop>
+<stop offset="100%" stop-color="transparent"></stop>
+</lineargradient>
+<lineargradient id="carbonWing" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#373943"></stop>
+<stop offset="50%" stop-color="#1d1f29"></stop>
+<stop offset="100%" stop-color="#0c0e17"></stop>
+</lineargradient>
+</defs>
+<!-- Sombra y Chispas de Derrape en el Asfalto -->
+<ellipse cx="170" cy="172" fill="#000000" filter="blur(4px)" opacity="0.9" rx="148" ry="12"></ellipse>
+<!-- Chispas laterales doradas -->
+<circle class="animate-ping" cx="28" cy="168" fill="#fde400" filter="drop-shadow(0 0 6px #fde400)" r="4"></circle>
+<circle class="animate-ping" cx="312" cy="168" fill="#fde400" filter="drop-shadow(0 0 6px #fde400)" r="4"></circle>
+<!-- Humo de derrape en neumáticos -->
+<ellipse cx="26" cy="162" fill="#e1e1ef" filter="blur(2px)" opacity="0.3" rx="18" ry="8"></ellipse>
+<ellipse cx="314" cy="162" fill="#e1e1ef" filter="blur(2px)" opacity="0.3" rx="18" ry="8"></ellipse>
+<!-- NEUMÁTICOS ANCHOS TRASEROS (SUPER SLICKS) -->
+<rect fill="#080a10" height="76" rx="6" stroke="#1d1f29" stroke-width="2" width="40" x="14" y="90"></rect>
+<path d="M18 100 L48 100 M18 116 L48 116 M18 132 L48 132 M18 148 L48 148" stroke="#191b24" stroke-width="3"></path>
+<rect fill="#080a10" height="76" rx="6" stroke="#1d1f29" stroke-width="2" width="40" x="286" y="90"></rect>
+<path d="M292 100 L322 100 M292 116 L322 116 M292 132 L322 132 M292 148 L322 148" stroke="#191b24" stroke-width="3"></path>
+<!-- SOPORTES / PYLONS DEL ALERÓN ACTIVO (CARBONO) -->
+<polygon fill="#191b24" points="90,44 100,44 106,78 96,78" stroke="#00f0ff" stroke-width="0.8"></polygon>
+<polygon fill="#191b24" points="250,44 240,44 234,78 244,78" stroke="#00f0ff" stroke-width="0.8"></polygon>
+<!-- ALERÓN TRASERO GIGANTE (ACTIVE AERO CYBER WING) -->
+<polygon fill="url(#carbonWing)" filter="drop-shadow(0 0 10px rgba(0,240,255,0.5))" points="20,24 320,24 328,40 12,40" stroke="#00f0ff" stroke-width="1.8"></polygon>
+<!-- Borde Superior Neón Cyan -->
+<line stroke="#00f0ff" stroke-width="2.5" x1="22" x2="318" y1="25" y2="25"></line>
+<!-- Placas Verticales Endplates del Alerón -->
+<polygon fill="#00dbe9" points="12,18 24,18 20,46 8,46" stroke="#dbfcff" stroke-width="1"></polygon>
+<polygon fill="#00dbe9" points="316,18 328,18 332,46 320,46" stroke="#dbfcff" stroke-width="1"></polygon>
+<!-- Gráficos del Alerón -->
+<text fill="#00f0ff" font-family="Space Mono" font-size="9" font-weight="900" letter-spacing="2" x="56" y="35">CYBER-GT</text>
+<rect fill="#ff506e" filter="drop-shadow(0 0 6px #ff506e)" height="3" width="50" x="145" y="30"></rect>
+<text fill="#00f0ff" font-family="Space Mono" font-size="9" font-weight="900" letter-spacing="2" text-anchor="end" x="284" y="35">APEX-99</text>
+<!-- CARROCERÍA ANCHA DEPORTIVA (WIDEBODY CHASSIS) -->
+<path d="M48 108 L62 66 L110 52 L230 52 L278 66 L292 108 L284 156 L56 156 Z" fill="url(#carBody)" stroke="#3b494b" stroke-width="1.5"></path>
+<!-- LUNETA TRASERA TINTADA Y ROLLCAGE HOLOGRÁFICO -->
+<path d="M112 55 L128 88 L212 88 L228 55 Z" fill="#080a12" stroke="#00f0ff" stroke-opacity="0.5" stroke-width="1"></path>
+<!-- Hologram grid inside window -->
+<line stroke="#00dbe9" stroke-opacity="0.3" stroke-width="1" x1="140" x2="200" y1="62" y2="62"></line>
+<line stroke="#00dbe9" stroke-opacity="0.3" stroke-width="1" x1="134" x2="206" y1="72" y2="72"></line>
+<line stroke="#00dbe9" stroke-opacity="0.3" stroke-width="1" x1="130" x2="210" y1="82" y2="82"></line>
+<line stroke="#00dbe9" stroke-opacity="0.4" stroke-width="1.5" x1="170" x2="170" y1="56" y2="88"></line>
+<!-- HOMBROS MUSCULOSOS TRASEROS & REFRIGERACIÓN -->
+<polygon fill="#141620" points="58,110 74,76 106,76 96,110" stroke="#ff506e" stroke-width="0.8"></polygon>
+<polygon fill="#141620" points="282,110 266,76 234,76 244,110" stroke="#ff506e" stroke-width="0.8"></polygon>
+<!-- BARRA DE LUZ LED NEÓN TRASERA CONTINUA (FULL-WIDTH CYBER LIGHTBAR) -->
+<rect fill="#ff506e" filter="drop-shadow(0 0 14px #ff506e)" height="12" rx="3" width="236" x="52" y="104"></rect>
+<rect fill="url(#cyanCyber)" filter="drop-shadow(0 0 8px #00f0ff)" height="5" rx="2" width="220" x="60" y="106"></rect>
+<!-- Segmentos ópticos estilo Synthwave -->
+<line stroke="#0c0e17" stroke-width="3" x1="100" x2="100" y1="105" y2="114"></line>
+<line stroke="#0c0e17" stroke-width="3" x1="140" x2="140" y1="105" y2="114"></line>
+<line stroke="#0c0e17" stroke-width="4" x1="170" x2="170" y1="105" y2="114"></line>
+<line stroke="#0c0e17" stroke-width="3" x1="200" x2="200" y1="105" y2="114"></line>
+<line stroke="#0c0e17" stroke-width="3" x1="240" x2="240" y1="105" y2="114"></line>
+<!-- DIFUSOR TRASERO DE COMPETICIÓN DE FIBRA DE CARBONO -->
+<rect fill="#08090e" height="28" rx="2" stroke="#282933" stroke-width="1" width="188" x="76" y="130"></rect>
+<!-- Aletas verticales del difusor aerodinámico -->
+<rect fill="#191b24" height="22" width="4" x="106" y="134"></rect>
+<rect fill="#191b24" height="22" width="4" x="136" y="134"></rect>
+<rect fill="#191b24" height="22" width="4" x="200" y="134"></rect>
+<rect fill="#191b24" height="22" width="4" x="230" y="134"></rect>
+<!-- MATRÍCULA / BADGE CENTRAL GT -->
+<rect fill="#11131c" height="16" rx="2" stroke="#00f0ff" stroke-width="1" width="48" x="146" y="134"></rect>
+<text fill="#00f0ff" font-family="Space Mono" font-size="8" font-weight="900" letter-spacing="1" text-anchor="middle" x="170" y="145">TURBO GT</text>
+<!-- TUBOS DE ESCAPE DOBLES CON LLAMAS DE NITRO AZUL/CIAN VIBRANTES -->
+<!-- Escape Izquierdo -->
+<rect fill="#191b24" height="14" rx="3" stroke="#ffdadb" stroke-width="1.2" width="22" x="80" y="140"></rect>
+<ellipse cx="91" cy="147" fill="#00f0ff" filter="drop-shadow(0 0 8px #00f0ff)" rx="7" ry="4"></ellipse>
+<!-- Llama de Nitro Izquierda Proyectada hacia Abajo -->
+<path class="animate-pulse" d="M84 150 Q91 184 91 190 Q91 184 98 150 Z" fill="url(#nitroFlameL)" filter="drop-shadow(0 0 16px #00f0ff)"></path>
+<path d="M87 150 Q91 172 91 176 Q91 172 95 150 Z" fill="#ffffff" opacity="0.9"></path>
+<!-- Escape Derecho -->
+<rect fill="#191b24" height="14" rx="3" stroke="#ffdadb" stroke-width="1.2" width="22" x="238" y="140"></rect>
+<ellipse cx="249" cy="147" fill="#00f0ff" filter="drop-shadow(0 0 8px #00f0ff)" rx="7" ry="4"></ellipse>
+<!-- Llama de Nitro Derecha Proyectada hacia Abajo -->
+<path class="animate-pulse" d="M242 150 Q249 184 249 190 Q249 184 256 150 Z" fill="url(#nitroFlameR)" filter="drop-shadow(0 0 16px #00f0ff)"></path>
+<path d="M245 150 Q249 172 249 176 Q249 172 253 150 Z" fill="#ffffff" opacity="0.9"></path>
+</svg>
+</div>
+</div>
+<!-- ===================== FIN COCHES EN PISTA ===================== -->
+<!-- HUD LAYER: TOP APEX OVERLAYS & PERIMETERS -->
+<div class="relative z-50 p-6 flex flex-col gap-3">
+<!-- Top Primary Row: Race Standings, Rear-View Mirror, Track Minimap -->
+<div class="w-full flex justify-between items-start gap-4">
+<!-- TOP-LEFT: POSITION & LAP TELEMETRY MODULE -->
+<div class="bg-surface-container-lowest/90 backdrop-blur-md p-4 rounded-lg shadow-[4px_4px_0_#000] flex flex-col gap-2 min-w-[260px]">
+<div class="flex items-baseline justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-container text-3xl animate-bounce">emoji_events</span>
+<span class="font-display-xl text-display-xl text-primary-container drop-shadow-[0_0_12px_#00f0ff] leading-none">1º</span>
+<span class="font-headline-md text-headline-md text-on-surface-variant font-bold">/ 8</span>
+</div>
+<!-- Lap Pill -->
+<div class="bg-secondary-container text-on-surface px-2.5 py-1 rounded-sm shadow-md font-label-md text-label-md tracking-wider">
+              VUELTA 2 / 3
+            </div>
+</div>
+<!-- Lap Timers Ledger -->
+<div class="bg-surface-container-low p-2 rounded flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">TIEMPO ACTUAL</span>
+<span class="font-label-md text-label-md text-primary tracking-widest">01:04.82</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-tertiary-fixed">MEJOR VUELTA</span>
+<span class="font-label-md text-label-md text-tertiary-fixed tracking-widest">01:12.04</span>
+</div>
+</div>
+</div>
+<!-- TOP-CENTER: PANORAMIC CRT REAR-VIEW MIRROR -->
+<div class="flex flex-col items-center">
+<div class="w-80 h-20 bg-surface-container-lowest rounded-md overflow-hidden shadow-[4px_4px_0_#000] relative flex items-center justify-center p-1 bg-gradient-to-b from-[#181a24] to-[#0c0e17]">
+<!-- Rear View Track Imagery -->
+<div class="w-full h-full bg-[#11131c] relative overflow-hidden flex items-center justify-center">
+<!-- Grid horizon lines fading back -->
+<div class="absolute inset-0 bg-[radial-gradient(#ff506e_1px,transparent_1px)] [background-size:16px_16px] opacity-25"></div>
+<!-- P4 Approaching Monster Truck 'MechaRacer' in Heavy Titan 6x6 -->
+<div class="relative z-10 flex flex-col items-center scale-90">
+<span class="font-label-sm text-[8px] bg-secondary-container text-on-surface px-1.5 rounded-xs mb-0.5">P4 • MechaRacer</span>
+<!-- Menacing High-Beam Grille -->
+<div class="w-24 h-9 bg-surface-container-high rounded flex items-center justify-between px-2 shadow-2xl">
+<div class="w-3.5 h-3.5 rounded-full bg-primary-container shadow-[0_0_12px_#fff,0_0_6px_#00f0ff] animate-ping"></div>
+<div class="w-10 h-3 bg-surface-container-lowest flex justify-around items-center">
+<div class="w-1 h-2 bg-on-surface-variant"></div>
+<div class="w-1 h-2 bg-on-surface-variant"></div>
+<div class="w-1 h-2 bg-on-surface-variant"></div>
+</div>
+<div class="w-3.5 h-3.5 rounded-full bg-primary-container shadow-[0_0_12px_#fff,0_0_6px_#00f0ff] animate-ping"></div>
+</div>
+</div>
+<!-- Beveled Mirror Glass Glare -->
+<div class="absolute inset-0 bg-gradient-to-tr from-transparent via-on-surface/10 to-transparent pointer-events-none"></div>
+</div>
+<!-- Mirror Bracket Top Frame Text -->
+<div class="absolute top-0.5 inset-x-0 flex justify-between px-3 pointer-events-none">
+<span class="font-label-sm text-[8px] text-on-surface-variant/70 tracking-widest">RETROVISOR ÓPTICO</span>
+<span class="font-label-sm text-[8px] text-secondary-container flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container animate-pulse"></span> REC 60FPS
+              </span>
+</div>
+</div>
+</div>
+<!-- TOP-RIGHT: CIRCUIT VECTOR MINIMAP & LIVE SPLITS -->
+<div class="bg-surface-container-lowest/90 backdrop-blur-md p-3.5 rounded-lg shadow-[4px_4px_0_#000] flex gap-3 min-w-[280px]">
+<!-- Vector Track Schematic (Green Valley GP) -->
+<div class="w-28 h-28 bg-surface-container-low rounded relative flex items-center justify-center p-2 overflow-hidden">
+<svg class="w-full h-full" viewbox="0 0 100 100">
+<!-- Circuit Vector Path -->
+<path class="opacity-40" d="M 20,25 C 20,10 70,10 80,25 C 90,40 85,75 75,85 C 65,95 35,90 25,75 C 15,60 20,40 20,25 Z" fill="none" stroke="#00f0ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
+<!-- Player P1 Blip (Cyan) -->
+<circle class="shadow-[0_0_8px_#00f0ff] animate-ping" cx="78" cy="42" fill="#00f0ff" r="4.5"></circle>
+<circle cx="78" cy="42" fill="#dbfcff" r="3.5"></circle>
+<!-- Rival P2 Blip (Yellow) -->
+<circle cx="75" cy="35" fill="#fde400" r="3"></circle>
+<!-- Rival P3 Blip (Red) -->
+<circle cx="68" cy="24" fill="#ff506e" r="3"></circle>
+<!-- Other field blips -->
+<circle cx="82" cy="58" fill="#e1e1ef" opacity="0.6" r="2.5"></circle>
+<circle cx="70" cy="80" fill="#e1e1ef" opacity="0.6" r="2.5"></circle>
+<circle cx="35" cy="85" fill="#e1e1ef" opacity="0.6" r="2.5"></circle>
+</svg>
+<div class="absolute bottom-1 left-1.5 font-label-sm text-[8px] text-primary-container uppercase tracking-wider">
+              GREEN VALLEY GP
+            </div>
+</div>
+<!-- Gap Splits Table -->
+<div class="flex flex-col justify-between flex-1 py-0.5">
+<div class="flex items-center justify-between pb-1 bg-surface-container-high px-2 py-0.5 rounded-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-bold">DELTA SPLITS</span>
+<span class="font-label-sm text-[9px] text-tertiary-fixed">SECTOR 2</span>
+</div>
+<!-- Splits List -->
+<div class="flex flex-col gap-1 mt-1">
+<div class="flex justify-between items-center text-xs">
+<span class="font-label-sm text-label-sm text-primary font-bold">P1 Gastón_99</span>
+<span class="font-label-sm text-label-sm text-primary-fixed-dim">LÍDER</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">P2 ApexViper</span>
+<span class="font-label-sm text-label-sm text-tertiary-fixed">+0.42s</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">P3 TurboCat</span>
+<span class="font-label-sm text-label-sm text-secondary">+1.15s</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">P4 MechaRacer</span>
+<span class="font-label-sm text-label-sm text-outline">+2.89s</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECONDARY HUD NOTIFICATION: COMBAT / HAZARD FLASH BANNER -->
+<div class="self-center flex items-center gap-3 bg-error-container/95 text-on-error-container px-6 py-2 rounded shadow-[0_0_20px_rgba(255,80,110,0.8)] animate-pulse">
+<span class="material-symbols-outlined text-2xl font-bold animate-spin">bolt</span>
+<span class="font-label-lg text-label-lg tracking-wider font-bold uppercase">
+          ⚡ ADVERTENCIA: PULSO EMP APROXIMÁNDOSE EN 2.4s
+        </span>
+<span class="material-symbols-outlined text-2xl font-bold">warning</span>
+</div>
+</div>
+<!-- HUD LAYER: BOTTOM TELEMETRY, WEAPONS, TACHOMETER & CONTROLS -->
+<div class="relative z-50 p-6 flex flex-col gap-3">
+<!-- Turn Indicator Prompt Floating in Lower Center -->
+<div class="self-center flex items-center gap-3 bg-surface-container-lowest/90 px-6 py-1.5 rounded-sm shadow-[4px_4px_0_#000]">
+<span class="material-symbols-outlined text-tertiary-fixed text-2xl animate-pulse">arrow_forward</span>
+<span class="material-symbols-outlined text-secondary-container text-2xl animate-pulse">arrow_forward</span>
+<span class="font-label-md text-label-md text-tertiary-fixed tracking-widest font-bold uppercase">
+          CURVA CERRADA A LA DERECHA EN 120M
+        </span>
+<span class="material-symbols-outlined text-secondary-container text-2xl animate-pulse">arrow_forward</span>
+<span class="material-symbols-outlined text-tertiary-fixed text-2xl animate-pulse">arrow_forward</span>
+</div>
+<!-- Main Lower Telemetry Dock -->
+<div class="w-full flex justify-between items-end gap-6">
+<!-- LOWER-LEFT: POWER-UP SLOTS & SLIPSTREAM BUFF GAUGE -->
+<div class="flex flex-col gap-2.5">
+<!-- Slipstream / Drafting Active Badge -->
+<div class="flex items-center gap-2 bg-surface-container-lowest/90 px-3 py-1 rounded shadow-md w-fit">
+<span class="material-symbols-outlined text-primary-container text-lg animate-bounce">fast_forward</span>
+<span class="font-label-sm text-label-sm text-primary-container font-bold tracking-widest">
+              DRAFTING BOOST +15 KM/H [ACTIVO]
+            </span>
+</div>
+<!-- Power-Up Inventory Cards -->
+<div class="flex items-center gap-3">
+<!-- Slot 1: MEGA TURBO -->
+<button class="relative bg-secondary-container text-on-surface px-4 py-3 rounded-lg shadow-[4px_4px_0_#000] hover:translate-x-0.5 hover:translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center gap-3 group">
+<div class="w-10 h-10 rounded bg-surface-container-lowest flex items-center justify-center text-secondary-container shadow-inner">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">rocket_launch</span>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-label-sm text-[9px] text-on-surface-variant uppercase tracking-wider font-bold">SLOT 01 • READY</span>
+<span class="font-headline-md text-headline-md text-on-surface leading-tight font-bold">MEGA TURBO</span>
+<span class="font-label-sm text-[10px] text-primary-fixed font-bold tracking-widest">[ESPACIO] 100%</span>
+</div>
+</button>
+<!-- Slot 2: ESCUDO DEFENSIVO EMP -->
+<div class="relative bg-surface-container-high text-on-surface px-4 py-3 rounded-lg shadow-[4px_4px_0_#000] flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container-lowest flex items-center justify-center text-primary-container shadow-inner">
+<span class="material-symbols-outlined text-2xl animate-pulse">shield</span>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-label-sm text-[9px] text-primary-container uppercase tracking-wider font-bold">ACTIVO (4.0s)</span>
+<span class="font-headline-md text-headline-md text-on-surface leading-tight font-bold">ESCUDO EMP</span>
+<span class="font-label-sm text-[10px] text-on-surface-variant font-bold tracking-widest">[TECLA E] DESPLEGADO</span>
+</div>
+</div>
+</div>
+</div>
+<!-- LOWER-CENTER: COMPACT DESKTOP CONTROLS REMINDER PILL -->
+<div class="bg-surface-container-lowest/80 backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg flex items-center gap-3 text-on-surface-variant mb-1">
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-primary">[A / D]</span>
+<span class="font-body-md text-[11px]">DIRECCIÓN</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-primary">[W / ⬆]</span>
+<span class="font-body-md text-[11px]">GAS</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-secondary-container">[ESPACIO]</span>
+<span class="font-body-md text-[11px]">NITRO</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-tertiary-fixed">[SHIFT]</span>
+<span class="font-body-md text-[11px]">DERRAPE</span>
+</div>
+</div>
+<!-- LOWER-RIGHT: RETRO DIGITAL INSTRUMENTATION & TACHOMETER CLUSTER -->
+<div class="bg-surface-container-lowest/95 backdrop-blur-md p-4 rounded-xl shadow-[4px_4px_0_#000] min-w-[340px] flex flex-col gap-2">
+<!-- Speedometer Digital Gauge & Gear Readout -->
+<div class="flex justify-between items-baseline">
+<div class="flex items-baseline gap-1">
+<span class="font-display-xl text-display-xl text-on-surface leading-none tracking-tight font-bold drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+                274
+              </span>
+<span class="font-label-md text-label-md text-primary-container tracking-widest font-bold">KM/H</span>
+</div>
+<!-- Transmission Gear Indicator -->
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">MARCHA</span>
+<div class="w-10 h-10 bg-surface-container-high rounded flex items-center justify-center font-display-lg text-display-lg text-tertiary-fixed shadow-inner font-bold">
+                5ª
+              </div>
+</div>
+</div>
+<!-- Segmented LED Tachometer Bar (16 Segments) -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-[9px] text-on-surface-variant">
+<span>0 RPM</span>
+<span>6,000</span>
+<span class="text-secondary-container font-bold">REDLINE 9,500</span>
+</div>
+<!-- LED Rev Blocks Matrix -->
+<div class="grid grid-cols-16 gap-1 h-3.5 w-full bg-surface-container-low p-0.5 rounded">
+<!-- Low RPM Range (Cyan) -->
+<div class="bg-primary-container rounded-xs shadow-[0_0_4px_#00f0ff]"></div>
+<div class="bg-primary-container rounded-xs shadow-[0_0_4px_#00f0ff]"></div>
+<div class="bg-primary-container rounded-xs shadow-[0_0_4px_#00f0ff]"></div>
+<div class="bg-primary-container rounded-xs shadow-[0_0_4px_#00f0ff]"></div>
+<div class="bg-primary-container rounded-xs shadow-[0_0_4px_#00f0ff]"></div>
+<div class="bg-primary-container rounded-xs shadow-[0_0_4px_#00f0ff]"></div>
+<!-- Mid RPM Range (Yellow) -->
+<div class="bg-tertiary-fixed rounded-xs shadow-[0_0_4px_#fde400]"></div>
+<div class="bg-tertiary-fixed rounded-xs shadow-[0_0_4px_#fde400]"></div>
+<div class="bg-tertiary-fixed rounded-xs shadow-[0_0_4px_#fde400]"></div>
+<div class="bg-tertiary-fixed rounded-xs shadow-[0_0_4px_#fde400]"></div>
+<div class="bg-tertiary-fixed rounded-xs shadow-[0_0_4px_#fde400]"></div>
+<!-- High Redline RPM Range (Magenta Pulsing) -->
+<div class="bg-secondary-container rounded-xs shadow-[0_0_6px_#ff506e]"></div>
+<div class="bg-secondary-container rounded-xs shadow-[0_0_6px_#ff506e]"></div>
+<div class="bg-secondary-container rounded-xs shadow-[0_0_6px_#ff506e] animate-pulse"></div>
+<!-- Inactive Unreached Peak Segments -->
+<div class="bg-surface-container-highest rounded-xs"></div>
+<div class="bg-surface-container-highest rounded-xs"></div>
+</div>
+</div>
+<!-- Boost / Nitro Reservoir Pressure Bar -->
+<div class="flex items-center gap-2 mt-1">
+<span class="font-label-sm text-[10px] text-primary tracking-widest font-bold">NITRO</span>
+<div class="flex-1 h-2.5 bg-surface-container-low rounded overflow-hidden p-0.5">
+<div class="h-full bg-gradient-to-r from-primary-container via-primary to-secondary-container rounded-xs shadow-[0_0_8px_#00f0ff] w-[85%]"></div>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-bold">85%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></main></body></html>

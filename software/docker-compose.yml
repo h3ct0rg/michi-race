@@ -1,0 +1,24 @@
+# Michi Racer: levantar con  docker compose up -d --build
+# El juego queda en http://<tu-servidor>:${MICHI_PORT:-8080}
+#
+# Importante: las salas viven en memoria del backend, así que debe haber UNA sola réplica de "backend".
+
+services:
+  backend:
+    build: ./backend
+    image: michiracer-backend:latest
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Logging__LogLevel__Default: Information
+    expose:
+      - "8080"
+
+  frontend:
+    build: ./frontend
+    image: michiracer-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${MICHI_PORT:-8080}:80"

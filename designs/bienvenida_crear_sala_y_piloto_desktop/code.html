@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_blank" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-tertiary-fixed":"#201c00","surface-container-low":"#191b24","on-secondary-fixed":"#40000f","tertiary-container":"#f3db00","outline":"#849495","error":"#ffb4ab","on-primary-container":"#006970","on-tertiary":"#373100","on-secondary":"#67001d","surface":"#11131c","primary-fixed":"#7df4ff","on-primary-fixed-variant":"#004f54","outline-variant":"#3b494b","inverse-on-surface":"#2e303a","surface-variant":"#32343e","on-surface":"#e1e1ef","on-secondary-container":"#5b0018","tertiary-fixed-dim":"#dec800","secondary-fixed":"#ffdadb","surface-container":"#1d1f29","error-container":"#93000a","inverse-surface":"#e1e1ef","on-error":"#690005","on-tertiary-fixed-variant":"#504700","on-primary-fixed":"#002022","tertiary-fixed":"#fde400","inverse-primary":"#006970","surface-dim":"#11131c","on-error-container":"#ffdad6","on-background":"#e1e1ef","on-tertiary-container":"#6b5f00","primary":"#dbfcff","tertiary":"#fff6d1","surface-container-highest":"#32343e","primary-fixed-dim":"#00dbe9","on-primary":"#00363a","on-secondary-fixed-variant":"#91002d","secondary-container":"#ff506e","on-surface-variant":"#b9cacb","primary-container":"#00f0ff","surface-container-high":"#282933","surface-container-lowest":"#0c0e17","secondary-fixed-dim":"#ffb2b8","surface-bright":"#373943","background":"#11131c","surface-tint":"#00dbe9","secondary":"#ffb2b8"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter-desktop":"1.5rem","margin":"1rem","space-md":"1rem","gutter":"1rem","space-sm":"0.5rem","margin-desktop":"2rem","space-lg":"1.5rem","space-xl":"2.5rem","space-xs":"0.25rem"},"fontFamily":{"label-sm":["Space Mono"],"label-lg":["Space Mono"],"body-md":["Space Grotesk"],"display-lg":["Space Mono"],"body-lg":["Space Grotesk"],"display-lg-mobile":["Space Mono"],"headline-md":["Space Grotesk"],"headline-lg-mobile":["Space Grotesk"],"headline-lg":["Space Grotesk"],"display-xl-mobile":["Space Mono"],"display-xl":["Space Mono"],"label-md":["Space Mono"]},"fontSize":{"label-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.12em","fontWeight":"700"}],"label-lg":["14px",{"lineHeight":"18px","letterSpacing":"0.08em","fontWeight":"700"}],"body-md":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"400"}],"display-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.03em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","letterSpacing":"0.01em","fontWeight":"500"}],"display-lg-mobile":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"0em","fontWeight":"600"}],"headline-lg-mobile":["24px",{"lineHeight":"32px","letterSpacing":"0em","fontWeight":"700"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"display-xl-mobile":["36px",{"lineHeight":"44px","letterSpacing":"-0.04em","fontWeight":"700"}],"display-xl":["56px",{"lineHeight":"64px","letterSpacing":"-0.05em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.1em","fontWeight":"700"}]}}}};</script></head><body class="bg-surface-container-lowest text-on-surface font-body-md text-body-md select-none"><main class="min-h-screen w-full flex items-center justify-center p-space-md lg:p-margin-desktop bg-surface-container-lowest"><div class="w-full max-w-[1440px] bg-surface-container-low shadow-[0_0_50px_rgba(0,0,0,0.9)] relative overflow-hidden"><div class="flex flex-col w-full text-on-surface select-none relative overflow-hidden">
+<!-- Scanline CRT Ambient Canvas Layer -->
+<div class="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-container/20 via-surface-container-lowest/90 to-surface-container-lowest z-0"></div>
+<div class="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(255,255,255,0)_50%,rgba(0,0,0,0.85)_50%)] bg-[length:100%_4px] z-0"></div>
+<!-- ARCADE HEADER BANNER -->
+<header class="relative z-10 w-full bg-surface-container-lowest shadow-xl flex flex-col">
+<!-- Top Micro Telemetry Ribbon -->
+<div class="w-full bg-surface-container-high px-space-md py-1.5 flex flex-wrap items-center justify-between">
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-tertiary-fixed tracking-widest bg-surface-container-lowest px-2 py-0.5 shadow-sm">CABINET #07 // SCL-LATAM</span>
+<span class="font-label-sm text-label-sm text-primary-fixed-dim flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-ping"></span>
+          2,410 PILOTOS ONLINE
+        </span>
+<span class="font-label-sm text-label-sm text-secondary-fixed flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">wifi</span>
+          18ms PING
+        </span>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1 bg-surface-container px-2 py-0.5 shadow-inner">
+<span class="material-symbols-outlined text-sm text-primary-container">sports_esports</span>
+<span class="font-label-sm text-label-sm text-on-surface">XINPUT DETECTADO</span>
+</div>
+<button class="flex items-center gap-1 px-2 py-0.5 bg-surface-container hover:bg-surface-variant text-on-surface shadow-sm cursor-pointer transition-colors" id="audio-toggle-btn" title="Toggle Chiptune Audio">
+<span class="material-symbols-outlined text-sm text-primary-container" id="audio-icon">volume_up</span>
+<span class="font-label-sm text-label-sm">SYNTH-WAVE FX: ON</span>
+</button>
+<span class="font-label-sm text-label-sm text-outline">v1.0.4 RC</span>
+</div>
+</div>
+<!-- Main Branding & Marquee Ticker -->
+<div class="w-full px-space-md lg:px-margin-desktop py-space-sm flex flex-col md:flex-row items-center justify-between gap-space-sm bg-surface-container-low">
+<!-- Title & Branding -->
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 bg-secondary-container flex items-center justify-center shadow-[0_0_16px_rgba(255,80,110,0.6)]">
+<span class="material-symbols-outlined text-3xl text-on-secondary">sports_motorsports</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-baseline gap-2">
+<h1 class="font-display-lg text-display-lg tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary-container via-primary to-secondary-container drop-shadow-[0_0_12px_rgba(0,240,255,0.7)]">
+              PIXEL GRAND PRIX
+            </h1>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-secondary-container text-on-secondary shadow-md">2.5D TURBO</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline tracking-widest -mt-1">MULTI-CIRCUIT SPEEDWAY // CO-OP TOURNAMENT ENGINE</span>
+</div>
+</div>
+<!-- Ticker Arcade Pill -->
+<div class="bg-surface-container-lowest px-space-md py-2 flex items-center gap-space-sm shadow-md">
+<span class="w-2.5 h-2.5 bg-tertiary-container shadow-[0_0_8px_rgba(243,219,0,0.8)] animate-pulse"></span>
+<p class="font-label-md text-label-md text-tertiary tracking-wider uppercase">
+          ★ ACCIÓN ARCADE PURA • SIN CUENTA • INSERT COIN / CLICK TO START ★
+        </p>
+</div>
+</div>
+</header>
+<!-- 3-COLUMN PANORAMIC WIDESCREEN ARENA -->
+<div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop p-space-md lg:p-margin-desktop w-full">
+<!-- ==================== LEFT PANEL: PILOT PROFILE & AVATAR ==================== -->
+<aside class="lg:col-span-3 flex flex-col gap-space-md">
+<!-- Pilot Dossier Card -->
+<div class="bg-surface-container p-space-md shadow-xl flex flex-col gap-space-md">
+<!-- Section Bar -->
+<div class="flex items-center justify-between bg-surface-container-highest px-3 py-1.5 shadow-sm">
+<span class="font-label-sm text-label-sm text-primary-fixed tracking-wider flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">badge</span>
+            PERFIL DE PILOTO
+          </span>
+<span class="font-label-sm text-label-sm text-outline">ID #4092-LAT</span>
+</div>
+<!-- Pilot Nickname Config -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant flex items-center justify-between">
+<span>APODO EN PISTA</span>
+<span class="text-primary-fixed-dim">MAX 12 CHARS</span>
+</label>
+<div class="flex items-center gap-1 bg-surface-container-lowest p-1 shadow-inner">
+<input class="bg-transparent font-display-lg text-headline-md text-primary-container px-2 py-1 uppercase tracking-wider outline-none w-full focus:bg-surface-container-low transition-colors" id="nickname-input" maxlength="12" type="text" value="GASTON_99"/>
+<button class="flex items-center gap-1 px-3 py-2 bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-sm text-label-sm shadow-md active:translate-y-0.5 cursor-pointer transition-all" id="random-name-btn" title="Generar Apodo Aleatorio">
+<span class="material-symbols-outlined text-sm text-primary-container">casino</span>
+              RANDOM
+            </button>
+</div>
+</div>
+<!-- Avatar Selection Grid -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">AVATAR PIXEL ARCADE</span>
+<span class="font-label-sm text-label-sm text-tertiary-fixed" id="avatar-label">MECHA PILOT</span>
+</div>
+<div class="grid grid-cols-4 gap-2 bg-surface-container-lowest p-2 shadow-inner">
+<!-- Avatar 1 -->
+<button class="avatar-card p-2 bg-surface-container hover:bg-surface-variant flex flex-col items-center gap-1 transition-all cursor-pointer shadow-sm relative group" data-name="CYBER CAT">
+<div class="w-10 h-10 bg-surface-container-high flex items-center justify-center text-primary-container group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-2xl">pets</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">CYBER</span>
+</button>
+<!-- Avatar 2 Selected -->
+<button class="avatar-card p-2 bg-surface-container-highest flex flex-col items-center gap-1 transition-all cursor-pointer shadow-[0_0_12px_rgba(0,240,255,0.4)] relative" data-name="MECHA PILOT">
+<div class="absolute top-0.5 right-0.5 w-2 h-2 bg-primary-container"></div>
+<div class="w-10 h-10 bg-primary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-2xl">smart_toy</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary-container font-bold">MECHA</span>
+</button>
+<!-- Avatar 3 -->
+<button class="avatar-card p-2 bg-surface-container hover:bg-surface-variant flex flex-col items-center gap-1 transition-all cursor-pointer shadow-sm relative group" data-name="SKULL RIDER">
+<div class="w-10 h-10 bg-surface-container-high flex items-center justify-center text-secondary-container group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-2xl">skull</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">SKULL</span>
+</button>
+<!-- Avatar 4 -->
+<button class="avatar-card p-2 bg-surface-container hover:bg-surface-variant flex flex-col items-center gap-1 transition-all cursor-pointer shadow-sm relative group" data-name="NINJA DRIFT">
+<div class="w-10 h-10 bg-surface-container-high flex items-center justify-center text-tertiary-container group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-2xl">swords</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">NINJA</span>
+</button>
+</div>
+</div>
+<!-- Telemetry Stats Panel -->
+<div class="bg-surface-container-lowest p-space-sm flex flex-col gap-2 shadow-inner">
+<div class="flex items-center justify-between pb-1 bg-surface-container-low px-2 py-1">
+<span class="font-label-sm text-label-sm text-outline">RANGO DE PILOTO</span>
+<span class="font-label-sm text-label-sm text-secondary-container font-bold">NIVEL 12 • PRO</span>
+</div>
+<!-- Segmented Rev/XP bar -->
+<div class="flex flex-col gap-1 px-1">
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>EXP LICENCIA S</span>
+<span>3,840 / 5,000 XP</span>
+</div>
+<div class="grid grid-cols-10 gap-1 h-2 w-full bg-surface-container-high">
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-primary-container"></div>
+<div class="bg-tertiary-container"></div>
+<div class="bg-surface-container-highest"></div>
+<div class="bg-surface-container-highest"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-1">
+<div class="bg-surface-container p-2 flex flex-col shadow-sm">
+<span class="font-label-sm text-label-sm text-outline">PODIOS (TOP 3)</span>
+<span class="font-display-lg text-headline-md text-primary font-bold">84</span>
+</div>
+<div class="bg-surface-container p-2 flex flex-col shadow-sm">
+<span class="font-label-sm text-label-sm text-outline">COCHE FAVORITO</span>
+<span class="font-label-sm text-label-sm text-tertiary font-bold truncate">INTERCEPTOR RX</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Server Banner -->
+<div class="bg-surface-container-low p-space-sm shadow-md flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary-container">hub</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-bold uppercase truncate">CLUSTER SANTIAGO #01</span>
+<span class="font-label-sm text-label-sm text-outline">SIN LAG • TICKRATE 64Hz</span>
+</div>
+</div>
+</aside>
+<!-- ==================== CENTER PANEL: CREATE & JOIN ROOMS ==================== -->
+<main class="lg:col-span-5 flex flex-col gap-space-md">
+<!-- QUICK MATCH FAST-TRACK BAR -->
+<button class="w-full bg-gradient-to-r from-surface-container-high via-surface-container to-surface-container-high hover:from-surface-container-highest hover:to-surface-variant p-space-sm shadow-lg flex items-center justify-between group cursor-pointer transition-all active:translate-y-0.5">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 bg-primary-container text-on-primary flex items-center justify-center shadow-[0_0_10px_rgba(0,240,255,0.7)] group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-2xl">bolt</span>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-display-lg text-headline-md text-primary-container tracking-wider">⚡ PARTIDA RÁPIDA (AUTO)</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Unirse a la sala abierta con menor latencia</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-primary bg-primary-container px-3 py-1 shadow-sm font-bold tracking-widest">
+          AUTO-MATCH ➔
+        </span>
+</button>
+<!-- TABBED/DUAL LOBBY CONTROLLER -->
+<div class="grid grid-cols-1 gap-space-md">
+<!-- MODULE A: CREAR SALA (HOST) -->
+<div class="bg-surface-container p-space-md shadow-2xl flex flex-col gap-space-md relative overflow-hidden">
+<div class="absolute -right-8 -top-8 w-28 h-28 bg-secondary-container/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-center justify-between bg-secondary-container px-3 py-1.5 shadow-md">
+<span class="font-label-sm text-label-sm text-on-secondary tracking-widest flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">cell_tower</span>
+              CREAR SALA MULTIJUGADOR (HOST P2P)
+            </span>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest text-secondary-fixed px-2 py-0.5">ROOM MASTER</span>
+</div>
+<!-- Room Code Generator & Setup -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Room Generated Code Display -->
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">CÓDIGO DE ACCESO GENERADO</span>
+<div class="bg-surface-container-lowest p-2 flex items-center justify-between shadow-inner">
+<span class="font-display-xl text-headline-lg text-primary-container tracking-widest font-bold" id="room-code-display">PX-8820</span>
+<button class="w-9 h-9 bg-surface-container-high hover:bg-surface-container-highest text-primary flex items-center justify-center shadow cursor-pointer active:scale-95 transition-transform" id="refresh-code-btn" title="Regenerar Código">
+<span class="material-symbols-outlined text-lg">refresh</span>
+</button>
+</div>
+</div>
+<!-- Capacity Selector -->
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">PILOTOS MÁXIMOS</span>
+<div class="bg-surface-container-lowest p-2 flex items-center justify-between shadow-inner">
+<button class="w-9 h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex items-center justify-center font-display-lg text-headline-md cursor-pointer active:scale-95" id="dec-cap">-</button>
+<span class="font-display-lg text-headline-lg text-tertiary-fixed font-bold" id="cap-count">8 PILOTOS</span>
+<button class="w-9 h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface flex items-center justify-center font-display-lg text-headline-md cursor-pointer active:scale-95" id="inc-cap">+</button>
+</div>
+</div>
+</div>
+<!-- Room Rules / Privacy Row -->
+<div class="grid grid-cols-2 gap-2">
+<button class="p-2 bg-surface-container-highest flex items-center justify-center gap-2 shadow-sm cursor-pointer transition-colors text-primary-container font-label-sm text-label-sm" id="btn-pub">
+<span class="material-symbols-outlined text-base">public</span>
+              SALA PÚBLICA (LOBBY)
+            </button>
+<button class="p-2 bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center gap-2 shadow-sm cursor-pointer transition-colors text-outline font-label-sm text-label-sm" id="btn-priv">
+<span class="material-symbols-outlined text-base">lock</span>
+              SOLO INVITACIÓN
+            </button>
+</div>
+<!-- Big Neon Host CTA -->
+<button class="w-full bg-secondary-container hover:bg-on-secondary-container text-on-secondary py-3 px-space-md font-display-lg text-headline-md tracking-wider shadow-[0_0_20px_rgba(255,80,110,0.6)] hover:shadow-[0_0_28px_rgba(255,80,110,0.9)] cursor-pointer active:translate-y-1 transition-all flex items-center justify-center gap-space-sm uppercase">
+<span>CREAR SALA Y JUGAR</span>
+<span class="material-symbols-outlined text-2xl">arrow_forward</span>
+</button>
+</div>
+<!-- MODULE B: UNIRSE A SALA PRIVADA/CÓDIGO -->
+<div class="bg-surface-container p-space-md shadow-xl flex flex-col gap-space-sm">
+<div class="flex items-center justify-between bg-surface-container-highest px-3 py-1.5 shadow-sm">
+<span class="font-label-sm text-label-sm text-primary-container tracking-widest flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">login</span>
+              UNIRSE CON CÓDIGO DIRECTO
+            </span>
+<span class="font-label-sm text-label-sm text-outline">CROSS-PLATFORM</span>
+</div>
+<div class="flex flex-col sm:flex-row gap-2">
+<div class="flex-1 bg-surface-container-lowest flex items-center px-2 shadow-inner">
+<span class="material-symbols-outlined text-outline mr-2 text-lg">vpn_key</span>
+<input class="bg-transparent font-display-lg text-headline-md text-tertiary-fixed tracking-widest uppercase outline-none py-2 w-full placeholder:text-outline-variant" id="join-code-input" maxlength="8" placeholder="EJ: PX-4412" type="text"/>
+<button class="px-2 py-1 bg-surface-container hover:bg-surface-variant text-primary-fixed-dim font-label-sm text-label-sm cursor-pointer transition-colors flex items-center gap-1 shadow-sm" id="paste-btn">
+<span class="material-symbols-outlined text-sm">content_paste</span>
+                PEGAR
+              </button>
+</div>
+<button class="bg-primary-container hover:bg-primary text-on-primary-container px-space-lg py-2.5 font-display-lg text-body-lg font-bold tracking-wider shadow-[0_0_16px_rgba(0,240,255,0.5)] active:translate-y-0.5 cursor-pointer transition-all flex items-center justify-center gap-1 uppercase">
+<span>UNIRSE</span>
+<span class="material-symbols-outlined text-lg">sports_score</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- ==================== RIGHT PANEL: TRACK OF THE DAY & CONTROLS ==================== -->
+<aside class="lg:col-span-4 flex flex-col gap-space-md">
+<!-- TRACK OF THE DAY FEATURE CARD -->
+<div class="bg-surface-container shadow-2xl flex flex-col overflow-hidden">
+<!-- Top Track Header -->
+<div class="bg-tertiary-container px-3 py-1.5 flex items-center justify-between shadow-sm">
+<span class="font-label-sm text-label-sm text-on-tertiary-container font-bold tracking-widest flex items-center gap-1.5">
+<span class="material-symbols-outlined text-base">alt_route</span>
+            CIRCUITO DEL DÍA: CYBER TOKYO
+          </span>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest text-tertiary px-2 py-0.5 font-mono">CIRCUITO 01</span>
+</div>
+<!-- Track Visual Art with Scanline & Metadata Overlay -->
+<div class="relative h-44 w-full bg-surface-container-lowest overflow-hidden">
+<img class="w-full h-full object-cover opacity-85" data-alt="Cyberpunk 90s arcade racing circuit at night in Tokyo, wet asphalt reflections with neon cyan and magenta city sky-scrapers, pixel art aesthetics with rain droplets and glowing street lights, wide angle 16:9 view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHicJNbhG0KWJhwBQwOV3YSx1TtauMXbrvmsvjkw1dcxHje6psb8PTHWH4diUfao_m_R8BS11gL2rq8Jy7QEHAdQXkVPBpwA7g9Gd9CQAi_UENunav7AQTks_S033X0V-EzXBAJZqP7_BXnGHKcSyUXdOhpkOuuXuHn0ND4dXSBKZLMDy3AaEqMIdJaYxDV_GvLA1djjiGD6HZsPpIS7nU8SYxCdcUgtGe_-vwdcQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container via-surface-container/30 to-transparent"></div>
+<!-- CRT Track Scanline effect inside card -->
+<div class="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(255,255,255,0)_50%,rgba(0,0,0,0.7)_50%)] bg-[length:100%_3px] opacity-25"></div>
+<!-- Bottom Badges inside Track Hero -->
+<div class="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm bg-surface-container-lowest/90 px-2 py-0.5 text-primary-fixed shadow flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">water_drop</span>
+                ASFALTO MOJADO
+              </span>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest/90 px-2 py-0.5 text-secondary-fixed shadow flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">thunderstorm</span>
+                LLUVIA NOCTURNA
+              </span>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest/90 text-tertiary-fixed px-2 py-0.5 font-bold shadow">
+              4.2 KM / 3 LAPS
+            </span>
+</div>
+</div>
+<!-- Track Lap Record Telemetry -->
+<div class="p-space-sm bg-surface-container flex flex-col gap-1.5">
+<div class="bg-surface-container-lowest p-2 flex items-center justify-between shadow-inner">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-fixed text-xl">trophy</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">RÉCORD MUNDIAL</span>
+<span class="font-label-sm text-label-sm text-on-surface font-bold">@NEO_DRIFT</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-display-lg text-headline-md text-tertiary-container tracking-wider font-bold">00:54.12</span>
+</div>
+</div>
+</div>
+</div>
+<!-- ARCADE HARDWARE INPUT GUIDE -->
+<div class="bg-surface-container p-space-md shadow-xl flex flex-col gap-space-sm">
+<div class="flex items-center justify-between bg-surface-container-highest px-3 py-1.5 shadow-sm">
+<span class="font-label-sm text-label-sm text-primary-container tracking-wider flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">keyboard</span>
+            CONFIGURACIÓN DE CONTROLES ARCADE
+          </span>
+<span class="font-label-sm text-label-sm text-outline">DEFAULT MAPPING</span>
+</div>
+<!-- Keymap Grid -->
+<div class="grid grid-cols-2 gap-2 text-on-surface">
+<!-- Steering -->
+<div class="bg-surface-container-lowest p-2 flex items-center justify-between shadow-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">DIRECCIÓN</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Girar / Acelerar</span>
+</div>
+<div class="flex gap-1">
+<span class="px-2 py-0.5 bg-surface-container font-label-sm text-label-sm text-primary-container shadow-sm font-bold">WASD</span>
+<span class="px-1.5 py-0.5 bg-surface-container font-label-sm text-label-sm text-outline">/</span>
+<span class="px-2 py-0.5 bg-surface-container font-label-sm text-label-sm text-primary-container shadow-sm font-bold">▲▼◀▶</span>
+</div>
+</div>
+<!-- Nitro -->
+<div class="bg-surface-container-lowest p-2 flex items-center justify-between shadow-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">NITRO BOOST</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Acelerón 2.5D</span>
+</div>
+<span class="px-3 py-0.5 bg-secondary-container font-label-sm text-label-sm text-on-secondary shadow-md font-bold">ESPACIO</span>
+</div>
+<!-- Drift -->
+<div class="bg-surface-container-lowest p-2 flex items-center justify-between shadow-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">DERRAPE ARCADE</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Corte de curva</span>
+</div>
+<span class="px-3 py-0.5 bg-surface-container font-label-sm text-label-sm text-tertiary-fixed shadow-sm font-bold">SHIFT / C</span>
+</div>
+<!-- Rearview / Horn -->
+<div class="bg-surface-container-lowest p-2 flex items-center justify-between shadow-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">RETROVISOR</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Mirar atrás</span>
+</div>
+<span class="px-3 py-0.5 bg-surface-container font-label-sm text-label-sm text-primary shadow-sm font-bold">TECLA [R]</span>
+</div>
+</div>
+<!-- Gamepad Indicator Footer Inside Guide -->
+<div class="bg-surface-container-low px-3 py-1.5 flex items-center justify-between shadow-inner">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-base">videogame_asset</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">SOPORTE GAMEPAD USB:</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary-fixed bg-surface-container-highest px-2 py-0.5 font-bold">LISTO (CALIBRADO)</span>
+</div>
+</div>
+</aside>
+</div>
+<!-- ARCADE FOOTER -->
+<footer class="relative z-10 w-full bg-surface-container-lowest px-space-md lg:px-margin-desktop py-space-sm flex flex-col md:flex-row items-center justify-between gap-space-sm shadow-2xl">
+<div class="flex items-center gap-space-md">
+<span class="font-label-sm text-label-sm text-outline">© 2025 PIXEL RACING CORP • ZERO MICROTRANSACTIONS • 100% RETRO SPIRIT</span>
+</div>
+<div class="flex items-center gap-space-lg">
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary-container transition-colors cursor-pointer flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">help_outline</span>
+        ¿CÓMO JUGAR Y POWER-UPS?
+      </button>
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-colors cursor-pointer flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">leaderboard</span>
+        TABLA GLOBAL DE RÉCORDS
+      </button>
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-tertiary transition-colors cursor-pointer flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">terminal</span>
+        CHANGELOG v1.0.4
+      </button>
+</div>
+</footer>
+</div>
+<script>
+  // Pilot Random Nickname Generator
+  const nicknames = ["NEO_DRIFT", "PIXEL_FOX", "CYBER_ACE", "TURBO_KID", "GASTON_99", "APEX_VIPER", "RETRO_RED", "VOLT_88"];
+  const nameInput = document.getElementById("nickname-input");
+  const randomBtn = document.getElementById("random-name-btn");
+
+  randomBtn.addEventListener("click", () => {
+    const current = nameInput.value;
+    const filtered = nicknames.filter(n => n !== current);
+    const chosen = filtered[Math.floor(Math.random() * filtered.length)];
+    nameInput.value = chosen;
+  });
+
+  // Avatar Selector Toggle
+  const avatarButtons = document.querySelectorAll(".avatar-card");
+  const avatarLabel = document.getElementById("avatar-label");
+
+  avatarButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      avatarButtons.forEach(b => {
+        b.classList.remove("shadow-[0_0_12px_rgba(0,240,255,0.4)]", "bg-surface-container-highest");
+        b.classList.add("bg-surface-container");
+      });
+      btn.classList.remove("bg-surface-container");
+      btn.classList.add("bg-surface-container-highest", "shadow-[0_0_12px_rgba(0,240,255,0.4)]");
+      avatarLabel.textContent = btn.getAttribute("data-name");
+    });
+  });
+
+  // Room Code Generator
+  const roomDisplay = document.getElementById("room-code-display");
+  const refreshCodeBtn = document.getElementById("refresh-code-btn");
+
+  refreshCodeBtn.addEventListener("click", () => {
+    const randNum = Math.floor(1000 + Math.random() * 9000);
+    roomDisplay.textContent = "PX-" + randNum;
+  });
+
+  // Capacity Counter (- / +)
+  let capacity = 8;
+  const capDisplay = document.getElementById("cap-count");
+  const decCap = document.getElementById("dec-cap");
+  const incCap = document.getElementById("inc-cap");
+
+  decCap.addEventListener("click", () => {
+    if (capacity > 2) {
+      capacity -= 2;
+      capDisplay.textContent = capacity + " PILOTOS";
+    }
+  });
+
+  incCap.addEventListener("click", () => {
+    if (capacity < 16) {
+      capacity += 2;
+      capDisplay.textContent = capacity + " PILOTOS";
+    }
+  });
+
+  // Room Visibility Toggle (Pública / Privada)
+  const btnPub = document.getElementById("btn-pub");
+  const btnPriv = document.getElementById("btn-priv");
+
+  btnPub.addEventListener("click", () => {
+    btnPub.classList.add("bg-surface-container-highest", "text-primary-container");
+    btnPub.classList.remove("bg-surface-container-low", "text-outline");
+    btnPriv.classList.remove("bg-surface-container-highest", "text-primary-container");
+    btnPriv.classList.add("bg-surface-container-low", "text-outline");
+  });
+
+  btnPriv.addEventListener("click", () => {
+    btnPriv.classList.add("bg-surface-container-highest", "text-primary-container");
+    btnPriv.classList.remove("bg-surface-container-low", "text-outline");
+    btnPub.classList.remove("bg-surface-container-highest", "text-primary-container");
+    btnPub.classList.add("bg-surface-container-low", "text-outline");
+  });
+
+  // Paste Join Code Clipboard Helper
+  const pasteBtn = document.getElementById("paste-btn");
+  const joinInput = document.getElementById("join-code-input");
+
+  pasteBtn.addEventListener("click", async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        joinInput.value = text.trim().substring(0, 8).toUpperCase();
+      }
+    } catch {
+      joinInput.value = "PX-8820";
+    }
+  });
+
+  // Audio Toggle Demo
+  const audioBtn = document.getElementById("audio-toggle-btn");
+  const audioIcon = document.getElementById("audio-icon");
+  let audioOn = true;
+
+  audioBtn.addEventListener("click", () => {
+    audioOn = !audioOn;
+    audioIcon.textContent = audioOn ? "volume_up" : "volume_off";
+    audioBtn.querySelector("span:last-child").textContent = audioOn ? "SYNTH-WAVE FX: ON" : "SYNTH-WAVE FX: MUTE";
+  });
+</script></div></main></body></html>

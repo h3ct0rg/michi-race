@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Michi Racer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="/src/screens.css" />
+  </head>
+  <body>
+    <!-- ============ BIENVENIDA ============ -->
+    <section id="screen-welcome" class="screen">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-icon">🐾</span>
+          <div>
+            <div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span> <span class="tag">2.5D TURBO</span></div>
+            <div class="brand-sub">PIXEL GRAND PRIX // MULTIPLAYER KART RACING</div>
+          </div>
+        </div>
+        <div class="marquee">★ ACCIÓN ARCADE PURA · SIN CUENTA · COMPARTE EL LINK Y CORRE ★</div>
+      </header>
+
+      <main class="welcome-grid">
+        <div class="card">
+          <div class="card-head">👤 PERFIL DE PILOTO</div>
+          <label class="field-label">APODO EN PISTA <span class="hint-right">MÁX 12</span></label>
+          <div class="input-row">
+            <input id="w-name" class="input big" maxlength="12" autocomplete="off" placeholder="TU APODO" />
+            <button id="w-random" class="btn btn-ghost">🎲 RANDOM</button>
+          </div>
+          <canvas id="w-preview" class="michi-preview" width="160" height="120"></canvas>
+          <div class="muted center">Elige el color de tu kart en el garaje del lobby</div>
+        </div>
+
+        <div class="col">
+          <div id="w-invite" class="card invite" hidden>
+            <div class="card-head pink">✉️ TE INVITARON A UNA CARRERA</div>
+            <div class="invite-code" id="w-invite-code">PX-0000</div>
+            <div class="muted center" id="w-invite-info"></div>
+            <button id="w-invite-join" class="btn btn-primary xl">UNIRSE A LA SALA →</button>
+          </div>
+
+          <div class="card">
+            <div class="card-head pink">📡 CREAR SALA MULTIJUGADOR <span class="pill">ROOM MASTER</span></div>
+            <p class="muted">Crea una sala, comparte el link y arranca cuando todos estén listos. Los lugares vacíos se rellenan con bots.</p>
+            <button id="w-create" class="btn btn-primary xl">CREAR SALA Y JUGAR →</button>
+          </div>
+
+          <div class="card">
+            <div class="card-head cyan">🔑 UNIRSE CON CÓDIGO DIRECTO</div>
+            <div class="input-row">
+              <input id="w-code" class="input mono" maxlength="20" placeholder="EJ: PX-4412" autocomplete="off" />
+              <button id="w-paste" class="btn btn-ghost">📋 PEGAR</button>
+              <button id="w-join" class="btn btn-cyan">UNIRSE 🏁</button>
+            </div>
+          </div>
+
+          <button id="w-practice" class="btn btn-ghost wide">⚡ PRÁCTICA LOCAL CONTRA BOTS</button>
+          <div id="w-error" class="error" hidden></div>
+        </div>
+
+        <div class="col">
+          <div class="card track-card">
+            <div class="card-head yellow">🏆 CIRCUITO <span class="pill dark">PRÁCTICA Y SALA NUEVA</span></div>
+            <img id="w-track-img" alt="" class="track-img" />
+            <div class="track-title" id="w-track-name"></div>
+            <div class="muted" id="w-track-tag"></div>
+            <div class="track-stats">
+              <div><span class="muted">VUELTAS</span><b id="w-track-laps"></b></div>
+              <div><span class="muted">DIFICULTAD</span><b class="yellow" id="w-track-diff"></b></div>
+              <div><span class="muted">PILOTOS</span><b>2–20</b></div>
+            </div>
+            <div class="track-picker" id="w-tracks"></div>
+          </div>
+          <div class="card controls-card">
+            <div class="card-head cyan">🎮 CONTROLES</div>
+            <div class="controls-grid">
+              <div><span class="key">← →</span> girar</div>
+              <div><span class="key">↑</span> acelerar</div>
+              <div><span class="key">↓</span> frenar</div>
+              <div><span class="key">SHIFT</span> derrape</div>
+              <div><span class="key pink">ESPACIO</span> turbo</div>
+              <div><span class="key">🎮</span> gamepad</div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="footbar">MICHI RACER · SIN CUENTAS · 100% RETRO SPIRIT</footer>
+    </section>
+
+    <!-- ============ LOBBY ============ -->
+    <section id="screen-lobby" class="screen">
+      <header class="topbar">
+        <div class="brand small"><span class="brand-icon">🐾</span><div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span></div></div>
+        <div class="status-chips">
+          <span class="chip"><i class="dot"></i>ONLINE</span>
+          <span class="chip" id="l-ping">-- MS</span>
+          <span class="chip">SALA: <b id="l-code" class="yellow">PX-0000</b></span>
+          <button id="l-copy" class="btn btn-cyan sm">🔗 COPIAR LINK</button>
+        </div>
+      </header>
+
+      <main class="lobby-grid">
+        <div class="col">
+          <div class="card track-card">
+            <div class="card-head">🗺️ MAPA PRINCIPAL <span class="muted right" id="l-track-hint"></span></div>
+            <img id="l-track-img" alt="" class="track-img" />
+            <div class="track-title" id="l-track">GREEN VALLEY</div>
+            <div class="muted" id="l-track-tag"></div>
+            <div class="track-stats">
+              <div><span class="muted">VUELTAS</span><b id="l-laps">3</b></div>
+              <div><span class="muted">DIFICULTAD</span><b class="yellow" id="l-diff"></b></div>
+            </div>
+            <div class="track-picker" id="l-tracks"></div>
+          </div>
+          <div class="card">
+            <div class="card-head">⚙️ PARÁMETROS DE CARRERA</div>
+            <label class="toggle-row"><span>RELLENAR CON BOTS</span><input type="checkbox" id="l-bots" /></label>
+            <label class="toggle-row"><span>TAMAÑO DE PARRILLA</span>
+              <select id="l-grid" class="select">
+                <option value="4">4 KARTS</option><option value="8">8 KARTS</option><option value="12">12 KARTS</option>
+                <option value="16">16 KARTS</option><option value="20">20 KARTS</option>
+              </select>
+            </label>
+            <div class="param-row"><span>COLISIONES</span><b class="cyan">ACTIVADAS</b></div>
+            <div class="param-row"><span>MÁXIMO PILOTOS</span><b>20 JUGADORES</b></div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card grid-head">
+            <div>
+              <div class="grid-title">PARRILLA DE SALIDA</div>
+              <div class="muted" id="l-count">0/8 PILOTOS</div>
+            </div>
+            <div class="start-box" id="l-status">ESPERANDO</div>
+          </div>
+          <ol id="l-players" class="grid-list"></ol>
+          <div class="lobby-actions">
+            <button id="l-garage" class="btn btn-ghost">🎨 CAMBIAR VEHÍCULO</button>
+            <button id="l-ready" class="btn btn-primary grow">🏁 ¡LISTO PARA CORRER! ⚡</button>
+          </div>
+          <div id="l-error" class="error" hidden></div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="card-head">🏎️ TU BÓLIDO <span class="muted right">CLASE-S</span></div>
+            <canvas id="l-preview" class="michi-preview" width="160" height="120"></canvas>
+            <div class="vehicle-name">MICHI RACER</div>
+            <div class="muted" id="l-color-name">COLOR: HIELO</div>
+            <div class="stats" id="l-stats"></div>
+          </div>
+          <button id="l-leave" class="btn btn-ghost wide">⟵ SALIR DE LA SALA</button>
+        </div>
+      </main>
+    </section>
+
+    <!-- ============ GARAJE ============ -->
+    <section id="screen-garage" class="screen">
+      <header class="topbar">
+        <div class="brand small"><span class="brand-icon">🐾</span><div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span></div></div>
+        <div class="crumbs">SYS://GARAJE / SELECCIÓN DE BÓLIDO</div>
+      </header>
+      <main class="garage-grid">
+        <div class="card">
+          <div class="card-head">🎨 PINTURA DEL KART</div>
+          <ul id="g-colors" class="color-list"></ul>
+        </div>
+        <div class="card garage-center">
+          <div class="garage-title">MICHI RACER</div>
+          <div class="muted">PROTOTIPO CLASE S · CHASIS #PX-MICHI</div>
+          <canvas id="g-preview" class="michi-preview large" width="320" height="220"></canvas>
+          <div class="garage-actions">
+            <button id="g-back" class="btn btn-ghost">⟵ VOLVER AL LOBBY</button>
+            <button id="g-equip" class="btn btn-primary grow">✔ ¡EQUIPAR PARA LA CARRERA!</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head cyan">📊 TELEMETRÍA</div>
+          <div class="stats" id="g-stats"></div>
+          <p class="muted small">Más vehículos (Muscle, Formula, Heavy, Compact) llegarán en la fase de contenido.</p>
+        </div>
+      </main>
+    </section>
+
+    <!-- ============ CARRERA ============ -->
+    <section id="screen-race" class="screen race-screen">
+      <div id="stage">
+        <canvas id="game" width="480" height="270"></canvas>
+        <div id="hud">
+          <div class="panel hud-pos">
+            <div class="pos-row">
+              <span class="pos" id="hud-pos">1°</span><span class="of" id="hud-of">/8</span>
+              <span class="lap" id="hud-lap">VUELTA 1 / 3</span>
+            </div>
+            <div class="times">
+              <div><span class="label">TIEMPO</span><span id="hud-time">00:00.00</span></div>
+              <div><span class="label best">MEJOR VUELTA</span><span id="hud-best">--:--.--</span></div>
+            </div>
+          </div>
+          <div class="panel hud-map">
+            <canvas id="minimap" width="140" height="140"></canvas>
+            <div class="map-side">
+              <div class="map-title">POSICIONES</div>
+              <ol id="standings"></ol>
+            </div>
+          </div>
+          <div id="warning" class="warning"></div>
+          <div class="panel hud-speed">
+            <div><span id="hud-speed">0</span><small>KM/H</small></div>
+            <div class="bar"><div id="hud-turbo"></div></div>
+            <span class="label" id="hud-turbo-label">TURBO [ESPACIO]</span>
+            <div id="hud-drift" class="drift">DERRAPE [SHIFT]</div>
+          </div>
+          <div class="hint" id="hud-hint">
+            ← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO turbo · 🎮 gamepad · ESC salir
+          </div>
+          <div id="net-info" class="net-info"></div>
+          <div id="debug-panel" class="debug-panel" hidden></div>
+          <div id="banner" class="banner"></div>
+        </div>
+        <div id="results" class="results"></div>
+      </div>
+    </section>
+
+    <div id="toast" class="toast" hidden></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
