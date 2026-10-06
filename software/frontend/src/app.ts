@@ -288,6 +288,17 @@ export async function startApp() {
 
   function copyInvite() {
     if (!room) return;
+    // en el celular: menú nativo de compartir (WhatsApp, Telegram...); en PC: copiar al portapapeles
+    if (isTouch && navigator.share) {
+      navigator
+        .share({
+          title: 'Michi Racer',
+          text: `🏁 ¡Únete a mi carrera de michis en Michi Racer! Sala ${room.code}`,
+          url: inviteLink(room.code),
+        })
+        .catch(() => {}); // cancelado por el usuario
+      return;
+    }
     navigator.clipboard
       .writeText(inviteLink(room.code))
       .then(() => toast(`Link copiado: ${inviteLink(room!.code)}`))

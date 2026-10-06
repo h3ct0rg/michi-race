@@ -584,3 +584,13 @@ html.touch .warning {
     height: 42px;
   }
 }
+
+/* en táctil el botón del lobby abre el menú de compartir del sistema */
+html.touch .copy-label {
+  font-size: 0;
+}
+
+html.touch .copy-label::after {
+  content: 'COMPARTIR';
+  font-size: 10px;
+}

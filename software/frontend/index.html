@@ -6,7 +6,29 @@
     <meta name="theme-color" content="#11131c" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <title>Michi Racer</title>
+    <title>Michi Racer · Carreras de michis multijugador</title>
+    <!--
+      Vista previa al compartir (WhatsApp, Telegram, Discord...). Los crawlers no ejecutan JS:
+      nginx.conf reemplaza __ORIGIN__ por el dominio real y, en /room/<código>, cambia título,
+      descripción e imagen por los de la invitación. Si cambias estos textos, actualiza nginx.conf.
+    -->
+    <meta name="description" content="Carreras arcade de michis en pixel art. Crea una sala, comparte el link y corre con hasta 20 amigos desde el navegador, sin cuentas." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Michi Racer" />
+    <meta property="og:locale" content="es_LA" />
+    <meta property="og:title" content="Michi Racer · Carreras de michis multijugador" />
+    <meta property="og:description" content="Carreras arcade de michis en pixel art. Crea una sala, comparte el link y corre con hasta 20 amigos desde el navegador, sin cuentas." />
+    <meta property="og:url" content="__ORIGIN____PATH__" />
+    <meta property="og:image" content="__ORIGIN__/og/michi-racer.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Michi Racer: un michi blanco en su kart en una pista de pixel art" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Michi Racer · Carreras de michis multijugador" />
+    <meta name="twitter:description" content="Carreras arcade de michis en pixel art. Crea una sala, comparte el link y corre con hasta 20 amigos desde el navegador, sin cuentas." />
+    <meta name="twitter:image" content="__ORIGIN__/og/michi-racer.png" />
+    <link rel="icon" type="image/png" href="/assets/michi/south.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
@@ -106,7 +128,7 @@
           <span class="chip"><i class="dot"></i>ONLINE</span>
           <span class="chip" id="l-ping">-- MS</span>
           <span class="chip">SALA: <b id="l-code" class="yellow">PX-0000</b></span>
-          <button id="l-copy" class="btn btn-cyan sm">🔗 COPIAR LINK</button>
+          <button id="l-copy" class="btn btn-cyan sm">🔗 <span class="copy-label">COPIAR LINK</span></button>
         </div>
       </header>
 
