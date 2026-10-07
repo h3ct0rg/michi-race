@@ -594,3 +594,23 @@ html.touch .copy-label::after {
   content: 'COMPARTIR';
   font-size: 10px;
 }
+
+/* botón de sonido táctil: al lado del ✕, arriba del joystick */
+.tc-sound {
+  position: absolute;
+  left: calc(var(--tc-side) + 43px + 42px);
+  bottom: calc(var(--tc-bottom) + 116px + 26px);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: rgba(12, 14, 23, 0.6);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0;
+}
+
+.tc-sound.muted {
+  opacity: 0.6;
+}

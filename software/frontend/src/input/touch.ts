@@ -30,6 +30,7 @@ export class TouchControls {
     this.root = root;
     root.innerHTML = `
       <button class="tc-exit" aria-label="Salir">✕</button>
+      <button class="tc-sound" data-sound aria-label="Sonido">🔊</button>
       <div class="tc-stick"><div class="tc-knob"></div></div>
       <div class="tc-buttons">
         <button class="tc-btn tc-turbo" data-key="turbo">TURBO</button>

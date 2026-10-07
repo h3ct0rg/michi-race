@@ -8,6 +8,7 @@ import { DebugPanel } from '../ui/debugPanel';
 import type { RaceEvent } from '../sim/race';
 import type { RaceSession } from './session';
 import { Ticker } from './ticker';
+import { RaceAudio } from '../audio/raceAudio';
 
 export class RaceView {
   private session: RaceSession | null = null;
@@ -17,6 +18,7 @@ export class RaceView {
   private last = 0;
   private readonly ticker = new Ticker(1000 / 60, () => this.session?.pump?.());
   readonly debug = new DebugPanel();
+  private readonly audio = new RaceAudio();
   onEvent: (e: RaceEvent) => void = () => {};
 
   constructor(private readonly canvas: HTMLCanvasElement) {}
@@ -30,11 +32,13 @@ export class RaceView {
     this.last = performance.now();
     this.raf = requestAnimationFrame(this.frame);
     this.ticker.start();
+    this.audio.start(theme.theme.trackId);
   }
 
   stop() {
     cancelAnimationFrame(this.raf);
     this.ticker.stop();
+    this.audio.stop();
     this.session?.dispose();
     this.session = null;
   }
@@ -51,12 +55,19 @@ export class RaceView {
       } else if (e.type === 'finish' && e.id === s.player.id) {
         this.hud!.flash(`🏁 ${e.place}° · ${fmtTime(e.time)}`, 4);
       }
+      this.audio.event(e, s);
       this.onEvent(e);
     }
+    this.audio.frame(s);
     this.renderer!.render(s.race, s.player, alpha, dt, { viewOffset: s.viewOffset?.bind(s), labels: s.labels });
     this.hud!.update(s.race);
     document.getElementById('net-info')!.textContent = s.netInfo?.() ?? '';
     this.debug.frame(dt, s);
     this.raf = requestAnimationFrame(this.frame);
   };
+
+  /** Resultados en pantalla: se apagan motor y música (los resultados online llegan por mensaje aparte). */
+  finishAudio() {
+    this.audio.finish();
+  }
 }

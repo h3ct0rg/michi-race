@@ -830,3 +830,20 @@ li:first-child .slot {
 .track-option:disabled:not(.selected) {
   opacity: 0.5;
 }
+
+/* ---------- sonido ---------- */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sound-btn {
+  min-width: 38px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.sound-btn.muted {
+  opacity: 0.6;
+}

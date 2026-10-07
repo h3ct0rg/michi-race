@@ -3,6 +3,7 @@ import { KART_COLORS, swatch } from './colors';
 import { Controls } from './input/controls';
 import { TouchControls } from './input/touch';
 import { enterFullscreen, exitFullscreen, isTouch } from './device';
+import { audio, sfx } from './audio/audio';
 import { GameConnection, createRoom, fetchRoom } from './net/connection';
 import type { JoinResponse, RaceStartDto, ResultsDto, RoomStateDto } from './net/protocol';
 import { KartFrames, loadKart } from './render/sprites';
@@ -49,9 +50,28 @@ export async function startApp() {
     return tracks.get(def.id)!;
   };
   const controls = new Controls();
+
+  // ---------------- sonido ----------------
+  // botones 🔊 (menús y controles táctiles), tecla M y "blip" al tocar botones de la interfaz
+  const refreshSoundButtons = (muted: boolean) =>
+    document.querySelectorAll<HTMLElement>('[data-sound]').forEach((b) => {
+      b.textContent = muted ? '🔇' : '🔊';
+      b.classList.toggle('muted', muted);
+    });
+  audio.onMutedChange(refreshSoundButtons);
+  document.addEventListener('click', (e) => {
+    const el = e.target as HTMLElement;
+    if (el.closest('[data-sound]')) {
+      audio.toggleMuted();
+      return;
+    }
+    if (el.closest('.btn, .track-option, .color-list li')) sfx.click();
+  });
+  controls.keyboard.onPress('KeyM', () => audio.toggleMuted());
   // controles táctiles (joystick + GAS/DRIFT/TURBO) solo en celular/tablet
   const touch = isTouch ? new TouchControls($('touch-controls')) : null;
   controls.touch = touch;
+  refreshSoundButtons(audio.muted); // incluye el botón 🔊 de los controles táctiles
   if (import.meta.env.DEV) (window as unknown as { __controls: Controls }).__controls = controls; // depuración
   const raceView = new RaceView($('game') as HTMLCanvasElement);
   const previews = {
@@ -78,6 +98,7 @@ export async function startApp() {
   };
   /** Fin de carrera (resultados): se ocultan los controles y se sale de pantalla completa. */
   const raceFinished = () => {
+    raceView.finishAudio();
     touch?.setVisible(false);
     exitFullscreen();
   };
@@ -345,8 +366,8 @@ export async function startApp() {
     const session = new OnlineSession(getTrack(start.trackId), conn, controls, start, myId);
     currentOnline = session;
     $('hud-hint').textContent = session.spectator
-      ? '👁 MODO ESPECTADOR · entrarás a correr en la próxima carrera · ESC×2 salir · F3 diagnóstico'
-      : '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO turbo · 🎮 gamepad · ESC×2 salir · F3 diagnóstico';
+      ? '👁 MODO ESPECTADOR · entrarás a correr en la próxima carrera · M sonido · ESC×2 salir · F3 diagnóstico'
+      : '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO turbo · 🎮 gamepad · M sonido · ESC×2 salir · F3 diagnóstico';
     raceView.onEvent = () => {};
     loadTheme(start.trackId).then((theme) => {
       if (currentOnline !== session) return;
@@ -379,7 +400,7 @@ export async function startApp() {
     const frames = new Map<string, KartFrames>([[session.player.id, kartFrames[localColor]]]);
     const botColors = KART_COLORS.map((_, i) => i).filter((i) => i !== localColor);
     PRACTICE_BOTS.forEach((_, i) => frames.set(`bot${i}`, kartFrames[botColors[i % botColors.length]]));
-    $('hud-hint').textContent = '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO turbo · 🎮 gamepad · ESC salir';
+    $('hud-hint').textContent = '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO turbo · 🎮 gamepad · M sonido · ESC salir';
     raceView.onEvent = (e) => {
       if (e.type !== 'end') return;
       raceFinished();
