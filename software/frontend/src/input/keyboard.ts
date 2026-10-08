@@ -25,7 +25,7 @@ export class Keyboard {
       throttle: k('ArrowUp', 'KeyW'),
       brake: k('ArrowDown', 'KeyS'),
       drift: k('ShiftLeft', 'ShiftRight', 'KeyK'),
-      turbo: k('Space'),
+      useItem: k('Space'),
     };
   }
 }

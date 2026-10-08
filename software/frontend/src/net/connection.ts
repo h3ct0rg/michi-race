@@ -17,7 +17,7 @@ function camelize<T>(value: unknown): T {
   return out as T;
 }
 
-export const encodeButtons = (i: Input) => (i.throttle ? 1 : 0) | (i.brake ? 2 : 0) | (i.drift ? 4 : 0) | (i.turbo ? 8 : 0);
+export const encodeButtons = (i: Input) => (i.throttle ? 1 : 0) | (i.brake ? 2 : 0) | (i.drift ? 4 : 0) | (i.useItem ? 8 : 0);
 
 export class GameConnection {
   private readonly hub: HubConnection;

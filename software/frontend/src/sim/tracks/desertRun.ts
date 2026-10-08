@@ -44,5 +44,12 @@ export const DESERT_RUN: TrackDef = {
     { segment: 1500, x: 0.5 },
     { segment: 1900, x: -0.4 },
   ],
+  itemBoxes: [280, 900, 1450, 2000],
+  hazards: [
+    { segment: 520, x: 0.3, kind: 2 },
+    { segment: 1150, x: -0.35, kind: 2 },
+    { segment: 1700, x: 0.2, kind: 2 },
+    { segment: 2150, x: -0.3, kind: 1 },
+  ],
   decor: { primary: 'cactus', secondary: 'drybush', primaryRatio: 0.6, clusters: [[990, 1340]], cluster: 'canyonrock', scatter: 'ruin' },
 };

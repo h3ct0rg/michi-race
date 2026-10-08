@@ -21,7 +21,7 @@ export function scriptedInput(t: number): Input {
     throttle: t % 200 < 180,
     brake: false,
     drift: t % 150 >= 60 && t % 150 < 110,
-    turbo: t % 300 === 0,
+    useItem: t % 90 === 0,
   };
 }
 

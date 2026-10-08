@@ -4,7 +4,8 @@ export interface Input {
   throttle: boolean;
   brake: boolean;
   drift: boolean;
-  turbo: boolean;
+  /** Usar el ítem (se dispara en el flanco: al presionar). */
+  useItem: boolean;
 }
 
-export const NO_INPUT: Input = { steer: 0, throttle: false, brake: false, drift: false, turbo: false };
+export const NO_INPUT: Input = { steer: 0, throttle: false, brake: false, drift: false, useItem: false };

@@ -4,6 +4,9 @@ import type { Race } from '../sim/race';
 import { BASE_SPEED } from '../sim/vehicles';
 import { Minimap } from './minimap';
 import { isTouch } from '../device';
+import { ITEM_KEYS, ITEM_LABELS } from '../sim/items';
+
+export const itemIcon = (item: number) => `/assets/items/icon-${ITEM_KEYS[item]}.png`;
 
 const METERS_PER_SEGMENT = 4;
 const $ = (id: string) => document.getElementById(id)!;
@@ -43,8 +46,7 @@ export class Hud {
     $('hud-time').textContent = fmtTime(p.finishTime ?? race.time);
     $('hud-best').textContent = p.bestLap === null ? '--:--.--' : fmtTime(p.bestLap);
     $('hud-speed').textContent = String(Math.round((p.speed / BASE_SPEED) * 160));
-    ($('hud-turbo') as HTMLElement).style.width = `${(p.turboLeft > 0 ? 1 : p.turbo) * 100}%`;
-    $('hud-turbo-label').textContent = p.turboLeft > 0 ? 'TURBO ACTIVO' : p.turbo >= 1 ? (isTouch ? 'TURBO LISTO' : 'TURBO LISTO [ESPACIO]') : 'TURBO CARGANDO';
+    this.updateItem(p);
 
     const drift = $('hud-drift');
     const c = p.drift.charge;
@@ -59,6 +61,32 @@ export class Hud {
     if (race.phase === 'countdown') banner.textContent = race.countdown > 2 ? '3' : race.countdown > 1 ? '2' : '1';
     else if (race.time < 0.8) banner.textContent = '¡YA!';
     else banner.textContent = performance.now() < this.flashUntil ? this.flashText : '';
+  }
+
+  /** Casilla de ítem: ruleta mientras se sortea, el ítem listo para usar y los efectos activos. */
+  private updateItem(p: Racer) {
+    const img = $('hud-item-img') as HTMLImageElement;
+    const rolling = p.item !== 0 && p.itemRoll > 0;
+    const shown = rolling ? 1 + (Math.floor(performance.now() / 80) % 7) : p.item;
+    if (shown === 0) {
+      img.hidden = true;
+    } else {
+      const src = itemIcon(shown);
+      if (img.getAttribute('src') !== src) img.setAttribute('src', src);
+      img.hidden = false;
+    }
+    $('hud-item-box').classList.toggle('ready', p.item !== 0 && !rolling);
+    $('hud-item-box').classList.toggle('rolling', rolling);
+    $('hud-item-name').textContent = rolling ? '???' : p.item ? ITEM_LABELS[p.item] : '—';
+    $('hud-item-key').textContent = p.item && !rolling ? (isTouch ? 'TOCA ÍTEM' : '[ESPACIO] USAR') : 'TOMA UNA CAJA ?';
+    const effects: string[] = [];
+    if (p.shieldLeft > 0) effects.push('🛡️ ESCUDO');
+    if (p.magnetLeft > 0) effects.push('🧲 IMÁN');
+    if (p.turboLeft > 0) effects.push('⚡ TURBO');
+    if (p.shockLeft > 0) effects.push('⚡ ELECTROCUTADO');
+    if (p.frozenLeft > 0) effects.push('❄️ CONGELADO');
+    if (p.spinLeft > 0) effects.push('💫 TROMPO');
+    $('hud-effects').textContent = effects.join(' · ');
   }
 
   private updateStandings(ranking: Racer[], p: Racer) {

@@ -3,6 +3,7 @@
 
 import { LANES, PAD_HALF, ROAD_WIDTH, SEGMENT_LENGTH, ScreenPoint, Segment } from '../sim/track';
 import { KART_WORLD_WIDTH, Racer, wrapZ } from '../sim/physics';
+import { BOX_LANES, HAZARD, HAZARD_HALF, HAZARD_LENGTH, ITEM, PROJ_STATE } from '../sim/items';
 import type { Race } from '../sim/race';
 import type { Direction, Img, KartFrames } from './sprites';
 import { drawLayer, drawSky, drawSun } from './parallax';
@@ -15,6 +16,8 @@ const BOOST_FOV = 14;
 const CAMERA_HEIGHT = 1000;
 const DRAW_DISTANCE = 220;
 const FOG_DENSITY = 3.5;
+const RAIL_HEIGHT = 260; // altura de la baranda del puente (unidades de mundo)
+const SPLASH_SHOW = 0.8; // segundos que dura el salpicón dibujado
 
 
 interface Particle {
@@ -25,6 +28,7 @@ interface Particle {
   life: number;
   size: number;
   color: string;
+  g?: number; // gravedad (gotas de agua)
 }
 
 type RearIndex = -2 | -1 | 0 | 1 | 2;
@@ -43,8 +47,15 @@ export class Renderer {
   private skyOffset = 0;
   private bounce = 0;
   private fovBoost = 0;
+  private rain: { x: number; y: number; len: number; v: number }[] = [];
+  private flashColor = '#ffffff';
+  private flashLeft = 0;
+  private explosionStart = new Map<string, number>();
   private cameraDepth = 1;
   private time = 0;
+  /** Último valor de `splash` visto por kart y momento en que empezó su salpicón. */
+  private lastSplash = new Map<string, number>();
+  private splashAt = new Map<string, number>();
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -94,6 +105,7 @@ export class Renderer {
     const playerPct = pctRemaining(pv.z, SEGMENT_LENGTH);
     const playerY = lerp(playerSeg.p1.world.y, playerSeg.p2.world.y, playerPct);
     const speedPct = player.speed / player.vehicle.maxSpeed;
+    this.detectSplashes(race, player);
 
     this.skyOffset += playerSeg.curve * speedPct * dt * 60;
 
@@ -103,6 +115,7 @@ export class Renderer {
     const { theme, layers } = this.assets;
     const yShift = Math.round(-playerY / 400);
     drawSky(ctx, WIDTH, HEIGHT, theme.sky);
+    if (theme.night?.stars) this.drawStars(yShift);
     if (theme.sun) drawSun(ctx, theme.sun, ((this.skyOffset * 0.0004) % 1) * WIDTH, yShift, WIDTH);
     for (const layer of layers) drawLayer(ctx, layer, this.skyOffset * layer.speed, yShift, WIDTH);
 
@@ -133,6 +146,7 @@ export class Renderer {
     const others = race.racers.filter((r) => r !== player).map((r) => ({ r, ...view(r) }));
     for (let n = drawn.length - 1; n > 0; n--) {
       const seg = drawn[n];
+      if (seg.water === 3) this.drawRails(seg);
       for (const s of seg.sprites) {
         const def = this.assets.sprites[s.kind];
         if (!def) continue;
@@ -141,13 +155,17 @@ export class Renderer {
         const align = s.kind === 'banner' ? -0.5 : s.offset < 0 ? -1 : 0;
         this.drawSprite(def.img, def.worldWidth, scale, sx, seg.p1.screen.y, align, seg.clip);
       }
+      if (seg.itemRow !== null) this.drawItemBoxes(race, seg);
+      for (const p of race.projectiles) {
+        if (track.findSegment(wrapZ(p.distance, track.length)) === seg) this.drawProjectile(p, seg, track.length);
+      }
       for (const o of others) {
         if (track.findSegment(o.z) !== seg) continue;
         const pct = pctRemaining(o.z, SEGMENT_LENGTH);
         const scale = lerp(seg.p1.screen.scale, seg.p2.screen.scale, pct);
         const sx = lerp(seg.p1.screen.x, seg.p2.screen.x, pct) + scale * o.x * ROAD_WIDTH * (WIDTH / 2);
         const sy = lerp(seg.p1.screen.y, seg.p2.screen.y, pct);
-        const rect = this.drawSprite(this.rearFrame(o.r, seg), KART_WORLD_WIDTH, scale, sx, sy, -0.5, seg.clip);
+        const rect = this.drawKart(o.r, seg, scale, sx, sy);
         const label = opts.labels?.get(o.r.id);
         if (rect && label && rect.w >= 18) this.drawLabel(label, rect.x + rect.w / 2, rect.y + rect.w * 0.12);
       }
@@ -155,6 +173,15 @@ export class Renderer {
 
     this.drawPlayer(player, playerSeg, playerPct, playerZ, speedPct, dt);
     ctx.restore();
+
+    if (theme.night?.rain) this.drawRain(dt, speedPct, player.steer);
+    if (this.flashLeft > 0) {
+      this.flashLeft -= dt;
+      ctx.globalAlpha = Math.max(0, Math.min(0.7, this.flashLeft * 3));
+      ctx.fillStyle = this.flashColor;
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      ctx.globalAlpha = 1;
+    }
 
     if (race.phase === 'countdown' || race.time < 1) this.drawStartLights(race);
   }
@@ -177,6 +204,7 @@ export class Renderer {
 
       ctx.fillStyle = colors.grass;
       ctx.fillRect(0, y, WIDTH, 1);
+      if (seg.water !== 0) this.drawWaterRow(seg, cx, w, y, t);
       ctx.fillStyle = colors.rumble;
       ctx.fillRect(Math.round(cx - w - rumble), y, Math.round(rumble), 1);
       ctx.fillRect(right, y, Math.round(rumble), 1);
@@ -193,11 +221,32 @@ export class Renderer {
         }
       } else if (colors.lane) {
         const lw = Math.max(1, Math.round(w / Math.max(32, 8 * LANES)));
-        ctx.fillStyle = colors.lane;
-        for (let l = 1; l < LANES; l++) ctx.fillRect(Math.round(left + ((right - left) * l) / LANES - lw / 2), y, lw, 1);
+        const glow = this.assets.theme.night?.laneGlow;
+        for (let l = 1; l < LANES; l++) {
+          const lx = Math.round(left + ((right - left) * l) / LANES - lw / 2);
+          if (glow) {
+            // halo del neón alrededor de la línea
+            ctx.globalAlpha = 0.3;
+            ctx.fillStyle = glow;
+            ctx.fillRect(lx - 1 - Math.floor(lw / 2), y, lw + 2 + Math.floor(lw / 2) * 2, 1);
+            ctx.globalAlpha = 1;
+          }
+          ctx.fillStyle = colors.lane;
+          ctx.fillRect(lx, y, lw, 1);
+        }
+      }
+
+      // bordes de neón continuos a lo largo de la pista (noche)
+      const edge = this.assets.theme.night?.edgeGlow;
+      if (edge) {
+        const ew = Math.max(1, Math.round(w / 90));
+        ctx.fillStyle = edge;
+        ctx.fillRect(left, y, ew, 1);
+        ctx.fillRect(right - ew, y, ew, 1);
       }
 
       if (seg.pad !== null) this.drawPadRow(seg, cx, w, y, t);
+      if (seg.hazard !== null) this.drawHazardRow(seg, cx, w, y, t);
 
       if (seg.fog < 1) {
         ctx.globalAlpha = 1 - seg.fog;
@@ -206,6 +255,238 @@ export class Renderer {
         ctx.globalAlpha = 1;
       }
     }
+  }
+
+  // Mar al costado (o a ambos lados en el puente): orilla con espuma que va y viene, agua con
+  // destellos. En el puente, el tablero de madera va del borde de la pista a la baranda.
+  private drawWaterRow(seg: Segment, cx: number, w: number, y: number, t: number) {
+    const coast = this.assets.theme.coast;
+    if (!coast) return;
+    const ctx = this.ctx;
+    const shore = seg.shore * w;
+    const wave = Math.sin(seg.index * 0.45 + this.time * 2.2) * 0.5 + 0.5;
+    const foam = Math.max(1, Math.round(w * (0.02 + 0.05 * wave)));
+    const water = coast.water[seg.dark ? 1 : 0];
+    const sides: number[] = [];
+    if (seg.water & 1) sides.push(-1);
+    if (seg.water & 2) sides.push(1);
+    if (seg.water === 3) {
+      ctx.fillStyle = coast.deck[seg.dark ? 1 : 0];
+      ctx.fillRect(Math.round(cx - shore), y, Math.round(shore * 2), 1);
+    }
+    for (const side of sides) {
+      const edge = Math.round(cx + side * shore);
+      const from = side < 0 ? 0 : edge;
+      const to = side < 0 ? edge : WIDTH;
+      if (to <= from) continue;
+      ctx.fillStyle = water;
+      ctx.fillRect(from, y, to - from, 1);
+      // más lejos de la orilla el agua es más profunda
+      const deepAt = Math.round(cx + side * shore * 2.2);
+      ctx.fillStyle = coast.deep;
+      if (side < 0 && deepAt > 0) ctx.fillRect(0, y, Math.min(deepAt, edge), 1);
+      if (side > 0 && deepAt < WIDTH) ctx.fillRect(Math.max(deepAt, edge), y, WIDTH - Math.max(deepAt, edge), 1);
+      // destellos del sol sobre el agua
+      for (let k = 0; k < 3; k++) {
+        const h = (seg.index * 73 + k * 151 + Math.floor(this.time * 3 + k) * 37) % 101;
+        if (h > 18 || Math.floor(t * 3) !== k % 3) continue;
+        const sx = Math.round(edge + side * (h / 18) * Math.max(20, w * 1.5));
+        ctx.fillStyle = '#e8fdff';
+        ctx.fillRect(sx, y, Math.max(1, Math.round(w / 50)), 1);
+      }
+      // espuma en la orilla (en el puente: base de la baranda)
+      ctx.fillStyle = coast.foam;
+      ctx.fillRect(side < 0 ? edge - foam : edge, y, foam, 1);
+    }
+  }
+
+  // Baranda del puente: pasamanos continuo y postes cada 4 segmentos, a ambos lados.
+  private drawRails(seg: Segment) {
+    const coast = this.assets.theme.coast;
+    const { p1, p2 } = seg;
+    if (!coast || p1.camera.z <= this.cameraDepth || p2.camera.z <= this.cameraDepth) return;
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, WIDTH, seg.clip);
+    ctx.clip();
+    const h1 = p1.screen.scale * RAIL_HEIGHT * (HEIGHT / 2);
+    const h2 = p2.screen.scale * RAIL_HEIGHT * (HEIGHT / 2);
+    for (const side of [-1, 1]) {
+      const x1 = p1.screen.x + side * seg.shore * p1.screen.w;
+      const x2 = p2.screen.x + side * seg.shore * p2.screen.w;
+      // pasamanos y travesaño medio
+      for (const [a, b] of [[1, 0.8], [0.5, 0.38]]) {
+        ctx.fillStyle = coast.rail;
+        ctx.beginPath();
+        ctx.moveTo(x2, p2.screen.y - h2 * a);
+        ctx.lineTo(x1, p1.screen.y - h1 * a);
+        ctx.lineTo(x1, p1.screen.y - h1 * b);
+        ctx.lineTo(x2, p2.screen.y - h2 * b);
+        ctx.closePath();
+        ctx.fill();
+      }
+      if (seg.index % 4 === 0) {
+        const pw = Math.max(1, Math.round(h1 * 0.18));
+        ctx.fillStyle = coast.post;
+        ctx.fillRect(Math.round(x1 - pw / 2), Math.round(p1.screen.y - h1), pw, Math.max(1, Math.round(h1)));
+      }
+    }
+    ctx.restore();
+  }
+
+  // Detecta karts que acaban de caer al agua (splash sube) para animar el salpicón.
+  private detectSplashes(race: Race, player: Racer) {
+    for (const r of race.racers) {
+      const prev = this.lastSplash.get(r.id) ?? 0;
+      if (r.splash > prev + 0.05) {
+        this.splashAt.set(r.id, this.time);
+        if (r === player) this.playerSplash(Math.sign(r.prevX) || -1);
+      }
+      this.lastSplash.set(r.id, r.splash);
+    }
+  }
+
+  // Salpicón del kart propio: gotas que suben y caen por el lado donde cayó, más un destello.
+  private playerSplash(side: number) {
+    const coast = this.assets.theme.coast;
+    const colors = coast ? [coast.foam, coast.water[0], '#bff6ff', '#ffffff'] : ['#ffffff'];
+    const cx = WIDTH / 2 + side * 70;
+    const cy = HEIGHT - 50;
+    for (let i = 0; i < 70; i++) {
+      this.particles.push({
+        x: cx + (Math.random() - 0.5) * 70,
+        y: cy + Math.random() * 10,
+        vx: (Math.random() - 0.5) * 160 + side * 30,
+        vy: -120 - Math.random() * 180,
+        life: 0.6 + Math.random() * 0.5,
+        size: Math.random() < 0.3 ? 3 : 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        g: 420,
+      });
+    }
+    this.flash('#d8faff', 0.15);
+  }
+
+  /** Destello de pantalla completa (rayo, golpe). */
+  flash(color: string, seconds: number) {
+    this.flashColor = color;
+    this.flashLeft = seconds;
+  }
+
+  // Obstáculo pintado: mancha redondeada (aceite brillante, arena con granos, charco con reflejos).
+  private drawHazardRow(seg: Segment, cx: number, w: number, y: number, t: number) {
+    const ctx = this.ctx;
+    const hz = seg.hazard!;
+    const along = (hz.part + t) / HAZARD_LENGTH; // 0..1 a lo largo del obstáculo
+    const shape = Math.sin(along * Math.PI);
+    const half = HAZARD_HALF * w * (0.35 + 0.65 * shape);
+    const l = Math.round(cx + hz.x * w - half);
+    const width = Math.round(half * 2);
+    if (width < 1) return;
+    const base = hz.kind === HAZARD.oil ? '#14121f' : hz.kind === HAZARD.sand ? '#d8ac63' : '#3d7fd1';
+    ctx.globalAlpha = hz.kind === HAZARD.puddle ? 0.65 : 0.95;
+    ctx.fillStyle = base;
+    ctx.fillRect(l, y, width, 1);
+    // brillo / textura
+    const step = Math.max(2, Math.floor(width / 10));
+    for (let px = 0; px < width; px += step) {
+      const n = (seg.index * 7 + px * 13 + Math.floor(t * 6) * 5) % 17;
+      if (hz.kind === HAZARD.oil && n < 2) ctx.fillStyle = ['#7df4ff', '#ff9ae6', '#f3db00'][n % 3];
+      else if (hz.kind === HAZARD.sand && n < 4) ctx.fillStyle = '#b8873f';
+      else if (hz.kind === HAZARD.puddle && n < 3) ctx.fillStyle = '#bfe8ff';
+      else continue;
+      ctx.fillRect(l + px, y, 1, 1);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Cajas de ítems: flotan y giran suavemente sobre la pista.
+  private drawItemBoxes(race: Race, seg: Segment) {
+    const def = this.assets.sprites['fx-box'];
+    if (!def) return;
+    const scale = seg.p1.screen.scale;
+    BOX_LANES.forEach((lane, i) => {
+      if (!race.boxActive(seg.itemRow! * BOX_LANES.length + i)) return;
+      const sx = seg.p1.screen.x + scale * lane * ROAD_WIDTH * (WIDTH / 2);
+      const bob = (Math.sin(this.time * 4 + i * 2) + 1.4) * def.worldWidth * 0.18 * scale * (WIDTH / 2);
+      this.drawSprite(def.img, def.worldWidth, scale, sx, seg.p1.screen.y - bob, -0.5, seg.clip);
+    });
+  }
+
+  private drawProjectile(p: { kind: number; distance: number; x: number; state: number; timer: number }, seg: Segment, trackLength: number) {
+    const pct = pctRemaining(wrapZ(p.distance, trackLength), SEGMENT_LENGTH);
+    const scale = lerp(seg.p1.screen.scale, seg.p2.screen.scale, pct);
+    const sx = lerp(seg.p1.screen.x, seg.p2.screen.x, pct) + scale * p.x * ROAD_WIDTH * (WIDTH / 2);
+    const sy = lerp(seg.p1.screen.y, seg.p2.screen.y, pct);
+    if (p.state === PROJ_STATE.exploding) {
+      const key = `${p.kind}:${Math.round(p.distance / 50)}:${Math.round(p.x * 10)}`;
+      const start = this.explosionStart.get(key) ?? this.time;
+      this.explosionStart.set(key, start);
+      const frame = Math.min(6, Math.floor((this.time - start) * 14));
+      const def = this.assets.sprites[`fx-explosion-${frame}`];
+      if (def) this.drawSprite(def.img, def.worldWidth, scale, sx, sy + def.worldWidth * 0.25 * scale * (WIDTH / 2), -0.5, seg.clip);
+      if (this.explosionStart.size > 40) this.explosionStart.clear();
+      return;
+    }
+    const def = this.assets.sprites[p.kind === ITEM.bomb ? 'fx-bomb' : 'fx-rocket'];
+    if (!def) return;
+    // la bomba vuela en arco; armada parpadea
+    const lift = p.kind === ITEM.bomb && p.state === PROJ_STATE.flying ? def.worldWidth * 0.6 * scale * (WIDTH / 2) : 0;
+    if (p.kind === ITEM.bomb && p.state === PROJ_STATE.armed && Math.floor(this.time * 8) % 2 === 0) this.ctx.globalAlpha = 0.7;
+    this.drawSprite(def.img, def.worldWidth, scale, sx, sy - lift, -0.5, seg.clip);
+    this.ctx.globalAlpha = 1;
+  }
+
+  /** Kart rival con sus efectos (escudo, hielo, trompo, rayo). */
+  private drawKart(r: Racer, seg: Segment, scale: number, sx: number, sy: number) {
+    const ctx = this.ctx;
+    if (r.shockLeft > 0 && Math.floor(this.time * 20) % 2 === 0) ctx.globalAlpha = 0.55;
+    const rect = this.drawSprite(this.rearFrame(r, seg), KART_WORLD_WIDTH, scale, sx, sy, -0.5, seg.clip);
+    ctx.globalAlpha = 1;
+    if (rect) this.drawKartEffects(r, rect.x, rect.y, rect.w, rect.w);
+    return rect;
+  }
+
+  /** Superposiciones de estado sobre un kart dibujado en (x, y, w, h). */
+  private drawKartEffects(r: Racer, x: number, y: number, w: number, h: number) {
+    const ctx = this.ctx;
+    const sp = this.assets.sprites;
+    const over = (key: string, scaleW: number, alpha: number, dy = 0) => {
+      const def = sp[key];
+      if (!def) return;
+      const dw = Math.round(w * scaleW);
+      const dh = Math.round(dw * (def.img.height / def.img.width));
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(def.img, Math.round(x + w / 2 - dw / 2), Math.round(y + h / 2 - dh / 2 + dy), dw, dh);
+      ctx.globalAlpha = 1;
+    };
+    if (r.frozenLeft > 0) over('fx-ice', 1.05, 0.8, h * 0.05);
+    if (r.shieldLeft > 0) over('fx-shield', 1.3, 0.35 + 0.1 * Math.sin(this.time * 6));
+    if (r.spinLeft > 0) over('fx-dizzy', 0.7, 1, -h * 0.45);
+    if (r.shockLeft > 0 && Math.floor(this.time * 10) % 2 === 0) over('fx-bolt', 0.55, 0.9, -h * 0.4);
+    const since = this.time - (this.splashAt.get(r.id) ?? -99);
+    if (since < SPLASH_SHOW) this.drawSplash(x + w / 2, y + h, w, since / SPLASH_SHOW);
+  }
+
+  // Corona de agua alrededor de un kart que cayó al mar (p: 0..1 del salpicón).
+  private drawSplash(cx: number, bottom: number, w: number, p: number) {
+    const coast = this.assets.theme.coast;
+    const ctx = this.ctx;
+    const size = Math.max(1, Math.round(w / 16));
+    ctx.globalAlpha = 1 - p * 0.7;
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 13) * Math.PI;
+      const reach = w * (0.35 + 0.45 * p) * (0.7 + ((i * 37) % 10) / 30);
+      const up = Math.sin(a) * w * 0.9 * Math.sin(Math.min(1, p * 1.4) * Math.PI);
+      ctx.fillStyle = i % 3 === 0 ? (coast?.water[0] ?? '#7fe6f5') : '#ffffff';
+      ctx.fillRect(Math.round(cx - Math.cos(a) * reach), Math.round(bottom - up - w * 0.1), size, size);
+    }
+    // anillo de espuma en la base
+    ctx.fillStyle = coast?.foam ?? '#ffffff';
+    const ring = Math.round(w * (0.5 + 0.4 * p));
+    ctx.fillRect(Math.round(cx - ring / 2), Math.round(bottom - w * 0.12), ring, size);
+    ctx.globalAlpha = 1;
   }
 
   // Pad de turbo: chevrones animados que apuntan hacia adelante.
@@ -225,6 +506,44 @@ export class Renderer {
       ctx.fillStyle = band % 2 === 0 ? '#f3db00' : '#ff506e';
       ctx.fillRect(l + px, y, step, 1);
     }
+  }
+
+  // Estrellas fijas con titileo (solo arriba del skyline).
+  private drawStars(yShift: number) {
+    const ctx = this.ctx;
+    for (let i = 0; i < 70; i++) {
+      const x = (i * 97 + Math.floor(this.skyOffset * 0.02)) % WIDTH;
+      const y = ((i * 53) % 70) + 4 + Math.min(0, yShift);
+      const twinkle = Math.sin(this.time * 3 + i * 1.7) > 0.6;
+      ctx.fillStyle = twinkle ? '#ffffff' : i % 3 === 0 ? '#ff9ae6' : '#7df4ff';
+      ctx.globalAlpha = twinkle ? 1 : 0.55;
+      ctx.fillRect(((x % WIDTH) + WIDTH) % WIDTH, y, 1, 1);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Lluvia en pantalla: gotas inclinadas según la velocidad y el giro.
+  private drawRain(dt: number, speedPct: number, steer: number) {
+    const ctx = this.ctx;
+    if (this.rain.length === 0) {
+      for (let i = 0; i < 140; i++) this.rain.push({ x: Math.random() * WIDTH, y: Math.random() * HEIGHT, len: 4 + Math.random() * 6, v: 260 + Math.random() * 140 });
+    }
+    const slant = -steer * 40 - 30 * speedPct;
+    ctx.fillStyle = '#9fd8ff';
+    ctx.globalAlpha = 0.35;
+    for (const d of this.rain) {
+      d.y += (d.v + speedPct * 160) * dt;
+      d.x += slant * dt;
+      if (d.y > HEIGHT) {
+        d.y = -d.len;
+        d.x = Math.random() * WIDTH;
+      }
+      if (d.x < 0) d.x += WIDTH;
+      if (d.x > WIDTH) d.x -= WIDTH;
+      const len = d.len * (1 + speedPct * 0.6);
+      ctx.fillRect(Math.round(d.x), Math.round(d.y), 1, Math.round(len));
+    }
+    ctx.globalAlpha = 1;
   }
 
   // align: -0.5 centra el sprite, -1 lo alinea a la derecha del punto, 0 a la izquierda
@@ -257,6 +576,10 @@ export class Renderer {
 
   // Frame trasero según el giro del kart más la curva de la pista bajo él.
   private rearFrame(r: Racer, seg: Segment): Img {
+    if (r.spinLeft > 0) {
+      const order: Direction[] = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+      return this.frames.get(r.id)!.dirs[order[Math.floor(this.time * 18) % 8]];
+    }
     const turn = r.lean + (Math.abs(seg.curve) > 3 ? Math.sign(seg.curve) * 0.4 : 0);
     const a = Math.abs(turn);
     const idx = (a < 0.3 ? 0 : a < 0.8 ? Math.sign(turn) : Math.sign(turn) * 2) as RearIndex;
@@ -313,6 +636,7 @@ export class Renderer {
     }
     this.particles = this.particles.filter((p) => (p.life -= dt) > 0);
     for (const p of this.particles) {
+      if (p.g) p.vy += p.g * dt;
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       ctx.fillStyle = p.color;
@@ -323,7 +647,10 @@ export class Renderer {
     if (r.respawn > 0 && Math.floor(this.time * 10) % 2 === 0) return;
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
     ctx.fillRect(dx + 14, dy + img.height - 10, img.width - 28, 4);
+    if (r.shockLeft > 0 && Math.floor(this.time * 20) % 2 === 0) ctx.globalAlpha = 0.55;
     ctx.drawImage(img, dx, dy);
+    ctx.globalAlpha = 1;
+    this.drawKartEffects(r, dx, dy, img.width, img.height);
   }
 
   private drawStartLights(race: Race) {

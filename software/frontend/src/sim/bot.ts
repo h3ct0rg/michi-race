@@ -31,6 +31,7 @@ export function botInput(r: Racer, race: Race): Input {
     throttle: r.speed < r.vehicle.maxSpeed * bot.skill,
     brake: false,
     drift: false,
-    turbo: rng() < 0.004,
+    // usa el ítem al rato de tenerlo (el RNG se consume siempre: mismo orden que en C#)
+    useItem: rng() < 0.04 && r.item !== 0 && r.itemRoll <= 0,
   };
 }

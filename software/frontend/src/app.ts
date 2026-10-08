@@ -17,6 +17,7 @@ import { MichiPreview } from './ui/michiPreview';
 import { renderStats } from './ui/stats';
 import { renderLobby, showError } from './ui/lobby';
 import { renderTrackCard } from './ui/trackPicker';
+import { itemIcon } from './ui/hud';
 import { showResults } from './ui/results';
 
 type ScreenId = 'welcome' | 'lobby' | 'garage' | 'race';
@@ -367,7 +368,7 @@ export async function startApp() {
     currentOnline = session;
     $('hud-hint').textContent = session.spectator
       ? '👁 MODO ESPECTADOR · entrarás a correr en la próxima carrera · M sonido · ESC×2 salir · F3 diagnóstico'
-      : '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO turbo · 🎮 gamepad · M sonido · ESC×2 salir · F3 diagnóstico';
+      : '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO ítem · 🎮 gamepad · M sonido · ESC×2 salir · F3 diagnóstico';
     raceView.onEvent = () => {};
     loadTheme(start.trackId).then((theme) => {
       if (currentOnline !== session) return;
@@ -400,7 +401,7 @@ export async function startApp() {
     const frames = new Map<string, KartFrames>([[session.player.id, kartFrames[localColor]]]);
     const botColors = KART_COLORS.map((_, i) => i).filter((i) => i !== localColor);
     PRACTICE_BOTS.forEach((_, i) => frames.set(`bot${i}`, kartFrames[botColors[i % botColors.length]]));
-    $('hud-hint').textContent = '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO turbo · 🎮 gamepad · M sonido · ESC salir';
+    $('hud-hint').textContent = '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO ítem · 🎮 gamepad · M sonido · ESC salir';
     raceView.onEvent = (e) => {
       if (e.type !== 'end') return;
       raceFinished();
@@ -434,6 +435,10 @@ export async function startApp() {
     }
   };
   controls.keyboard.onPress('Escape', () => exitRace('Presiona ESC otra vez para salir de la sala'));
+  raceView.onFrame = (s) => {
+    const p = s.player;
+    touch?.setItemIcon(p.item !== 0 && p.itemRoll <= 0 ? itemIcon(p.item) : null);
+  };
   if (touch) {
     touch.onExit = () => exitRace('Toca ✕ otra vez para salir de la sala');
     // los invitados entran a la carrera sin gesto propio: el primer toque activa la pantalla completa

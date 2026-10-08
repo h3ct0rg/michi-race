@@ -6,6 +6,7 @@ import type { RaceEvent } from '../sim/race';
 import { audio, sfx } from './audio';
 import { EngineSound } from './engine';
 import { music } from './music';
+import { HIT, ITEM, PROJ_STATE } from '../sim/items';
 
 const DRIFT_BLUE = 0.6;
 const DRIFT_ORANGE = 1.4;
@@ -16,7 +17,8 @@ export class RaceAudio {
   private watched: Racer | null = null;
   private lastCount = 0;
   private wasCountdown = true;
-  private prev = { turboLeft: 0, boostLeft: 0, drift: false, charge: 0, bump: 99, respawn: 0 };
+  private prev = { turboLeft: 0, boostLeft: 0, drift: false, charge: 0, bump: 99, respawn: 0, splash: 0, shield: 0, magnet: 0, rolling: false };
+  private explosions = new Set<string>();
   private ended = false;
 
   start(trackId: string) {
@@ -81,8 +83,24 @@ export class RaceAudio {
       if (p.charge < DRIFT_ORANGE && r.drift.charge >= DRIFT_ORANGE) sfx.driftLevel(2);
     }
     if (r.bump < p.bump && r.bump < 0.15) sfx.bump();
-    if (r.respawn > p.respawn + 0.5) sfx.respawn();
+    if (r.splash > p.splash + 0.05) sfx.splash();
+    else if (r.respawn > p.respawn + 0.5) sfx.respawn();
+    if (r.shieldLeft > p.shield + 1) sfx.shieldUp();
+    if (r.magnetLeft > p.magnet + 1) sfx.magnet();
+    const rolling = r.item !== 0 && r.itemRoll > 0;
+    if (p.rolling && !rolling && r.item !== 0) sfx.itemReady();
     this.snapshot(r);
+
+    // explosiones cercanas (bombas y cohetes), una vez cada una
+    for (const pr of race.projectiles) {
+      if (pr.state !== PROJ_STATE.exploding) continue;
+      const key = `${pr.kind}:${Math.round(pr.distance / 50)}:${Math.round(pr.x * 10)}`;
+      if (this.explosions.has(key)) continue;
+      this.explosions.add(key);
+      const dist = Math.abs(pr.distance - r.distance);
+      if (dist < 6000) sfx.explosion(1 - dist / 7000);
+    }
+    if (this.explosions.size > 60) this.explosions.clear();
 
     const speedPct = r.speed / r.vehicle.maxSpeed;
     const boosting = r.turboLeft > 0 || r.boostLeft > 0;
@@ -91,7 +109,20 @@ export class RaceAudio {
 
   event(e: RaceEvent, session: RaceSession) {
     const me = session.player.id;
-    if (e.type === 'lap' && e.id === me && e.lap > 1) sfx.lap(e.lap === session.race.track.laps);
+    if (e.type === 'item' && e.id === me) {
+      sfx.boxBreak();
+      sfx.itemRoulette();
+    } else if (e.type === 'use') {
+      if (e.item === ITEM.lightning) sfx.lightning(); // todos lo escuchan
+      else if (e.id === me && e.item === ITEM.bomb) sfx.throwBomb();
+      else if (e.id === me && e.item === ITEM.rocket) sfx.rocketLaunch();
+      else if (e.id === me && e.item === ITEM.freeze) sfx.freeze();
+    } else if (e.type === 'hit' && e.id === me) {
+      if (e.hit === HIT.spin) sfx.spinHit();
+      else if (e.hit === HIT.freeze) sfx.freeze();
+      else if (e.hit === HIT.shock) sfx.shocked();
+    } else if (e.type === 'blocked' && e.id === me) sfx.shieldBlock();
+    else if (e.type === 'lap' && e.id === me && e.lap > 1) sfx.lap(e.lap === session.race.track.laps);
     else if (e.type === 'finish' && e.id === me) sfx.finish(e.place === 1);
     else if (e.type === 'end') this.finish();
   }
@@ -110,5 +141,9 @@ export class RaceAudio {
     p.charge = r.drift.charge;
     p.bump = r.bump;
     p.respawn = r.respawn;
+    p.splash = r.splash;
+    p.shield = r.shieldLeft;
+    p.magnet = r.magnetLeft;
+    p.rolling = r.item !== 0 && r.itemRoll > 0;
   }
 }

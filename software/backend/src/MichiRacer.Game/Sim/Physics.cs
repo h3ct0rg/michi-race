@@ -28,13 +28,25 @@ public sealed class Racer(string id, string name, VehicleParams vehicle, double 
     public double Speed { get; set; }
     public double Steer { get; set; }
     public double Lean { get; set; }
-    public double Turbo { get; set; } = 1;
     public double TurboLeft { get; set; }
     public double BoostLeft { get; set; }
     public DriftState Drift { get; } = new();
     public double LostTime { get; set; }
     public double Respawn { get; set; }
     public double Bump { get; set; } = 99;
+
+    // ítems y efectos
+    public int Item { get; set; }
+    public double ItemRoll { get; set; }
+    public bool UseHeld { get; set; }
+    public int PendingUse { get; set; }
+    public double ShieldLeft { get; set; }
+    public double SpinLeft { get; set; }
+    public double ShockLeft { get; set; }
+    public double FrozenLeft { get; set; }
+    public double MagnetLeft { get; set; }
+    /// <summary>Segundos del salpicón tras caer al agua (efecto visual).</summary>
+    public double Splash { get; set; }
 
     public int Lap { get; set; }
     public int NextCheckpoint { get; set; } = checkpoints;
@@ -57,6 +69,7 @@ public static class Physics
     private const double DriftChargeBlue = 0.6;
     private const double DriftChargeOrange = 1.4;
     private const double RespawnAfter = 2.5;
+    public const double SplashTime = 0.8;
 
     public static double WrapZ(double z, double len) => ((z % len) + len) % len;
     public static double ZOf(Racer r, Track track) => WrapZ(r.Distance, track.Length);
@@ -69,26 +82,35 @@ public static class Physics
         var seg = track.FindSegment(ZOf(r, track));
         var speedPct = r.Speed / p.MaxSpeed;
         var offroad = r.X < -1 || r.X > 1;
-        var steerIn = Clamp(input.Steer, -1, 1);
+        var stunned = r.SpinLeft > 0 || r.FrozenLeft > 0;
+        // en trompo o congelado no hay control
+        var steerIn = stunned ? 0 : Clamp(input.Steer, -1, 1);
+        var throttle = input.Throttle && !stunned;
+        var brake = input.Brake && !stunned;
 
-        // --- turbo manual
-        if (input.Turbo && r.Turbo >= 1 && r.TurboLeft <= 0)
+        // --- ítem (flanco del botón): efectos propios aquí; los ofensivos los resuelve la carrera
+        var press = input.UseItem && !r.UseHeld;
+        r.UseHeld = input.UseItem;
+        if (press && r.Item != Items.None && r.ItemRoll <= 0 && !stunned)
         {
-            r.TurboLeft = p.TurboTime;
-            r.Turbo = 0;
+            if (r.Item == Items.Turbo) r.TurboLeft = Math.Max(r.TurboLeft, p.TurboTime * Items.TurboItemMult);
+            else if (r.Item == Items.Shield) r.ShieldLeft = Items.ShieldTime;
+            else if (r.Item == Items.Magnet) r.MagnetLeft = Items.MagnetTime;
+            else r.PendingUse = r.Item;
+            r.Item = Items.None;
         }
 
         // --- derrape
         var d = r.Drift;
-        if (!d.Active && input.Drift && steerIn != 0 && speedPct > DriftMinSpeed && !offroad)
+        if (!d.Active && !stunned && input.Drift && steerIn != 0 && speedPct > DriftMinSpeed && !offroad)
         {
             d.Active = true;
             d.Dir = Math.Sign(steerIn);
             d.Charge = 0;
         }
-        else if (d.Active && (!input.Drift || speedPct < DriftMinSpeed * 0.75 || offroad))
+        else if (d.Active && (!input.Drift || speedPct < DriftMinSpeed * 0.75 || offroad || stunned))
         {
-            if (!offroad)
+            if (!offroad && !stunned)
             {
                 if (d.Charge >= DriftChargeOrange) r.BoostLeft = Math.Max(r.BoostLeft, 1.0);
                 else if (d.Charge >= DriftChargeBlue) r.BoostLeft = Math.Max(r.BoostLeft, 0.5);
@@ -113,6 +135,24 @@ public static class Physics
         if (seg.Pad is { } pad && !offroad && Math.Abs(r.X - pad) < Track.PadHalf + KartHalf * 0.5)
             r.BoostLeft = Math.Max(r.BoostLeft, 0.8);
 
+        // --- obstáculos pintados: aceite (trompo), arena (frena), charco (resbala)
+        if (seg.Hazard is { } hz && !offroad && r.Respawn <= 0 && Math.Abs(r.X - hz.X) < Items.HazardHalf + KartHalf * 0.5)
+        {
+            if (hz.Kind == Items.HazardOil && r.SpinLeft <= 0)
+            {
+                if (r.ShieldLeft > 0) r.ShieldLeft = 0;
+                else r.SpinLeft = Items.OilSpinTime;
+            }
+            else if (hz.Kind == Items.HazardSand && r.Speed > p.OffroadLimit)
+            {
+                r.Speed -= p.OffroadDecel * 0.7 * dt;
+            }
+            else if (hz.Kind == Items.HazardPuddle)
+            {
+                r.Vx += (r.X >= hz.X ? 1 : -1) * 4 * dt;
+            }
+        }
+
         // --- movimiento lateral
         var dx = dt * p.Steer * speedPct;
         r.X += steer * dx;
@@ -121,12 +161,16 @@ public static class Physics
         r.Vx *= Math.Max(0, 1 - dt * 6);
 
         // --- velocidad
-        var boosting = r.TurboLeft > 0 || r.BoostLeft > 0;
+        var boosting = (r.TurboLeft > 0 || r.BoostLeft > 0) && !stunned;
         var maxSpeed = boosting ? p.MaxSpeed * p.TurboMult : p.MaxSpeed;
+        if (r.MagnetLeft > 0) maxSpeed *= 1.12;
+        if (r.ShockLeft > 0) maxSpeed *= 0.55;
         if (boosting) r.Speed += p.Accel * 2 * dt;
-        else if (input.Throttle) r.Speed += p.Accel * dt;
-        else if (input.Brake) r.Speed -= p.Braking * dt;
+        else if (throttle) r.Speed += p.Accel * (r.MagnetLeft > 0 ? 1.5 : 1) * dt;
+        else if (brake) r.Speed -= p.Braking * dt;
         else r.Speed -= p.Decel * dt;
+        if (r.SpinLeft > 0) r.Speed -= p.Braking * 0.5 * dt;
+        if (r.FrozenLeft > 0) r.Speed -= r.Speed * 1.5 * dt;
         if (offroad && r.Speed > p.OffroadLimit) r.Speed -= p.OffroadDecel * dt;
         if (r.Speed > maxSpeed) r.Speed = Math.Max(maxSpeed, r.Speed - p.Decel * 2 * dt);
         r.Speed = Math.Max(0, r.Speed);
@@ -134,7 +178,13 @@ public static class Physics
         // --- timers
         r.TurboLeft = Math.Max(0, r.TurboLeft - dt);
         r.BoostLeft = Math.Max(0, r.BoostLeft - dt);
-        if (r.TurboLeft <= 0) r.Turbo = Math.Min(1, r.Turbo + dt / p.TurboRecharge);
+        r.ItemRoll = Math.Max(0, r.ItemRoll - dt);
+        r.ShieldLeft = Math.Max(0, r.ShieldLeft - dt);
+        r.SpinLeft = Math.Max(0, r.SpinLeft - dt);
+        r.ShockLeft = Math.Max(0, r.ShockLeft - dt);
+        r.FrozenLeft = Math.Max(0, r.FrozenLeft - dt);
+        r.MagnetLeft = Math.Max(0, r.MagnetLeft - dt);
+        r.Splash = Math.Max(0, r.Splash - dt);
         r.Respawn = Math.Max(0, r.Respawn - dt);
         r.Bump += dt;
 
@@ -145,6 +195,22 @@ public static class Physics
         {
             for (var s = from; s <= r.Distance; s += Track.SegmentLength)
                 if (HitObstacle(r, track.FindSegment(WrapZ(s, track.Length)))) break;
+        }
+
+        // --- caer al mar: salpicón y reaparición inmediata en el centro de la pista
+        if (seg.Water != 0 && r.Respawn <= 0)
+        {
+            var fell = (r.X < -seg.Shore && (seg.Water & 1) != 0) || (r.X > seg.Shore && (seg.Water & 2) != 0);
+            if (fell)
+            {
+                r.X = 0;
+                r.Vx = 0;
+                r.Speed *= 0.3;
+                r.Respawn = 1.5;
+                r.Splash = SplashTime;
+                r.Drift.Active = false;
+                r.LostTime = 0;
+            }
         }
 
         // --- perdido lejos de la pista

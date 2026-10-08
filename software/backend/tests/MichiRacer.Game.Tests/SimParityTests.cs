@@ -20,7 +20,7 @@ public class SimParityTests
         Throttle: t % 200 < 180,
         Brake: false,
         Drift: t % 150 >= 60 && t % 150 < 110,
-        Turbo: t % 300 == 0);
+        UseItem: t % 90 == 0);
 
     [Fact]
     public void Rng_matches_typescript()

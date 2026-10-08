@@ -38,5 +38,11 @@ export const GREEN_VALLEY: TrackDef = {
     { segment: 1150, x: 0 },
     { segment: 1700, x: -0.4 },
   ],
+  itemBoxes: [300, 900, 1500, 2050],
+  hazards: [
+    { segment: 700, x: -0.3, kind: 1 },
+    { segment: 1350, x: 0.35, kind: 1 },
+    { segment: 1950, x: 0, kind: 1 },
+  ],
   decor: { primary: 'tree', secondary: 'bush', primaryRatio: 0.75, clusters: [[600, 780]], cluster: 'tree', scatter: 'rock' },
 };

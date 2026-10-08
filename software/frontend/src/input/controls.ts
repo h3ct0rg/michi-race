@@ -15,7 +15,7 @@ export class Controls {
       throttle: sources.some((s) => s.throttle),
       brake: sources.some((s) => s.brake),
       drift: sources.some((s) => s.drift),
-      turbo: sources.some((s) => s.turbo),
+      useItem: sources.some((s) => s.useItem),
     };
   }
 }

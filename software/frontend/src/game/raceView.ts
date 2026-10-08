@@ -9,6 +9,7 @@ import type { RaceEvent } from '../sim/race';
 import type { RaceSession } from './session';
 import { Ticker } from './ticker';
 import { RaceAudio } from '../audio/raceAudio';
+import { HIT, ITEM } from '../sim/items';
 
 export class RaceView {
   private session: RaceSession | null = null;
@@ -20,6 +21,8 @@ export class RaceView {
   readonly debug = new DebugPanel();
   private readonly audio = new RaceAudio();
   onEvent: (e: RaceEvent) => void = () => {};
+  /** Se llama en cada frame (p. ej. para actualizar el botón táctil de ítem). */
+  onFrame: (s: RaceSession) => void = () => {};
 
   constructor(private readonly canvas: HTMLCanvasElement) {}
 
@@ -54,6 +57,19 @@ export class RaceView {
         this.hud!.flash(e.lap === s.race.track.laps ? '¡ÚLTIMA VUELTA!' : `VUELTA ${e.lap}`);
       } else if (e.type === 'finish' && e.id === s.player.id) {
         this.hud!.flash(`🏁 ${e.place}° · ${fmtTime(e.time)}`, 4);
+      } else if (e.type === 'use' && e.item === ITEM.lightning) {
+        this.renderer!.flash('#fff6a0', 0.35);
+        if (e.id !== s.player.id) this.hud!.flash('⚡ ¡RAYO!', 1.2);
+      } else if (e.type === 'hit' && e.id === s.player.id) {
+        if (e.hit === HIT.freeze) {
+          this.renderer!.flash('#9fe8ff', 0.4);
+          this.hud!.flash('❄️ ¡TE CONGELARON!', 1.4);
+        } else if (e.hit === HIT.spin) {
+          this.renderer!.flash('#ff8a5c', 0.3);
+          this.hud!.flash('💥 ¡AUCH!', 1.2);
+        }
+      } else if (e.type === 'blocked' && e.id === s.player.id) {
+        this.hud!.flash('🛡️ ¡BLOQUEADO!', 1.2);
       }
       this.audio.event(e, s);
       this.onEvent(e);
@@ -63,6 +79,7 @@ export class RaceView {
     this.hud!.update(s.race);
     document.getElementById('net-info')!.textContent = s.netInfo?.() ?? '';
     this.debug.frame(dt, s);
+    this.onFrame(s);
     this.raf = requestAnimationFrame(this.frame);
   };
 

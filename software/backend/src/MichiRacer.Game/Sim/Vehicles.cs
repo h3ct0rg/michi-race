@@ -12,7 +12,6 @@ public sealed record VehicleParams(
     double OffroadDecel,
     double OffroadLimit,
     double TurboTime,
-    double TurboRecharge,
     double TurboMult,
     double Mass);
 
@@ -42,7 +41,6 @@ public static class Vehicles
             OffroadDecel: maxSpeed * (0.6 - 0.05 * s.Weight),
             OffroadLimit: maxSpeed / 4,
             TurboTime: 1.2 + 0.15 * s.Boost,
-            TurboRecharge: 6,
             TurboMult: 1.25 + 0.03 * s.Boost,
             Mass: 0.6 + 0.2 * s.Weight);
     }

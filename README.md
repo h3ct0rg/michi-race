@@ -13,8 +13,10 @@ Juego de carreras arcade **multijugador** para navegador, en **2.5D** y **pixel 
 - **Salas por link** (`/room/PX-1234`), lobby con host, LISTO, garaje para elegir color del kart,
   relleno con bots y parrilla de hasta **20 pilotos**.
 - **Reconexión**: si se cae la red o recargas la página vuelves a tu kart; también puedes entrar como espectador.
-- **Gameplay**: derrape con mini-turbo, turbo, pads de velocidad, choques, checkpoints, 3 vueltas, resultados.
-- **Pistas**: *Green Valley* (bosques y montañas nevadas) y *Desert Run* (atardecer, dunas y cañón).
+- **Gameplay**: derrape con mini-turbo, pads de velocidad, choques, checkpoints, 3 vueltas, resultados.
+- **Power-ups**: turbo, escudo, bomba, rayo, imán, hielo y cohete, más obstáculos (aceite, arena, charcos).
+- **Pistas**: *Green Valley* (bosques y montañas nevadas), *Desert Run* (atardecer, dunas y cañón) , *Neon City* (noche, neón y lluvia) y *Coastal Road* (isla tropical con puente: si te sales al mar, ¡salpicón!).
+- **Sonido** chiptune generado en vivo (motor, efectos y música por pista).
 - **Práctica local** contra bots, teclado o gamepad.
 - Arte generado con [PixelLab](https://www.pixellab.ai/).
 
@@ -73,7 +75,7 @@ Para jugar desde otra PC de la red abre `http://<ip-de-tu-pc>:5173`.
 | Acelerar | ↑ / W | A / RT |
 | Frenar | ↓ / S | B / LT |
 | Derrape | Shift | RB / LB |
-| Turbo | Espacio | X / Y |
+| Usar ítem | Espacio | X / Y |
 | Diagnóstico de red | F3 | |
 
 ## Tests

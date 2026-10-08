@@ -25,7 +25,6 @@ export interface VehicleParams {
   offroadDecel: number;
   offroadLimit: number;
   turboTime: number;
-  turboRecharge: number;
   turboMult: number;
   mass: number;
 }
@@ -56,7 +55,6 @@ export function deriveParams(s: VehicleStats): VehicleParams {
     offroadDecel: maxSpeed * (0.6 - 0.05 * s.weight),
     offroadLimit: maxSpeed / 4,
     turboTime: 1.2 + 0.15 * s.boost,
-    turboRecharge: 6,
     turboMult: 1.25 + 0.03 * s.boost,
     mass: 0.6 + 0.2 * s.weight,
   };

@@ -10,7 +10,7 @@ public enum RoomPhase { Lobby, Racing }
 public sealed class RoomException(string message) : Exception(message);
 
 /// <summary>Snapshot de un tick: la parte común (R, eventos) + el estado propio de cada destinatario.</summary>
-public sealed record SnapshotBundle(int T, int Ph, float[] R, IReadOnlyList<RaceEvent> Ev, IReadOnlyList<SnapshotTarget> Targets);
+public sealed record SnapshotBundle(int T, int Ph, float[] R, float[] P, int[] B, IReadOnlyList<RaceEvent> Ev, IReadOnlyList<SnapshotTarget> Targets);
 
 public sealed record SnapshotTarget(string ConnectionId, double[]? Me);
 
@@ -253,6 +253,7 @@ public sealed class Room
     {
         lock (_gate)
         {
+            // buttons: 1 gas, 2 freno, 4 derrape, 8 usar ítem
             var input = new Input(steer, (buttons & 1) != 0, (buttons & 2) != 0, (buttons & 4) != 0, (buttons & 8) != 0);
             _players.Find(p => p.Id == playerId)?.PushInput(seq, input);
         }
@@ -318,7 +319,8 @@ public sealed class Room
             .Where(p => p.Connected)
             .Select(p => new SnapshotTarget(p.ConnectionId!, p.InRace && RacerOf(p) is { } me ? SnapshotLayout.Self(me, p.LastSeq) : null))
             .ToList();
-        return new SnapshotBundle(race.Tick, phase, r, events, targets);
+        var broken = Enumerable.Range(0, race.BoxRespawn.Length).Where(i => !race.BoxActive(i)).ToArray();
+        return new SnapshotBundle(race.Tick, phase, r, SnapshotLayout.Projectiles(race.Projectiles), broken, events, targets);
     }
 
     private ResultsDto BuildResults(Race race)

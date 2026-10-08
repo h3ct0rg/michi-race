@@ -114,7 +114,7 @@
               <div><span class="key">↑</span> acelerar</div>
               <div><span class="key">↓</span> frenar</div>
               <div><span class="key">SHIFT</span> derrape</div>
-              <div><span class="key pink">ESPACIO</span> turbo</div>
+              <div><span class="key pink">ESPACIO</span> ítem</div>
               <div><span class="key">🎮</span> gamepad</div>
             </div>
           </div>
@@ -246,10 +246,17 @@
             </div>
           </div>
           <div id="warning" class="warning"></div>
+          <div class="panel hud-item">
+            <div class="item-box" id="hud-item-box"><img id="hud-item-img" alt="" hidden /></div>
+            <div class="item-info">
+              <span class="label">ÍTEM</span>
+              <b id="hud-item-name">—</b>
+              <span class="label item-key" id="hud-item-key">[ESPACIO] USAR</span>
+              <span class="item-effects" id="hud-effects"></span>
+            </div>
+          </div>
           <div class="panel hud-speed">
             <div><span id="hud-speed">0</span><small>KM/H</small></div>
-            <div class="bar"><div id="hud-turbo"></div></div>
-            <span class="label" id="hud-turbo-label">TURBO [ESPACIO]</span>
             <div id="hud-drift" class="drift">DERRAPE [SHIFT]</div>
           </div>
           <div class="hint" id="hud-hint">

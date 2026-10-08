@@ -2,7 +2,10 @@ namespace MichiRacer.Game.Sim;
 
 public enum RacePhase { Countdown, Racing, Finished }
 
-/// <summary>Eventos de carrera (LAP_UPDATE, FINISH...). Type: go | checkpoint | lap | finish | end.</summary>
+/// <summary>
+/// Eventos de carrera. Type: go | checkpoint | lap | finish | item (Value = ítem) | use (Value = ítem)
+/// | hit (Value = tipo de golpe) | blocked | end.
+/// </summary>
 public sealed record RaceEvent(string Type, string? Id = null, int? Value = null, double? Time = null);
 
 /// <summary>Estado autoritativo de una carrera. Port de frontend/src/sim/race.ts.</summary>
@@ -19,6 +22,11 @@ public sealed class Race
     public double Countdown { get; set; } = CountdownSeconds;
     public RacePhase Phase { get; private set; } = RacePhase.Countdown;
 
+    /// <summary>Momento (Time) en que cada caja vuelve a estar disponible; índice = fila * 3 + carril.</summary>
+    public double[] BoxRespawn { get; }
+    public List<Projectile> Projectiles { get; } = [];
+    private int _nextProjectileId = 1;
+
     private readonly List<RaceEvent> _events = [];
     private double? _firstFinish;
 
@@ -27,7 +35,10 @@ public sealed class Race
         Track = track;
         Racers = racers;
         Rng = new Rng(seed);
+        BoxRespawn = new double[track.ItemRows.Count * Items.BoxLanes.Length];
     }
+
+    public bool BoxActive(int index) => Time >= BoxRespawn[index];
 
     /// <summary>Avanza un tick. Los humanos usan su input; los bots deciden solos.</summary>
     public void Step(IReadOnlyDictionary<string, Input> inputs)
@@ -51,8 +62,12 @@ public sealed class Race
             var input = human ? inputs.GetValueOrDefault(r.Id, Input.None) : Bots.Decide(r, this);
             var before = Physics.ZOf(r, Track);
             Physics.Step(r, input, Track, Vehicles.Tick);
-            CheckProgress(r, before, Physics.ZOf(r, Track));
+            var after = Physics.ZOf(r, Track);
+            CheckProgress(r, before, after);
+            PickBoxes(r, before, after);
+            if (r.PendingUse != Items.None) ResolveUse(r);
         }
+        UpdateProjectiles(Vehicles.Tick);
         Physics.CollideAll(Racers);
 
         if (Phase == RacePhase.Racing)
@@ -104,6 +119,183 @@ public sealed class Race
                 _events.Add(new RaceEvent("lap", r.Id, r.Lap, Time));
             }
         }
+    }
+
+    private static bool CrossedS(double before, double after, double s) =>
+        after >= before ? before < s && s <= after : before < s || s <= after;
+
+    // ------------------------------------------------------------------ ítems (port de race.ts)
+
+    private void PickBoxes(Racer r, double before, double after)
+    {
+        var rows = Track.ItemRows;
+        for (var row = 0; row < rows.Count; row++)
+        {
+            if (!CrossedS(before, after, rows[row])) continue;
+            var reach = Physics.KartHalf + (r.MagnetLeft > 0 ? Items.MagnetBoxHalf : Items.BoxHalf);
+            for (var lane = 0; lane < Items.BoxLanes.Length; lane++)
+            {
+                var idx = row * Items.BoxLanes.Length + lane;
+                if (Time < BoxRespawn[idx] || Math.Abs(r.X - Items.BoxLanes[lane]) >= reach) continue;
+                BoxRespawn[idx] = Time + Items.BoxRespawn;
+                if (r.Item == Items.None && r.ItemRoll <= 0)
+                {
+                    var ahead = 0;
+                    foreach (var o in Racers)
+                        if (o != r && o.Distance > r.Distance) ahead++;
+                    var frac = Racers.Count > 1 ? (double)ahead / (Racers.Count - 1) : 0;
+                    r.Item = Items.Roll(Rng.Next(), frac);
+                    r.ItemRoll = Items.RollTime;
+                    _events.Add(new RaceEvent("item", r.Id, r.Item));
+                }
+            }
+        }
+    }
+
+    private Racer? RacerAhead(Racer r)
+    {
+        Racer? best = null;
+        foreach (var o in Racers)
+        {
+            if (o == r || o.FinishTime is not null || o.Distance <= r.Distance) continue;
+            if (best is null || o.Distance < best.Distance) best = o;
+        }
+        return best;
+    }
+
+    private void ResolveUse(Racer r)
+    {
+        var item = r.PendingUse;
+        r.PendingUse = Items.None;
+        _events.Add(new RaceEvent("use", r.Id, item));
+        if (item == Items.Bomb)
+        {
+            Projectiles.Add(new Projectile
+            {
+                Id = _nextProjectileId++,
+                Kind = Items.Bomb,
+                Owner = r.Id,
+                Distance = r.Distance + Items.BombThrow,
+                X = r.X,
+                Speed = r.Speed + 3000,
+                State = Items.StateFlying,
+                Timer = Items.BombFlight,
+            });
+        }
+        else if (item == Items.Rocket)
+        {
+            var target = RacerAhead(r);
+            Projectiles.Add(new Projectile
+            {
+                Id = _nextProjectileId++,
+                Kind = Items.Rocket,
+                Owner = r.Id,
+                Target = target?.Id,
+                Distance = r.Distance + Items.RocketLaunch,
+                X = r.X,
+                Speed = r.Vehicle.MaxSpeed * Items.RocketSpeedMult,
+                State = Items.StateFlying,
+                Timer = Items.RocketLife,
+            });
+        }
+        else if (item == Items.Lightning)
+        {
+            foreach (var o in Racers)
+                if (o != r && o.FinishTime is null && o.Distance > r.Distance) Hit(o, Items.HitShock);
+        }
+        else if (item == Items.Freeze)
+        {
+            if (RacerAhead(r) is { } target) Hit(target, Items.HitFreeze);
+        }
+    }
+
+    private void Hit(Racer t, int kind)
+    {
+        if (t.Respawn > 0) return;
+        if (t.ShieldLeft > 0)
+        {
+            t.ShieldLeft = 0;
+            _events.Add(new RaceEvent("blocked", t.Id));
+            return;
+        }
+        if (kind == Items.HitSpin)
+        {
+            t.SpinLeft = Items.SpinTime;
+            t.Speed *= 0.5;
+            t.Drift.Active = false;
+            t.Bump = 0;
+        }
+        else if (kind == Items.HitShock)
+        {
+            t.ShockLeft = Items.ShockTime;
+            t.Speed *= 0.6;
+        }
+        else if (kind == Items.HitFreeze)
+        {
+            t.FrozenLeft = Items.FreezeTime;
+            t.Speed *= 0.5;
+            t.Drift.Active = false;
+        }
+        _events.Add(new RaceEvent("hit", t.Id, kind));
+    }
+
+    private void Explode(Projectile p, bool blast)
+    {
+        p.State = Items.StateExploding;
+        p.Timer = Items.ExplosionTime;
+        if (!blast) return;
+        foreach (var o in Racers)
+            if (Math.Abs(o.Distance - p.Distance) < Items.BombBlastZ && Math.Abs(o.X - p.X) < Items.BombBlastX) Hit(o, Items.HitSpin);
+    }
+
+    private void UpdateProjectiles(double dt)
+    {
+        foreach (var p in Projectiles)
+        {
+            if (p.State == Items.StateExploding)
+            {
+                p.Timer -= dt;
+            }
+            else if (p.Kind == Items.Bomb)
+            {
+                if (p.State == Items.StateFlying)
+                {
+                    p.Distance += p.Speed * dt;
+                    p.Timer -= dt;
+                    if (p.Timer <= 0)
+                    {
+                        p.State = Items.StateArmed;
+                        p.Timer = Items.BombFuse;
+                    }
+                }
+                else
+                {
+                    p.Timer -= dt;
+                    var touched = false;
+                    foreach (var o in Racers)
+                        if (o.Respawn <= 0 && Math.Abs(o.Distance - p.Distance) < Items.BombTriggerZ && Math.Abs(o.X - p.X) < Items.BombTriggerX) touched = true;
+                    if (touched || p.Timer <= 0) Explode(p, true);
+                }
+            }
+            else
+            {
+                p.Distance += p.Speed * dt;
+                p.Timer -= dt;
+                var target = p.Target is null ? null : Racers.Find(o => o.Id == p.Target);
+                if (target is not null)
+                {
+                    p.X += Math.Max(-Items.RocketTurn * dt, Math.Min(Items.RocketTurn * dt, target.X - p.X));
+                    if (Math.Abs(target.Distance - p.Distance) < Items.RocketHitZ && Math.Abs(target.X - p.X) < Items.RocketHitX)
+                    {
+                        Hit(target, Items.HitSpin);
+                        Explode(p, false);
+                        continue;
+                    }
+                }
+                if (p.Timer <= 0) Explode(p, false);
+            }
+        }
+        Projectiles.RemoveAll(p => p.State == Items.StateExploding && p.Timer <= 0);
     }
 
     public double Progress(Racer r) =>

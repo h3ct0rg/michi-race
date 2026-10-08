@@ -2,6 +2,7 @@
 import type { Input } from './input';
 import { PAD_HALF, ROAD_WIDTH, SEGMENT_LENGTH, Track } from './track';
 import type { VehicleParams } from './vehicles';
+import { HAZARD, HAZARD_HALF, ITEM, MAGNET_TIME, OIL_SPIN_TIME, SHIELD_TIME, TURBO_ITEM_MULT } from './items';
 
 export const KART_WORLD_WIDTH = 400;
 export const KART_HALF = KART_WORLD_WIDTH / ROAD_WIDTH / 2; // medio ancho en unidades de x
@@ -10,6 +11,7 @@ const DRIFT_MIN_SPEED = 0.4;
 const DRIFT_CHARGE_BLUE = 0.6; // segundos de derrape para mini-turbo azul
 const DRIFT_CHARGE_ORANGE = 1.4; // ... y naranja
 const RESPAWN_AFTER = 2.5; // segundos perdido lejos de la pista
+export const SPLASH_TIME = 0.8;
 
 export interface Racer {
   id: string;
@@ -22,13 +24,23 @@ export interface Racer {
   speed: number;
   steer: number; // giro efectivo aplicado
   lean: number; // giro visual suavizado
-  turbo: number; // carga 0..1
   turboLeft: number;
   boostLeft: number; // mini-turbo de derrape o pad
   drift: { active: boolean; dir: number; charge: number };
   lostTime: number;
   respawn: number; // segundos de invulnerabilidad tras reaparecer
   bump: number; // segundos desde el último golpe (para cámara/efectos)
+  // ítems y efectos
+  item: number; // ITEM.*, 0 = sin ítem
+  itemRoll: number; // segundos de "ruleta" antes de poder usarlo
+  useHeld: boolean; // botón de ítem presionado en el tick anterior (para detectar el flanco)
+  pendingUse: number; // ítem ofensivo usado este tick; lo resuelve la carrera (proyectiles, rayo...)
+  shieldLeft: number;
+  spinLeft: number; // trompo
+  shockLeft: number; // electrocutado (rayo)
+  frozenLeft: number; // congelado
+  magnetLeft: number;
+  splash: number; // segundos desde que cayó al agua (efecto visual/sonido)
   // estado de carrera
   lap: number; // 0 = en la parrilla, antes de cruzar la salida
   nextCheckpoint: number;
@@ -57,13 +69,22 @@ export function createRacer(id: string, name: string, vehicle: VehicleParams, di
     speed: 0,
     steer: 0,
     lean: 0,
-    turbo: 1,
     turboLeft: 0,
     boostLeft: 0,
     drift: { active: false, dir: 0, charge: 0 },
     lostTime: 0,
     respawn: 0,
     bump: 99,
+    item: 0,
+    itemRoll: 0,
+    useHeld: false,
+    pendingUse: 0,
+    shieldLeft: 0,
+    spinLeft: 0,
+    shockLeft: 0,
+    frozenLeft: 0,
+    magnetLeft: 0,
+    splash: 0,
     lap: 0,
     nextCheckpoint: checkpoints, // la meta es el siguiente objetivo desde la parrilla
     lapStart: 0,
@@ -83,22 +104,32 @@ export function stepRacer(r: Racer, input: Input, track: Track, dt: number) {
   const seg = track.findSegment(zOf(r, track));
   const speedPct = r.speed / p.maxSpeed;
   const offroad = r.x < -1 || r.x > 1;
-  const steerIn = clamp(input.steer, -1, 1);
+  const stunned = r.spinLeft > 0 || r.frozenLeft > 0;
+  // en trompo o congelado no hay control
+  const steerIn = stunned ? 0 : clamp(input.steer, -1, 1);
+  const throttle = input.throttle && !stunned;
+  const brake = input.brake && !stunned;
 
-  // --- turbo manual
-  if (input.turbo && r.turbo >= 1 && r.turboLeft <= 0) {
-    r.turboLeft = p.turboTime;
-    r.turbo = 0;
+  // --- ítem: se usa al presionar (flanco). Los de efecto propio se aplican aquí (el cliente los predice);
+  // los ofensivos quedan en pendingUse y los resuelve la carrera.
+  const press = input.useItem && !r.useHeld;
+  r.useHeld = input.useItem;
+  if (press && r.item !== ITEM.none && r.itemRoll <= 0 && !stunned) {
+    if (r.item === ITEM.turbo) r.turboLeft = Math.max(r.turboLeft, p.turboTime * TURBO_ITEM_MULT);
+    else if (r.item === ITEM.shield) r.shieldLeft = SHIELD_TIME;
+    else if (r.item === ITEM.magnet) r.magnetLeft = MAGNET_TIME;
+    else r.pendingUse = r.item;
+    r.item = ITEM.none;
   }
 
   // --- derrape: se inicia con drift + dirección, al soltar da mini-turbo según la carga
   const d = r.drift;
-  if (!d.active && input.drift && steerIn !== 0 && speedPct > DRIFT_MIN_SPEED && !offroad) {
+  if (!d.active && !stunned && input.drift && steerIn !== 0 && speedPct > DRIFT_MIN_SPEED && !offroad) {
     d.active = true;
     d.dir = Math.sign(steerIn);
     d.charge = 0;
-  } else if (d.active && (!input.drift || speedPct < DRIFT_MIN_SPEED * 0.75 || offroad)) {
-    if (!offroad) {
+  } else if (d.active && (!input.drift || speedPct < DRIFT_MIN_SPEED * 0.75 || offroad || stunned)) {
+    if (!offroad && !stunned) {
       if (d.charge >= DRIFT_CHARGE_ORANGE) r.boostLeft = Math.max(r.boostLeft, 1.0);
       else if (d.charge >= DRIFT_CHARGE_BLUE) r.boostLeft = Math.max(r.boostLeft, 0.5);
     }
@@ -123,6 +154,19 @@ export function stepRacer(r: Racer, input: Input, track: Track, dt: number) {
     r.boostLeft = Math.max(r.boostLeft, 0.8);
   }
 
+  // --- obstáculos pintados: aceite (trompo), arena (frena), charco (resbala)
+  const hz = seg.hazard;
+  if (hz !== null && !offroad && r.respawn <= 0 && Math.abs(r.x - hz.x) < HAZARD_HALF + KART_HALF * 0.5) {
+    if (hz.kind === HAZARD.oil && r.spinLeft <= 0) {
+      if (r.shieldLeft > 0) r.shieldLeft = 0;
+      else r.spinLeft = OIL_SPIN_TIME;
+    } else if (hz.kind === HAZARD.sand && r.speed > p.offroadLimit) {
+      r.speed -= p.offroadDecel * 0.7 * dt;
+    } else if (hz.kind === HAZARD.puddle) {
+      r.vx += (r.x >= hz.x ? 1 : -1) * 4 * dt;
+    }
+  }
+
   // --- movimiento lateral
   const dx = dt * p.steer * speedPct;
   r.x += steer * dx;
@@ -131,12 +175,16 @@ export function stepRacer(r: Racer, input: Input, track: Track, dt: number) {
   r.vx *= Math.max(0, 1 - dt * 6);
 
   // --- velocidad
-  const boosting = r.turboLeft > 0 || r.boostLeft > 0;
-  const maxSpeed = boosting ? p.maxSpeed * p.turboMult : p.maxSpeed;
+  const boosting = (r.turboLeft > 0 || r.boostLeft > 0) && !stunned;
+  let maxSpeed = boosting ? p.maxSpeed * p.turboMult : p.maxSpeed;
+  if (r.magnetLeft > 0) maxSpeed *= 1.12;
+  if (r.shockLeft > 0) maxSpeed *= 0.55;
   if (boosting) r.speed += p.accel * 2 * dt;
-  else if (input.throttle) r.speed += p.accel * dt;
-  else if (input.brake) r.speed -= p.braking * dt;
+  else if (throttle) r.speed += p.accel * (r.magnetLeft > 0 ? 1.5 : 1) * dt;
+  else if (brake) r.speed -= p.braking * dt;
   else r.speed -= p.decel * dt;
+  if (r.spinLeft > 0) r.speed -= p.braking * 0.5 * dt;
+  if (r.frozenLeft > 0) r.speed -= r.speed * 1.5 * dt;
   if (offroad && r.speed > p.offroadLimit) r.speed -= p.offroadDecel * dt;
   if (r.speed > maxSpeed) r.speed = Math.max(maxSpeed, r.speed - p.decel * 2 * dt);
   r.speed = Math.max(0, r.speed);
@@ -144,7 +192,13 @@ export function stepRacer(r: Racer, input: Input, track: Track, dt: number) {
   // --- timers
   r.turboLeft = Math.max(0, r.turboLeft - dt);
   r.boostLeft = Math.max(0, r.boostLeft - dt);
-  if (r.turboLeft <= 0) r.turbo = Math.min(1, r.turbo + dt / p.turboRecharge);
+  r.itemRoll = Math.max(0, r.itemRoll - dt);
+  r.shieldLeft = Math.max(0, r.shieldLeft - dt);
+  r.spinLeft = Math.max(0, r.spinLeft - dt);
+  r.shockLeft = Math.max(0, r.shockLeft - dt);
+  r.frozenLeft = Math.max(0, r.frozenLeft - dt);
+  r.magnetLeft = Math.max(0, r.magnetLeft - dt);
+  r.splash = Math.max(0, r.splash - dt);
   r.respawn = Math.max(0, r.respawn - dt);
   r.bump += dt;
 
@@ -154,6 +208,20 @@ export function stepRacer(r: Racer, input: Input, track: Track, dt: number) {
   if (r.x < -1 || r.x > 1) {
     for (let s = from; s <= r.distance; s += SEGMENT_LENGTH) {
       if (hitObstacle(r, track.findSegment(wrapZ(s, track.length)))) break;
+    }
+  }
+
+  // --- caer al mar: salpicón y reaparición inmediata en el centro de la pista
+  if (seg.water !== 0 && r.respawn <= 0) {
+    const fell = (r.x < -seg.shore && (seg.water & 1) !== 0) || (r.x > seg.shore && (seg.water & 2) !== 0);
+    if (fell) {
+      r.x = 0;
+      r.vx = 0;
+      r.speed *= 0.3;
+      r.respawn = 1.5;
+      r.splash = SPLASH_TIME;
+      r.drift.active = false;
+      r.lostTime = 0;
     }
   }
 

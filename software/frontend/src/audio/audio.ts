@@ -189,6 +189,53 @@ export const sfx = {
     const notes = last ? [76, 79, 84, 88] : [79, 84];
     notes.forEach((n, i) => audio.tone({ type: 'square', freq: midiToFreq(n), dur: 0.16, vol: 0.18, delay: i * (last ? 0.08 : 0.1) }));
   },
+  // ---- ítems
+  itemRoulette: () => {
+    for (let i = 0; i < 10; i++) audio.tone({ type: 'square', freq: midiToFreq(76 + (i % 4) * 3), dur: 0.05, vol: 0.09, delay: i * 0.11 });
+  },
+  itemReady: () => {
+    audio.tone({ type: 'square', freq: 1319, dur: 0.08, vol: 0.16 });
+    audio.tone({ type: 'square', freq: 1760, dur: 0.14, vol: 0.16, delay: 0.07 });
+  },
+  boxBreak: () => audio.noise({ dur: 0.12, vol: 0.18, filter: 'highpass', freq: 3000 }),
+  throwBomb: () => audio.tone({ type: 'triangle', freq: 300, freqEnd: 900, dur: 0.25, vol: 0.25 }),
+  rocketLaunch: () => {
+    audio.noise({ dur: 0.9, vol: 0.3, filter: 'bandpass', freq: 600, freqEnd: 2400, q: 1.5 });
+    audio.tone({ type: 'sawtooth', freq: 110, freqEnd: 440, dur: 0.8, vol: 0.12 });
+  },
+  lightning: () => {
+    audio.noise({ dur: 0.08, vol: 0.5, filter: 'highpass', freq: 2000 });
+    audio.noise({ dur: 1.1, vol: 0.4, filter: 'lowpass', freq: 900, freqEnd: 80, delay: 0.05 });
+    audio.tone({ type: 'sawtooth', freq: 1800, freqEnd: 120, dur: 0.25, vol: 0.15 });
+  },
+  freeze: () => {
+    [0, 0.05, 0.1, 0.15].forEach((d, i) => audio.tone({ type: 'triangle', freq: midiToFreq(96 - i * 3), dur: 0.2, vol: 0.12, delay: d }));
+    audio.noise({ dur: 0.4, vol: 0.2, filter: 'highpass', freq: 5000 });
+  },
+  shieldUp: () => audio.tone({ type: 'sine', freq: 330, freqEnd: 990, dur: 0.35, vol: 0.25 }),
+  shieldBlock: () => {
+    audio.tone({ type: 'square', freq: 1568, dur: 0.12, vol: 0.18 });
+    audio.tone({ type: 'sine', freq: 784, freqEnd: 392, dur: 0.3, vol: 0.2 });
+  },
+  splash: () => {
+    // golpe contra el agua + rocío que cae
+    audio.noise({ dur: 0.25, vol: 0.5, filter: 'lowpass', freq: 2200, freqEnd: 300 });
+    audio.tone({ type: 'sine', freq: 220, freqEnd: 60, dur: 0.3, vol: 0.35 });
+    audio.noise({ dur: 0.9, vol: 0.22, filter: 'highpass', freq: 3500, freqEnd: 1500, delay: 0.12 });
+    [0, 0.07, 0.15].forEach((d, i) => audio.tone({ type: 'sine', freq: midiToFreq(84 + i * 5), freqEnd: midiToFreq(91 + i * 5), dur: 0.06, vol: 0.08, delay: 0.2 + d }));
+  },
+  magnet: () => audio.tone({ type: 'sine', freq: 220, freqEnd: 660, dur: 0.6, vol: 0.2 }),
+  explosion: (near: number) => {
+    audio.noise({ dur: 0.7, vol: 0.55 * near, filter: 'lowpass', freq: 1400, freqEnd: 60 });
+    audio.tone({ type: 'sine', freq: 90, freqEnd: 30, dur: 0.5, vol: 0.5 * near });
+  },
+  spinHit: () => {
+    audio.tone({ type: 'square', freq: 880, freqEnd: 220, dur: 0.5, vol: 0.15 });
+    audio.noise({ dur: 0.3, vol: 0.25, filter: 'bandpass', freq: 2000, q: 4 });
+  },
+  shocked: () => {
+    for (let i = 0; i < 6; i++) audio.tone({ type: 'sawtooth', freq: 300 + Math.random() * 900, dur: 0.05, vol: 0.12, delay: i * 0.05 });
+  },
   finish: (win: boolean) => {
     const notes = win ? [72, 76, 79, 84, 79, 84] : [72, 76, 79, 77];
     notes.forEach((n, i) => {

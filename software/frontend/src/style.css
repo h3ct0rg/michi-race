@@ -312,3 +312,65 @@ body {
   font-size: 1cqw;
   animation: blink 1s steps(2) infinite;
 }
+
+/* ---------- casilla de ítem ---------- */
+.hud-item {
+  bottom: 6%;
+  left: 2%;
+  display: flex;
+  align-items: center;
+  gap: 0.8cqw;
+  font-size: 0.9cqw;
+  min-width: 16cqw;
+}
+
+.item-box {
+  width: 5.2cqw;
+  height: 5.2cqw;
+  display: grid;
+  place-items: center;
+  background: #0c0e17;
+  border: 2px solid #32343e;
+}
+
+.item-box img {
+  width: 90%;
+  height: 90%;
+  image-rendering: pixelated;
+}
+
+.item-box.ready {
+  border-color: var(--tertiary);
+  box-shadow: 0 0 1cqw rgba(243, 219, 0, 0.45);
+  animation: item-pulse 0.9s ease-in-out infinite;
+}
+
+.item-box.rolling img {
+  opacity: 0.8;
+}
+
+@keyframes item-pulse {
+  50% {
+    box-shadow: 0 0 1.6cqw rgba(243, 219, 0, 0.8);
+  }
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15cqw;
+}
+
+.item-info b {
+  font-size: 1.3cqw;
+  color: var(--tertiary);
+}
+
+.item-key {
+  font-size: 0.7cqw;
+}
+
+.item-effects {
+  font-size: 0.75cqw;
+  color: var(--primary);
+}

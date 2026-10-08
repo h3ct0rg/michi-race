@@ -62,10 +62,31 @@ Referencia (localhost, 3 salas × 20 pilotos): tick 0,23 ms de 33 ms, snapshot d
 | --- | --- |
 | Green Valley | Bosques, colinas y montañas nevadas |
 | Desert Run | Atardecer, mesas, dunas, cañón de curvas en S, ruinas |
+| Neon City | Noche, rascacielos, neón, lluvia, paso elevado y chicana |
+| Coastal Road | Isla tropical al mediodía, playa, faro y un puente sobre el mar (salirse por la orilla = caer al agua) |
+
+## Power-ups y obstáculos
+
+Filas de cajas **?** en cada pista (reaparecen a los 2,5 s). El ítem se sortea según tu posición:
+los de atrás reciben ítems ofensivos y los de adelante defensivos. Se usa con **Espacio** (o el botón ÍTEM en táctil).
+
+| Ítem | Efecto |
+| --- | --- |
+| Turbo | Acelerón largo |
+| Escudo | Bloquea un golpe (8 s) |
+| Bomba | Se lanza adelante, queda armada y explota al contacto (trompo) |
+| Rayo | Electrocuta y frena a todos los que van adelante |
+| Imán | Atrae cajas y da un empujón de velocidad |
+| Hielo | Congela al kart de adelante |
+| Cohete | Persigue y golpea al kart de adelante |
+
+Obstáculos pintados en la pista: **aceite** (trompo), **arena** (frena), **charco** (resbala).
+Toda la lógica de ítems vive en la simulación (TS y C#), así que el servidor la decide y la paridad la verifica.
 
 Agregar una pista:
 1. Lógica: `frontend/src/sim/tracks/<pista>.ts` (curvas, colinas, pads, reglas de decoración) y registrarla en `tracks/index.ts`;
    la misma definición en `backend/src/MichiRacer.Game/Sim/Tracks/` y en `Tracks.All`.
+   Opcional: `sea` (lado del mar, orilla y puentes) y `landmarks` (objetos puntuales sin colisión).
 2. Ambientación: un `TrackTheme` en `frontend/src/render/themes.ts` (paleta, cielo, sol, capas de fondo, objetos)
    y su arte en `frontend/public/assets/<pista>/`. Si falta una imagen se usa un placeholder procedural.
 3. Regenerar los fixtures de paridad (`GOLDEN=1 npx vitest run src/sim/golden.test.ts`): el test de C# recorre todas las pistas.

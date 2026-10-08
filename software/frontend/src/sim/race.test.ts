@@ -77,7 +77,7 @@ describe('race simulation', () => {
   it('drift release gives a mini-turbo', () => {
     const r = createRacer('d', 'D', vehicle, 0, 0, GREEN_VALLEY.checkpoints);
     r.speed = vehicle.maxSpeed * 0.8;
-    const drifting = { steer: -1, throttle: true, brake: false, drift: true, turbo: false };
+    const drifting = { steer: -1, throttle: true, brake: false, drift: true, useItem: false };
     for (let i = 0; i < 45; i++) {
       stepRacer(r, drifting, track, TICK); // 1.5 s derrapando
       r.x = 0; // mantenerlo sobre la pista como si estuviera en una curva
@@ -86,5 +86,31 @@ describe('race simulation', () => {
     stepRacer(r, { ...drifting, drift: false }, track, TICK);
     expect(r.drift.active).toBe(false);
     expect(r.boostLeft).toBeGreaterThan(0.9);
+  });
+
+  it('items: boxes are picked, items used, hits land and the shield blocks', () => {
+    const race = botRace(9, 8);
+    const events = runToEnd(race);
+    const count = (t: string) => events.filter((e) => e.type === t).length;
+    expect(count('item')).toBeGreaterThan(10);
+    expect(count('use')).toBeGreaterThan(3);
+    expect(count('hit') + count('blocked')).toBeGreaterThan(0);
+    expect(race.projectiles.every((p) => p.state <= 2)).toBe(true);
+  });
+
+  it('shield absorbs one hit', () => {
+    const race = botRace(3, 2);
+    race.countdown = 0;
+    race.step(new Map());
+    const [a, b] = race.racers;
+    b.shieldLeft = 5;
+    b.distance = a.distance + 1000;
+    a.bot = undefined;
+    a.item = 6; // hielo al de adelante
+    race.step(new Map([[a.id, { ...NO_INPUT, useItem: true }]]));
+    const events = race.drainEvents();
+    expect(events.some((e) => e.type === 'blocked' && e.id === b.id)).toBe(true);
+    expect(b.frozenLeft).toBe(0);
+    expect(b.shieldLeft).toBe(0);
   });
 });

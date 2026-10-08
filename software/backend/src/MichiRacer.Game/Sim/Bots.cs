@@ -31,6 +31,7 @@ public static class Bots
             Throttle: r.Speed < r.Vehicle.MaxSpeed * bot.Skill,
             Brake: false,
             Drift: false,
-            Turbo: rng.Next() < 0.004);
+            // usa el ítem al rato de tenerlo (el RNG se consume siempre: mismo orden que en TS)
+            UseItem: rng.Next() < 0.04 && r.Item != 0 && r.ItemRoll <= 0);
     }
 }

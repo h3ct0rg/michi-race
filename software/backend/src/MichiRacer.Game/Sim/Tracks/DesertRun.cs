@@ -46,6 +46,8 @@ public static class DesertRun
             new(1500, 0.5),
             new(1900, -0.4),
         ],
+        ItemBoxes: [280, 900, 1450, 2000],
+        Hazards: [new(520, 0.3, 2), new(1150, -0.35, 2), new(1700, 0.2, 2), new(2150, -0.3, 1)],
         Decor: new DecorDef("cactus", "drybush", 0.6, [(990, 1340)], "canyonrock", "ruin"));
 }
 
@@ -58,5 +60,7 @@ public static class Tracks
     {
         [GreenValley.Def.Id] = GreenValley.Def,
         [DesertRun.Def.Id] = DesertRun.Def,
+        [NeonCity.Def.Id] = NeonCity.Def,
+        [CoastalRoad.Def.Id] = CoastalRoad.Def,
     };
 }

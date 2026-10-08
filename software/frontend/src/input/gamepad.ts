@@ -17,6 +17,6 @@ export function readGamepad(): Input | null {
     throttle: b(0) || b(7, 0.2),
     brake: b(1) || b(6, 0.2),
     drift: b(4) || b(5),
-    turbo: b(2) || b(3),
+    useItem: b(2) || b(3),
   };
 }

@@ -69,12 +69,12 @@ public sealed class GameLoop(RoomManager rooms, IHubContext<RaceHub, IRaceClient
                 {
                     foreach (var target in s.Targets)
                     {
-                        var dto = new SnapshotDto(s.T, s.Ph, s.R, target.Me, s.Ev);
+                        var dto = new SnapshotDto(s.T, s.Ph, s.R, target.Me, s.P, s.B, s.Ev);
                         sends.Add(hub.Clients.Client(target.ConnectionId).Snapshot(dto));
                     }
                     metrics.SnapshotSent(s.Targets.Count);
                     if (s.Targets.Count > 0 && metrics.ShouldSampleSize())
-                        metrics.SampleSnapshot(new SnapshotDto(s.T, s.Ph, s.R, s.Targets[0].Me, s.Ev));
+                        metrics.SampleSnapshot(new SnapshotDto(s.T, s.Ph, s.R, s.Targets[0].Me, s.P, s.B, s.Ev));
                 }
                 var group = hub.Clients.Group(room.Code);
                 if (output.Results is not null) sends.Add(group.Results(output.Results));

@@ -42,6 +42,8 @@ public static class GreenValley
             new(1150, 0),
             new(1700, -0.4),
         ],
+        ItemBoxes: [300, 900, 1500, 2050],
+        Hazards: [new(700, -0.3, 1), new(1350, 0.35, 1), new(1950, 0, 1)],
         Decor: new DecorDef("tree", "bush", 0.75, [(600, 780)], "tree", "rock"));
 
 }

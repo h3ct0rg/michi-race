@@ -6,7 +6,7 @@
 import type { Controls } from '../input/controls';
 import { ServerClock } from '../net/clock';
 import type { GameConnection } from '../net/connection';
-import { FLAG, R, RACER_FIELDS, RaceStartDto, SnapshotDto } from '../net/protocol';
+import { FLAG, PROJECTILE_FIELDS, R, RACER_FIELDS, RaceStartDto, SnapshotDto } from '../net/protocol';
 import type { Input } from '../sim/input';
 import { collideWithGhost, createRacer, KART_HALF, Racer, stepRacer } from '../sim/physics';
 import { Race, RaceEvent } from '../sim/race';
@@ -23,16 +23,35 @@ interface Buffered {
   r: number[];
 }
 
-/** Estado propio completo (orden de SnapshotLayout.Self en C#). */
+/** Estado propio completo (orden de SnapshotLayout.Self en C#). El último valor (seq) lo usa el llamador. */
+const SELF_SEQ = 29;
 function applySelf(r: Racer, m: number[]) {
-  [r.distance, r.x, r.vx, r.speed, r.steer, r.lean, r.turbo, r.turboLeft, r.boostLeft] = m;
-  r.drift.active = m[9] === 1;
-  r.drift.dir = m[10];
-  r.drift.charge = m[11];
-  [r.lostTime, r.respawn, r.bump, r.lap, r.nextCheckpoint, r.lapStart] = m.slice(12, 18);
-  r.bestLap = m[18] < 0 ? null : m[18];
-  r.finishTime = m[19] < 0 ? null : m[19];
-  r.place = m[20] === 0 ? null : m[20];
+  [r.distance, r.x, r.vx, r.speed, r.steer, r.lean, r.turboLeft, r.boostLeft] = m;
+  r.drift.active = m[8] === 1;
+  r.drift.dir = m[9];
+  r.drift.charge = m[10];
+  [r.lostTime, r.respawn, r.bump, r.lap, r.nextCheckpoint, r.lapStart] = m.slice(11, 17);
+  r.bestLap = m[17] < 0 ? null : m[17];
+  r.finishTime = m[18] < 0 ? null : m[18];
+  r.place = m[19] === 0 ? null : m[19];
+  r.item = m[20];
+  r.itemRoll = m[21];
+  r.useHeld = m[22] === 1;
+  [r.shieldLeft, r.spinLeft, r.shockLeft, r.frozenLeft, r.magnetLeft, r.splash] = m.slice(23, 29);
+  r.pendingUse = 0; // los ítems ofensivos los resuelve el servidor
+}
+
+/** Estados visuales de un kart remoto a partir de sus flags (solo para dibujar). */
+function applyFlags(r: Racer, flags: number) {
+  r.drift.active = (flags & FLAG.drift) !== 0;
+  r.boostLeft = flags & FLAG.boost ? 0.1 : 0;
+  r.respawn = flags & FLAG.respawn ? 0.1 : 0;
+  r.shieldLeft = flags & FLAG.shield ? 0.1 : 0;
+  r.spinLeft = flags & FLAG.spin ? 0.1 : 0;
+  r.shockLeft = flags & FLAG.shock ? 0.1 : 0;
+  r.frozenLeft = flags & FLAG.frozen ? 0.1 : 0;
+  r.magnetLeft = flags & FLAG.magnet ? 0.1 : 0;
+  r.splash = flags & FLAG.splash ? 0.1 : 0;
 }
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -95,10 +114,23 @@ export class OnlineSession implements RaceSession {
     if (this.buffer.length > 40) this.buffer.shift();
     this.snapCount++;
 
+    // proyectiles y cajas: estado del servidor tal cual (solo se dibujan)
+    const projectiles = [];
+    for (let i = 0; i + PROJECTILE_FIELDS <= s.p.length; i += PROJECTILE_FIELDS) {
+      projectiles.push({ id: i, kind: s.p[i], owner: '', target: null, distance: s.p[i + 1], x: s.p[i + 2], speed: 0, state: s.p[i + 3], timer: 0 });
+    }
+    this.race.projectiles = projectiles;
+    this.race.boxRespawn.fill(0);
+    for (const b of s.b) if (b < this.race.boxRespawn.length) this.race.boxRespawn[b] = Number.MAX_VALUE;
+
     for (const e of s.ev) {
       if (e.type === 'lap') this.events.push({ type: 'lap', id: e.id!, lap: e.value!, time: e.time! });
       else if (e.type === 'finish') this.events.push({ type: 'finish', id: e.id!, place: e.value!, time: e.time! });
       else if (e.type === 'go') this.events.push({ type: 'go' });
+      else if (e.type === 'item') this.events.push({ type: 'item', id: e.id!, item: e.value! });
+      else if (e.type === 'use') this.events.push({ type: 'use', id: e.id!, item: e.value! });
+      else if (e.type === 'hit') this.events.push({ type: 'hit', id: e.id!, hit: e.value! });
+      else if (e.type === 'blocked') this.events.push({ type: 'blocked', id: e.id! });
     }
 
     const me = this.me;
@@ -106,7 +138,7 @@ export class OnlineSession implements RaceSession {
     // reconciliación: estado del servidor + reaplicar los inputs que aún no procesó
     const before = { d: me.distance, x: me.x };
     applySelf(me, s.me);
-    const ack = s.me[21];
+    const ack = s.me[SELF_SEQ];
     this.pending = this.pending.filter((p) => p.seq > ack);
     if (this.predicting) for (const p of this.pending) this.simulate(p.input, p.seq);
 
@@ -229,9 +261,7 @@ export class OnlineSession implements RaceSession {
       r.nextCheckpoint = b.r[o + R.cp];
       r.finishTime = b.r[o + R.ft] < 0 ? null : b.r[o + R.ft];
       r.place = b.r[o + R.pl] || null;
-      r.drift.active = (flags & FLAG.drift) !== 0;
-      r.boostLeft = flags & FLAG.boost ? 0.1 : 0;
-      r.respawn = flags & FLAG.respawn ? 0.1 : 0;
+      applyFlags(r, flags);
       if (r !== this.me && !r.bot) this.labels.set(r.id, flags & FLAG.away ? `${r.name} (AUSENTE)` : r.name);
     });
   }

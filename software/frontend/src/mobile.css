@@ -525,7 +525,7 @@ html.touch .warning {
   border-color: rgba(0, 240, 255, 0.8);
 }
 
-.tc-turbo {
+.tc-item {
   grid-column: 1 / span 2;
   grid-row: 1;
   width: 48px;
@@ -579,7 +579,7 @@ html.touch .warning {
     height: 56px;
   }
 
-  .tc-turbo {
+  .tc-item {
     width: 42px;
     height: 42px;
   }
@@ -613,4 +613,33 @@ html.touch .copy-label::after {
 
 .tc-sound.muted {
   opacity: 0.6;
+}
+
+/* táctil: la casilla de ítem a la izquierda, entre el velocímetro y el joystick */
+html.touch .hud-item {
+  bottom: auto;
+  top: 42%;
+  left: 2%;
+  min-width: 0;
+  padding: 0.4cqw 0.6cqw;
+}
+
+/* botón de ítem: muestra el ícono del ítem que tienes */
+.tc-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.tc-item.has-item {
+  background: rgba(243, 219, 0, 0.9);
+  box-shadow: 0 0 14px rgba(243, 219, 0, 0.8), 0 4px 0 rgba(12, 14, 23, 0.55);
+}
+
+.tc-item img {
+  position: absolute;
+  inset: 12%;
+  width: 76%;
+  height: 76%;
+  image-rendering: pixelated;
+  pointer-events: none;
 }

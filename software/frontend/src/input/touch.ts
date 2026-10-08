@@ -21,7 +21,7 @@ export class TouchControls {
   private stickPointer: number | null = null;
   private steer = 0;
   private brake = false;
-  private readonly held = { throttle: false, drift: false, turbo: false };
+  private readonly held = { throttle: false, drift: false, useItem: false };
   onExit: () => void = () => {};
   /** Se llama en el primer toque (para pedir pantalla completa dentro del gesto). */
   onFirstTouch: () => void = () => {};
@@ -33,7 +33,7 @@ export class TouchControls {
       <button class="tc-sound" data-sound aria-label="Sonido">🔊</button>
       <div class="tc-stick"><div class="tc-knob"></div></div>
       <div class="tc-buttons">
-        <button class="tc-btn tc-turbo" data-key="turbo">TURBO</button>
+        <button class="tc-btn tc-item" data-key="useItem"><span class="tc-item-label">ÍTEM</span></button>
         <button class="tc-btn tc-drift" data-key="drift">DRIFT</button>
         <button class="tc-btn tc-gas" data-key="throttle">GAS</button>
       </div>`;
@@ -100,6 +100,22 @@ export class TouchControls {
     this.brake = dy / radius > BRAKE_THRESHOLD;
   }
 
+  /** Muestra en el botón el ícono del ítem disponible (null = sin ítem). */
+  setItemIcon(src: string | null) {
+    const btn = this.root.querySelector<HTMLElement>('.tc-item')!;
+    const label = btn.querySelector<HTMLElement>('.tc-item-label')!;
+    let img = btn.querySelector('img');
+    if (src) {
+      if (!img) {
+        img = document.createElement('img');
+        btn.appendChild(img);
+      }
+      if (img.getAttribute('src') !== src) img.setAttribute('src', src);
+    } else img?.remove();
+    label.hidden = !!src;
+    btn.classList.toggle('has-item', !!src);
+  }
+
   setVisible(visible: boolean) {
     this.root.hidden = !visible;
     if (!visible) this.reset();
@@ -109,7 +125,7 @@ export class TouchControls {
     this.stickPointer = null;
     this.steer = 0;
     this.brake = false;
-    this.held.throttle = this.held.drift = this.held.turbo = false;
+    this.held.throttle = this.held.drift = this.held.useItem = false;
     this.knob.style.transform = '';
     this.root.querySelectorAll('.pressed').forEach((b) => b.classList.remove('pressed'));
   }
@@ -120,7 +136,7 @@ export class TouchControls {
       throttle: this.held.throttle && !this.brake,
       brake: this.brake,
       drift: this.held.drift,
-      turbo: this.held.turbo,
+      useItem: this.held.useItem,
     };
   }
 }
