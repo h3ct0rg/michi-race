@@ -2,6 +2,7 @@
 import { THEMES } from '../render/themes';
 import { TRACKS } from '../sim/tracks';
 import { escapeHtml } from './results';
+import { t, type Key } from '../i18n';
 
 export interface TrackCardIds {
   img: string;
@@ -21,8 +22,8 @@ export function renderTrackCard(ids: TrackCardIds, trackId: string, onPick: ((id
   const el = (id: string) => document.getElementById(id)!;
   (el(ids.img) as HTMLImageElement).src = theme.preview;
   el(ids.name).textContent = def.name.toUpperCase();
-  el(ids.tagline).textContent = theme.tagline;
-  el(ids.laps).textContent = `${def.laps} VUELTAS`;
+  el(ids.tagline).textContent = t(`track.${def.id}` as Key);
+  el(ids.laps).textContent = t('track.laps', { n: def.laps });
   el(ids.difficulty).textContent = stars(theme.difficulty);
 
   const picker = el(ids.picker);

@@ -248,6 +248,17 @@ body {
   white-space: nowrap;
 }
 
+.banner-sub {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2cqw;
+  color: var(--primary);
+  text-shadow: 3px 3px 0 #0c0e17;
+  white-space: nowrap;
+}
+
 .results {
   display: none;
   position: absolute;
@@ -303,6 +314,152 @@ body {
 
 .results .pos {
   width: 3cqw;
+}
+
+.results-scroll {
+  max-height: 34cqw;
+  overflow-y: auto;
+}
+
+.results td.race {
+  color: #b9cacb;
+}
+
+.results td.gain {
+  color: #7dff8a;
+}
+
+.results td.total {
+  color: var(--tertiary);
+  font-weight: bold;
+  text-align: right;
+}
+
+.results-next {
+  margin-top: 1cqw;
+  text-align: right;
+  color: var(--secondary);
+  font-size: 1.2cqw;
+  animation: blink 1s steps(2) infinite;
+}
+
+/* ---------- podio final del torneo ---------- */
+.podium {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: #0c0e17;
+}
+
+.podium[hidden] {
+  display: none;
+}
+
+.podium canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+.podium-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  font-family: 'Space Mono', monospace;
+}
+
+.podium-ui.show {
+  opacity: 1;
+}
+
+.podium-text {
+  position: absolute;
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.podium-ui.show .podium-text {
+  animation: podium-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+
+.podium-title {
+  font-size: 3.6cqw;
+  font-weight: bold;
+  color: var(--tertiary);
+  text-shadow: 0.35cqw 0.35cqw 0 #0c0e17, 0 0 1.2cqw rgba(243, 219, 0, 0.6);
+  letter-spacing: 0.2cqw;
+}
+
+.podium-name {
+  font-size: 4.8cqw;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0.4cqw 0.4cqw 0 #ff506e, 0.8cqw 0.8cqw 0 #0c0e17;
+  line-height: 1.1;
+}
+
+/* tu resultado: abajo a la derecha, junto al podio */
+.podium-sub {
+  position: absolute;
+  right: 2.5%;
+  bottom: 14%;
+  width: 21%;
+  padding: 0.8cqw;
+  text-align: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.3cqw;
+  color: var(--on-surface);
+  background: rgba(12, 14, 23, 0.75);
+  border: 2px solid #32343e;
+}
+
+.podium-sub b {
+  color: var(--tertiary);
+  font-size: 1.8cqw;
+}
+
+.podium-actions {
+  position: absolute;
+  left: 2.5%;
+  bottom: 14%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8cqw;
+  width: 21%;
+  pointer-events: auto;
+}
+
+.podium-actions .btn {
+  font-size: 1.1cqw;
+  padding: 0.8cqw 0.6cqw;
+  width: 100%;
+}
+
+.podium-votes {
+  position: absolute;
+  left: 2.5%;
+  bottom: 7%;
+  width: 21%;
+  text-align: center;
+  font-size: 1cqw;
+  color: var(--primary);
+  text-shadow: 0.12cqw 0.12cqw 0 #0c0e17;
+}
+
+@keyframes podium-pop {
+  from {
+    transform: translateX(-50%) scale(0.3);
+  }
+  to {
+    transform: translateX(-50%) scale(1);
+  }
 }
 
 .results-hint {

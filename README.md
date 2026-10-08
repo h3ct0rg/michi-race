@@ -13,6 +13,10 @@ Juego de carreras arcade **multijugador** para navegador, en **2.5D** y **pixel 
 - **Salas por link** (`/room/PX-1234`), lobby con host, LISTO, garaje para elegir color del kart,
   relleno con bots y parrilla de hasta **20 pilotos**.
 - **Reconexión**: si se cae la red o recargas la página vuelves a tu kart; también puedes entrar como espectador.
+- **Portada animada** con contador de jugadores en línea y totales, **configuración** (brillo, volúmenes) y
+  **español / inglés**.
+- **Torneo de 4 carreras** con puntos acumulados y **podio animado** (bronce, plata y copa dorada); al final el host
+  reinicia o los invitados votan la revancha.
 - **Gameplay**: derrape con mini-turbo, pads de velocidad, choques, checkpoints, 3 vueltas, resultados.
 - **Power-ups**: turbo, escudo, bomba, rayo, imán, hielo y cohete, más obstáculos (aceite, arena, charcos).
 - **Pistas**: *Green Valley* (bosques y montañas nevadas), *Desert Run* (atardecer, dunas y cañón) , *Neon City* (noche, neón y lluvia) y *Coastal Road* (isla tropical con puente: si te sales al mar, ¡salpicón!).

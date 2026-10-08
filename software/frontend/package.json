@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@microsoft/signalr": "^9.0.19",
-    "@microsoft/signalr-protocol-msgpack": "^9.0.19"
+    "@microsoft/signalr-protocol-msgpack": "^9.0.19",
+    "firebase": "^11.10.0"
   }
 }

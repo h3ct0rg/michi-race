@@ -10,6 +10,7 @@ import type { RaceSession } from './session';
 import { Ticker } from './ticker';
 import { RaceAudio } from '../audio/raceAudio';
 import { HIT, ITEM } from '../sim/items';
+import { t } from '../i18n';
 
 export class RaceView {
   private session: RaceSession | null = null;
@@ -54,22 +55,22 @@ export class RaceView {
     const alpha = s.update(dt);
     for (const e of s.drainEvents()) {
       if (e.type === 'lap' && e.id === s.player.id && e.lap > 1) {
-        this.hud!.flash(e.lap === s.race.track.laps ? '¡ÚLTIMA VUELTA!' : `VUELTA ${e.lap}`);
+        this.hud!.flash(e.lap === s.race.track.laps ? t('flash.lastLap') : t('flash.lap', { n: e.lap }));
       } else if (e.type === 'finish' && e.id === s.player.id) {
         this.hud!.flash(`🏁 ${e.place}° · ${fmtTime(e.time)}`, 4);
       } else if (e.type === 'use' && e.item === ITEM.lightning) {
         this.renderer!.flash('#fff6a0', 0.35);
-        if (e.id !== s.player.id) this.hud!.flash('⚡ ¡RAYO!', 1.2);
+        if (e.id !== s.player.id) this.hud!.flash(t('flash.lightning'), 1.2);
       } else if (e.type === 'hit' && e.id === s.player.id) {
         if (e.hit === HIT.freeze) {
           this.renderer!.flash('#9fe8ff', 0.4);
-          this.hud!.flash('❄️ ¡TE CONGELARON!', 1.4);
+          this.hud!.flash(t('flash.frozen'), 1.4);
         } else if (e.hit === HIT.spin) {
           this.renderer!.flash('#ff8a5c', 0.3);
-          this.hud!.flash('💥 ¡AUCH!', 1.2);
+          this.hud!.flash(t('flash.ouch'), 1.2);
         }
       } else if (e.type === 'blocked' && e.id === s.player.id) {
-        this.hud!.flash('🛡️ ¡BLOQUEADO!', 1.2);
+        this.hud!.flash(t('flash.blocked'), 1.2);
       }
       this.audio.event(e, s);
       this.onEvent(e);
@@ -82,6 +83,11 @@ export class RaceView {
     this.onFrame(s);
     this.raf = requestAnimationFrame(this.frame);
   };
+
+  /** Subtítulo de la largada (p. ej. "CARRERA 2/4 · COASTAL ROAD"). */
+  announce(text: string) {
+    this.hud?.setSubtitle(text);
+  }
 
   /** Resultados en pantalla: se apagan motor y música (los resultados online llegan por mensaje aparte). */
   finishAudio() {

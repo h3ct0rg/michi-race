@@ -14,7 +14,7 @@ export interface PlayerDto {
 export interface RoomStateDto {
   code: string;
   ownerId: string;
-  phase: 'lobby' | 'racing';
+  phase: 'lobby' | 'racing' | 'intermission' | 'podium';
   trackId: string;
   trackName: string;
   laps: number;
@@ -22,6 +22,28 @@ export interface RoomStateDto {
   gridSize: number;
   maxPlayers: number;
   players: PlayerDto[];
+  /** null en el lobby. */
+  tournament: TournamentDto | null;
+}
+
+export interface StandingDto {
+  id: string;
+  name: string;
+  color: number;
+  bot: boolean;
+  points: number;
+  places: number[];
+}
+
+/** race: carrera actual o recién terminada (0..3). nextRaceIn: segundos del intermedio. votes: ids que votaron reiniciar. */
+export interface TournamentDto {
+  race: number;
+  totalRaces: number;
+  tracks: string[];
+  standings: StandingDto[];
+  nextRaceIn: number;
+  votes: string[];
+  votesNeeded: number;
 }
 
 export interface RaceRacerDto {
@@ -80,9 +102,18 @@ export interface ResultRowDto {
   place: number;
   finishTime: number | null;
   bestLap: number | null;
+  /** Puntos ganados en esta carrera y acumulado del torneo. */
+  points: number;
+  total: number;
 }
 
+/** Fin de una carrera del torneo; final = era la última (sigue el podio). */
 export interface ResultsDto {
   trackName: string;
   rows: ResultRowDto[];
+  raceIndex: number;
+  totalRaces: number;
+  final: boolean;
+  nextRaceIn: number;
+  standings: StandingDto[];
 }

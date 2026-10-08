@@ -49,6 +49,8 @@ class AudioEngine {
   musicBus!: GainNode;
   private noiseBuffer!: AudioBuffer;
   muted = store.get('muted') === '1';
+  /** Volúmenes de la configuración (0..1): general, música y efectos. */
+  private volumes = { master: 1, music: 1, sfx: 1 };
   private listeners = new Set<(muted: boolean) => void>();
 
   constructor() {
@@ -70,13 +72,13 @@ class AudioEngine {
       if (!Ctx) return;
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
-      this.master.gain.value = this.muted ? 0 : 0.8;
+      this.master.gain.value = this.masterLevel();
       this.master.connect(this.ctx.destination);
       this.sfxBus = this.ctx.createGain();
-      this.sfxBus.gain.value = 0.6;
+      this.sfxBus.gain.value = 0.6 * this.volumes.sfx;
       this.sfxBus.connect(this.master);
       this.musicBus = this.ctx.createGain();
-      this.musicBus.gain.value = 0.22;
+      this.musicBus.gain.value = 0.22 * this.volumes.music;
       this.musicBus.connect(this.master);
       // ruido blanco reutilizable (derrape, choques, percusión)
       const len = this.ctx.sampleRate * 2;
@@ -94,8 +96,21 @@ class AudioEngine {
   setMuted(muted: boolean) {
     this.muted = muted;
     store.set('muted', muted ? '1' : '0');
-    if (this.ctx) this.master.gain.setTargetAtTime(muted ? 0 : 0.8, this.ctx.currentTime, 0.02);
+    if (this.ctx) this.master.gain.setTargetAtTime(this.masterLevel(), this.ctx.currentTime, 0.02);
     this.listeners.forEach((l) => l(muted));
+  }
+
+  private masterLevel() {
+    return this.muted ? 0 : 0.8 * this.volumes.master;
+  }
+
+  setVolumes(v: { master: number; music: number; sfx: number }) {
+    this.volumes = { ...v };
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    this.master.gain.setTargetAtTime(this.masterLevel(), now, 0.02);
+    this.sfxBus.gain.setTargetAtTime(0.6 * v.sfx, now, 0.02);
+    this.musicBus.gain.setTargetAtTime(0.22 * v.music, now, 0.02);
   }
 
   toggleMuted() {

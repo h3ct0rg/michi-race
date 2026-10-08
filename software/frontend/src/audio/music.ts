@@ -11,6 +11,30 @@ interface Song {
 }
 
 const SONGS: Record<string, Song> = {
+  // Menú: pop arcade animado de 8 compases (C – G – Am – F – C – G – F – G)
+  menu: {
+    bpm: 160,
+    chords: [
+      [36, 60, 64, 67, 72],
+      [43, 59, 62, 67, 71],
+      [45, 60, 64, 69, 72],
+      [41, 60, 65, 69, 72],
+      [36, 60, 64, 67, 72],
+      [43, 59, 62, 67, 71],
+      [41, 60, 65, 69, 72],
+      [43, 59, 62, 65, 71],
+    ],
+    melody: [
+      [72, 0, 76, 79, 0, 76, 79, 84],
+      [83, 0, 79, 0, 74, 76, 79, 0],
+      [81, 0, 79, 76, 0, 72, 76, 0],
+      [77, 79, 81, 0, 79, 77, 76, 74],
+      [72, 0, 76, 79, 0, 84, 83, 84],
+      [86, 0, 83, 79, 0, 83, 86, 0],
+      [84, 0, 81, 77, 81, 84, 0, 81],
+      [79, 0, 83, 0, 86, 0, 0, 0],
+    ],
+  },
   // Green Valley: mayor y alegre (C – G – Am – F)
   'green-valley': {
     bpm: 148,
@@ -69,11 +93,14 @@ export class Music {
   private song: Song | null = null;
   private step = 0; // semicorchea actual
   private nextTime = 0;
+  /** Canción sonando ahora (id de pista o 'menu'); null en silencio. */
+  current: string | null = null;
 
   start(trackId: string) {
     this.stop();
     const ctx = audio.ctx;
     if (!ctx) return;
+    this.current = trackId;
     this.song = SONGS[trackId] ?? SONGS['green-valley'];
     this.step = 0;
     this.nextTime = ctx.currentTime + 0.1;
@@ -84,6 +111,7 @@ export class Music {
     clearInterval(this.timer);
     this.timer = 0;
     this.song = null;
+    this.current = null;
   }
 
   private schedule() {

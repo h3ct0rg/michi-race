@@ -11,6 +11,8 @@ export type RearFrames = Record<-2 | -1 | 0 | 1 | 2, Img>;
 export interface KartFrames {
   dirs: Record<Direction, Img>;
   rear: RearFrames;
+  /** Perfil puro mirando a la derecha (portada); si falta, la vista 3/4 'east'. */
+  side: Img;
 }
 
 export interface SpriteDef {
@@ -97,7 +99,8 @@ export async function loadKart(base: string, hue = 0): Promise<KartFrames> {
   const straight = await load('rear-straight');
   const left1 = await load('rear-left1').catch(() => straight);
   const left2 = await load('rear-left2').catch(() => left1);
-  return { dirs, rear: { [-2]: left2, [-1]: left1, 0: straight, 1: mirror(left1), 2: mirror(left2) } as RearFrames };
+  const side = await load('side').catch(() => dirs.east);
+  return { dirs, rear: { [-2]: left2, [-1]: left1, 0: straight, 1: mirror(left1), 2: mirror(left2) } as RearFrames, side };
 }
 
 // Dibuja un sprite pixel a pixel desde un mapa de caracteres.

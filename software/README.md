@@ -56,6 +56,37 @@ Referencia (localhost, 3 salas × 20 pilotos): tick 0,23 ms de 33 ms, snapshot d
   y de tamaño de mensaje.
 - Los inputs se envían desde un Web Worker: siguen saliendo aunque la pestaña esté en segundo plano.
 
+## Inicio, configuración e idiomas
+
+- **Portada** (`/`): emblema, título, JUGAR / CONFIGURAR / COMPARTIR y fondo animado con las 4 pistas
+  (`frontend/src/ui/homeBackground.ts`). Los links de sala (`/room/PX-1234`) saltan la portada.
+- **Configuración** (se guarda en el navegador): brillo, volumen general, música, efectos e idioma
+  (`frontend/src/settings.ts`).
+- **Idiomas**: español (por defecto) e inglés en `frontend/src/i18n.ts`. En el HTML se marcan los textos con
+  `data-i18n="clave"` (`data-i18n-ph` para placeholders); en TS se usa `t('clave', { n })`. Los errores del servidor
+  llegan en español y el cliente los traduce (`SERVER_ERRORS`).
+- **Compartir**: en celular abre el menú nativo con la imagen del juego (`/og/michi-racer.png`), el texto y el link;
+  en PC copia texto + link. La vista previa del link sigue saliendo de las etiquetas Open Graph.
+- **Contadores** (Firebase Realtime Database pública, rama `/michiracer`, `frontend/src/net/presence.ts`):
+  `online/<id>` una entrada por pestaña abierta (se borra sola con `onDisconnect`) y `totalPlayers`, que suma 1 la
+  primera vez que entra cada navegador. Son informativos: la base es pública y cualquiera podría modificarlos.
+
+## Torneo
+
+Cada sala corre un **torneo de 4 carreras** en orden fijo (de fácil a difícil): Green Valley → Coastal Road →
+Desert Run → Neon City. Los puntos se acumulan (estilo Mario Kart: 25, 20, 16, 13, 11, 10… hasta 0 desde el 16º);
+empate: gana quien quedó mejor en la última carrera. Entre carreras hay 8 s de resultados y la siguiente arranca sola,
+con la parrilla ordenada por la tabla (el líder adelante). Los bots corren todo el torneo y suman puntos; quien entra
+a mitad mira la carrera en curso y corre la siguiente con 0 puntos.
+
+Al final, **podio animado**: el 3º, el 2º y el 1º llegan a su escalón y reciben bronce, plata y la copa; el ganador ve
+"¡YOU WIN!" y los demás "<NOMBRE> WINS!". El host puede **reiniciar el torneo** o volver al lobby (**nuevo torneo**);
+los invitados **votan** reiniciar y con mayoría simple de los humanos conectados se reinicia solo.
+La práctica local también es un torneo de 4 carreras contra bots.
+
+Lógica: `backend/src/MichiRacer.Game/Rooms/Tournament.cs` y `Room.cs` (fases Lobby → Racing → Intermission → … → Podium);
+espejo para la práctica en `frontend/src/game/tournament.ts`.
+
 ## Pistas
 
 | Pista | Ambientación |
@@ -87,6 +118,7 @@ Agregar una pista:
 1. Lógica: `frontend/src/sim/tracks/<pista>.ts` (curvas, colinas, pads, reglas de decoración) y registrarla en `tracks/index.ts`;
    la misma definición en `backend/src/MichiRacer.Game/Sim/Tracks/` y en `Tracks.All`.
    Opcional: `sea` (lado del mar, orilla y puentes) y `landmarks` (objetos puntuales sin colisión).
+   Para que entre al torneo: agregarla a `TournamentRules.Order` (C#) y `TOURNAMENT_ORDER` (TS).
 2. Ambientación: un `TrackTheme` en `frontend/src/render/themes.ts` (paleta, cielo, sol, capas de fondo, objetos)
    y su arte en `frontend/public/assets/<pista>/`. Si falta una imagen se usa un placeholder procedural.
 3. Regenerar los fixtures de paridad (`GOLDEN=1 npx vitest run src/sim/golden.test.ts`): el test de C# recorre todas las pistas.
@@ -112,7 +144,8 @@ cd frontend && GOLDEN=1 npx vitest run src/sim/golden.test.ts
 | `JoinRoom(code, name)` → `{ playerId, token, room, race }` | `RoomState` |
 | `RejoinRoom(code, playerId, token)` | `RaceStarted` (`racers`, `goTick`) |
 | `SetReady`, `SelectColor`, `SetFillBots`, `SetGridSize` | `Snapshot` (20/s: `t`, `ph`, `r`, `me`, `ev`) |
-| `StartRace` (solo el owner) | `Results` |
+| `StartRace` (solo el owner: inicia el torneo) | `Results` (carrera, puntos, tabla, `final`) |
+| `VoteRestart` (podio: el host reinicia, un invitado vota), `BackToLobby` (host) | `RoomState.tournament` (tabla, votos, intermedio) |
 | `SendInput(seq, steer, buttons)` (fire-and-forget, 30/s) | errores como `HubException` |
 | `Ping`, `ReportPing`, `LeaveRoom` | |
 

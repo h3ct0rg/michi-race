@@ -75,18 +75,112 @@ public class RoomTests
     }
 
     [Fact]
-    public void Race_runs_to_results_and_room_returns_to_lobby()
+    public void Race_runs_to_results_and_awards_tournament_points()
     {
         var room = NewRoom();
         var a = room.Join("ca", "A");
-        room.StartRace(a.PlayerId);
+        var start = room.StartRace(a.PlayerId);
+        Assert.Equal(TournamentRules.Order[0], start.TrackId);
         var results = RunToResults(room, a.PlayerId);
         Assert.NotNull(results);
         Assert.Equal(8, results!.Rows.Count);
         Assert.Equal(Enumerable.Range(1, 8), results.Rows.Select(r => r.Place));
+        Assert.Equal([25, 20, 16, 13, 11, 10, 9, 8], results.Rows.Select(r => r.Points));
+        Assert.Equal(results.Rows.Select(r => r.Points), results.Rows.Select(r => r.Total));
         Assert.False(results.Rows.Single(r => r.Id == a.PlayerId).Bot);
-        Assert.Equal(RoomPhase.Lobby, room.Phase);
+        Assert.False(results.Final);
+        Assert.Equal(RoomPhase.Intermission, room.Phase);
+        Assert.Equal("intermission", room.State().Phase);
+        Assert.Equal(8, room.State().Tournament!.Standings.Count);
         Assert.All(room.State().Players, p => Assert.False(p.Ready));
+    }
+
+    [Fact]
+    public void Tournament_runs_four_races_in_order_and_ends_on_the_podium()
+    {
+        var room = NewRoom();
+        var a = room.Join("ca", "A");
+        room.StartRace(a.PlayerId);
+        var now = T0;
+        ResultsDto? last = null;
+        for (var race = 0; race < 4; race++)
+        {
+            last = RunToResults(room, a.PlayerId);
+            Assert.NotNull(last);
+            Assert.Equal(race, last!.RaceIndex);
+            if (race == 3) break;
+            Assert.Null(room.Tick(1, now + TimeSpan.FromSeconds(1)).Start); // el intermedio dura 8 s
+            var next = room.Tick(1, now + TournamentRules.Intermission + TimeSpan.FromSeconds(1)).Start;
+            Assert.NotNull(next);
+            Assert.Equal(TournamentRules.Order[race + 1], next!.TrackId);
+            // desde la 2ª carrera la parrilla sigue la tabla: el líder sale adelante
+            Assert.Equal(last.Standings[0].Id, next.Racers[0].Id);
+        }
+        Assert.True(last!.Final);
+        Assert.Equal(RoomPhase.Podium, room.Phase);
+        var standings = room.State().Tournament!.Standings;
+        Assert.All(standings, s => Assert.Equal(s.Places.Sum(p => TournamentRules.Points(p)), s.Points));
+        Assert.True(standings.Zip(standings.Skip(1)).All(x => x.First.Points >= x.Second.Points));
+    }
+
+    [Fact]
+    public void Guests_vote_to_restart_and_majority_restarts_the_tournament()
+    {
+        var room = NewRoom();
+        var a = room.Join("ca", "A");
+        var b = room.Join("cb", "B");
+        var c = room.Join("cc", "C");
+        room.SetReady(b.PlayerId, true);
+        room.SetReady(c.PlayerId, true);
+        room.StartRace(a.PlayerId);
+        Assert.Throws<RoomException>(() => room.VoteRestart(b.PlayerId)); // todavía no terminó
+        for (var race = 0; race < 4; race++)
+        {
+            RunToResults(room, a.PlayerId);
+            room.Tick(1, T0 + TournamentRules.Intermission + TimeSpan.FromSeconds(1));
+        }
+        Assert.Equal(RoomPhase.Podium, room.Phase);
+        Assert.Throws<RoomException>(() => room.BackToLobby(b.PlayerId)); // solo el host
+
+        var (state, start) = room.VoteRestart(b.PlayerId);
+        Assert.Null(start);
+        Assert.Equal([b.PlayerId], state.Tournament!.Votes);
+        Assert.Equal(2, state.Tournament.VotesNeeded);
+        (state, start) = room.VoteRestart(c.PlayerId); // 2 de 3: mayoría
+        Assert.NotNull(start);
+        Assert.Equal(TournamentRules.Order[0], start!.TrackId);
+        Assert.Equal(RoomPhase.Racing, room.Phase);
+        Assert.Empty(state.Tournament!.Votes);
+        Assert.All(state.Tournament.Standings, s => Assert.Equal(0, s.Points));
+    }
+
+    [Fact]
+    public void Host_restarts_instantly_or_goes_back_to_the_lobby()
+    {
+        var room = NewRoom();
+        var a = room.Join("ca", "A");
+        room.StartRace(a.PlayerId);
+        for (var race = 0; race < 4; race++)
+        {
+            RunToResults(room, a.PlayerId);
+            room.Tick(1, T0 + TournamentRules.Intermission + TimeSpan.FromSeconds(1));
+        }
+        Assert.NotNull(room.VoteRestart(a.PlayerId).Start);
+        for (var race = 0; race < 4; race++)
+        {
+            RunToResults(room, a.PlayerId);
+            room.Tick(1, T0 + TournamentRules.Intermission + TimeSpan.FromSeconds(1));
+        }
+        var state = room.BackToLobby(a.PlayerId);
+        Assert.Equal("lobby", state.Phase);
+        Assert.Null(state.Tournament);
+    }
+
+    [Fact]
+    public void Points_follow_the_mario_kart_style_table()
+    {
+        Assert.Equal([25, 20, 16, 13, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0],
+            Enumerable.Range(1, 20).Select(TournamentRules.Points));
     }
 
     [Fact]

@@ -1,9 +1,11 @@
-// Flujo completo: Bienvenida → Crear/Unirse (link) → Lobby ⇄ Garaje → Carrera → Resultados → Lobby.
-import { KART_COLORS, swatch } from './colors';
+// Flujo completo: Inicio → Bienvenida → Crear/Unirse (link) → Lobby ⇄ Garaje → Torneo (4 carreras con resultados entre
+// cada una) → Podio → Reiniciar (host o votación) / Lobby.
+import { KART_COLORS, colorName, swatch } from './colors';
 import { Controls } from './input/controls';
 import { TouchControls } from './input/touch';
 import { enterFullscreen, exitFullscreen, isTouch } from './device';
 import { audio, sfx } from './audio/audio';
+import { music } from './audio/music';
 import { GameConnection, createRoom, fetchRoom } from './net/connection';
 import type { JoinResponse, RaceStartDto, ResultsDto, RoomStateDto } from './net/protocol';
 import { KartFrames, loadKart } from './render/sprites';
@@ -18,9 +20,16 @@ import { renderStats } from './ui/stats';
 import { renderLobby, showError } from './ui/lobby';
 import { renderTrackCard } from './ui/trackPicker';
 import { itemIcon } from './ui/hud';
-import { showResults } from './ui/results';
+import { hideResults, showResults } from './ui/results';
+import { PodiumScene, type PodiumOptions } from './ui/podium';
+import { INTERMISSION_SECONDS, LocalTournament, TOURNAMENT_ORDER } from './game/tournament';
+import type { StandingDto } from './net/protocol';
+import { applyI18n, getLang, onLangChange, setLang, t, tServer, type Lang } from './i18n';
+import { applySettings, getSettings, updateSettings } from './settings';
+import { HomeBackground } from './ui/homeBackground';
+import { startPresence, type PresenceStats } from './net/presence';
 
-type ScreenId = 'welcome' | 'lobby' | 'garage' | 'race';
+type ScreenId = 'home' | 'welcome' | 'lobby' | 'garage' | 'race';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const RANDOM_NAMES = ['TurboCat', 'Bigotes', 'ApexMiau', 'Pelusa', 'Garfi', 'Nieve', 'Ronroneo', 'Misifu', 'Zarpas', 'Michifuz'];
@@ -42,6 +51,8 @@ const store = {
 };
 
 export async function startApp() {
+  applyI18n();
+  applySettings();
   const kartFrames = await Promise.all(KART_COLORS.map((c) => loadKart('/assets/michi', c.shift)));
   loadTheme(DEFAULT_TRACK); // precarga del tema por defecto
   const tracks = new Map<string, Track>();
@@ -69,12 +80,20 @@ export async function startApp() {
     if (el.closest('.btn, .track-option, .color-list li')) sfx.click();
   });
   controls.keyboard.onPress('KeyM', () => audio.toggleMuted());
+  // música de menú (portada, bienvenida, lobby, garaje). El navegador solo deja sonar audio después
+  // del primer toque o tecla, así que también se intenta en cada gesto hasta que arranque.
+  const menuMusic = () => {
+    if ($('screen-race').classList.contains('active') || !audio.ctx || music.current === 'menu') return;
+    music.start('menu');
+  };
+  for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, () => menuMusic());
   // controles táctiles (joystick + GAS/DRIFT/TURBO) solo en celular/tablet
   const touch = isTouch ? new TouchControls($('touch-controls')) : null;
   controls.touch = touch;
   refreshSoundButtons(audio.muted); // incluye el botón 🔊 de los controles táctiles
   if (import.meta.env.DEV) (window as unknown as { __controls: Controls }).__controls = controls; // depuración
   const raceView = new RaceView($('game') as HTMLCanvasElement);
+  const homeBg = new HomeBackground($('home-bg') as HTMLCanvasElement, kartFrames);
   const previews = {
     welcome: new MichiPreview($('w-preview') as HTMLCanvasElement),
     lobby: new MichiPreview($('l-preview') as HTMLCanvasElement),
@@ -88,26 +107,45 @@ export async function startApp() {
   let myId = '';
   let mode: 'practice' | 'online' | null = null;
   let localColor = Number(store.get('color') ?? 0) % KART_COLORS.length;
-  let localTrack = TRACKS[store.get('track') ?? ''] ? store.get('track')! : DEFAULT_TRACK;
+  const podium = new PodiumScene();
+  /** Cambia en cada carrera/torneo nuevo: invalida temporizadores pendientes (pase al podio, siguiente carrera). */
+  let flowToken = 0;
   let garageColor = localColor;
 
   const show = (id: ScreenId) => {
-    for (const s of ['welcome', 'lobby', 'garage', 'race']) $(`screen-${s}`).classList.toggle('active', s === id);
+    for (const s of ['home', 'welcome', 'lobby', 'garage', 'race']) $(`screen-${s}`).classList.toggle('active', s === id);
+    if (id === 'home') homeBg.start();
+    else homeBg.stop();
+    if (id === 'race') {
+      if (music.current === 'menu') music.stop();
+    } else menuMusic();
     // en táctil: controles visibles solo en carrera; al salir de la carrera se deja la pantalla completa
     touch?.setVisible(id === 'race');
-    if (id !== 'race') exitFullscreen();
+    if (id !== 'race') {
+      flowToken++;
+      podium.hide();
+      exitFullscreen();
+    }
   };
-  /** Fin de carrera (resultados): se ocultan los controles y se sale de pantalla completa. */
+  /** Fin de una carrera (resultados): se ocultan los controles; la pantalla completa sigue hasta salir del torneo. */
   const raceFinished = () => {
     raceView.finishAudio();
     touch?.setVisible(false);
-    exitFullscreen();
   };
+  const trackName = (id: string) => TRACKS[id]?.name ?? id;
+  /** Cartel de largada: "CARRERA 2/4 · COASTAL ROAD". */
+  const announceRace = (trackId: string) => {
+    const i = TOURNAMENT_ORDER.indexOf(trackId);
+    raceView.announce(t('race.banner', { n: i + 1, total: TOURNAMENT_ORDER.length, track: trackName(trackId).toUpperCase() }));
+  };
+  /** Los 3 primeros de la tabla con su kart, para el podio. */
+  const podiumTop = (standings: { id: string; name: string; color: number; points: number }[]) =>
+    standings.slice(0, 3).map((s) => ({ id: s.id, name: s.name, points: s.points, frames: kartFrames[s.color % kartFrames.length] }));
   const toast = (msg: string) => {
-    const t = $('toast');
-    t.textContent = msg;
-    t.hidden = false;
-    setTimeout(() => (t.hidden = true), 2200);
+    const el = $('toast');
+    el.textContent = msg;
+    el.hidden = false;
+    setTimeout(() => (el.hidden = true), 2200);
   };
   const myColor = () => room?.players.find((p) => p.id === myId)?.color ?? localColor;
   const nameInput = $<HTMLInputElement>('w-name');
@@ -120,16 +158,12 @@ export async function startApp() {
   const inviteLink = (code: string) => `${location.origin}/room/${code}`;
 
   // ---------------- bienvenida ----------------
+  // el torneo recorre las 4 pistas en orden: la tarjeta muestra la primera y la lista completa
   const renderWelcomeTrack = () =>
     renderTrackCard(
       { img: 'w-track-img', name: 'w-track-name', tagline: 'w-track-tag', laps: 'w-track-laps', difficulty: 'w-track-diff', picker: 'w-tracks' },
-      localTrack,
-      (id) => {
-        localTrack = id;
-        store.set('track', id);
-        loadTheme(id);
-        renderWelcomeTrack();
-      },
+      TOURNAMENT_ORDER[0],
+      null,
     );
   renderWelcomeTrack();
   nameInput.value = store.get('name') ?? '';
@@ -143,7 +177,7 @@ export async function startApp() {
       const code = text.match(/PX-?\d{4}/i)?.[0] ?? text.trim();
       $<HTMLInputElement>('w-code').value = code.toUpperCase();
     } catch {
-      toast('No se pudo leer el portapapeles');
+      toast(t('w.clipboardFail'));
     }
   };
   const busy = async (fn: () => Promise<void>) => {
@@ -160,10 +194,10 @@ export async function startApp() {
       document.querySelectorAll<HTMLButtonElement>('#screen-welcome button').forEach((b) => (b.disabled = false));
     }
   };
-  $('w-create').onclick = () => busy(async () => joinRoom(await createRoom(localTrack)));
+  $('w-create').onclick = () => busy(async () => joinRoom(await createRoom(TOURNAMENT_ORDER[0])));
   $('w-join').onclick = () => busy(() => joinRoom($<HTMLInputElement>('w-code').value));
   $('w-invite-join').onclick = () => busy(() => joinRoom($('w-invite-code').textContent!));
-  $('w-practice').onclick = () => startPractice();
+  $('w-practice').onclick = () => startPractice(true);
 
   // ---------------- conexión / sala ----------------
   // La sesión (código + id + token) se guarda por pestaña para volver al mismo lugar tras recargar o caerse la red.
@@ -187,7 +221,7 @@ export async function startApp() {
 
   async function joinRoom(rawCode: string) {
     const code = normalizeCode(rawCode);
-    if (!code) throw new Error('Escribe el código de la sala (ej: PX-4412).');
+    if (!code) throw new Error(t('w.needCode'));
     const name = playerName();
     conn ??= createConnection();
     const res = await conn.join(code, name);
@@ -202,7 +236,7 @@ export async function startApp() {
       conn ??= createConnection();
       const res = await conn.rejoin(code, saved.playerId, saved.token);
       await enterRoom(res, false);
-      toast('Reconectado a la sala');
+      toast(t('l.reconnected'));
       return true;
     } catch {
       saveSession(null);
@@ -220,25 +254,38 @@ export async function startApp() {
       await conn!.selectColor(localColor).catch(() => {});
     }
     if (res.race) startOnlineRace(res.race); // carrera en curso: a tu kart, o como espectador
-    else enterLobby();
+    else if (room.phase === 'podium' && room.tournament) {
+      // recargó la página durante el podio: vuelve a la escena final (con su voto)
+      mode = 'online';
+      show('race');
+      touch?.setVisible(false);
+      showOnlinePodium(room.tournament.standings);
+    } else enterLobby();
   }
 
   function createConnection() {
     const c = new GameConnection();
     c.onRoomState = (state) => {
       room = state;
-      if (mode !== 'online' || !$('screen-race').classList.contains('active')) refreshLobby();
+      const inRace = mode === 'online' && $('screen-race').classList.contains('active');
+      if (!inRace) refreshLobby();
+      else if (state.phase === 'lobby') {
+        // el host eligió "nuevo torneo" desde el podio (o se canceló el torneo)
+        raceView.stop();
+        mode = null;
+        enterLobby();
+      } else if (podium.visible) refreshVotes();
     };
     c.onRaceStarted = (start) => startOnlineRace(start);
     c.onResults = (results) => showOnlineResults(results);
-    c.onReconnecting = () => toast('Conexión inestable, reconectando…');
+    c.onReconnecting = () => toast(t('l.unstable'));
     c.onReconnected = () => {
       // la conexión nueva tiene otro id: el servidor nos devuelve el mismo lugar con el token
       const saved = savedSession();
       if (!saved) return;
       c.rejoin(saved.code, saved.playerId, saved.token)
         .then((res) => {
-          toast('Reconectado');
+          toast(t('l.reconnectedShort'));
           const racing = mode === 'online' && $('screen-race').classList.contains('active');
           myId = res.playerId;
           room = res.room;
@@ -255,13 +302,15 @@ export async function startApp() {
       saveSession(null);
       history.replaceState(null, '', `/${location.search}`);
       showWelcome();
-      showError('w-error', `Se perdió la conexión con el servidor (${reason}).`);
+      showError('w-error', t('w.connLost', { reason }));
     };
     c.onConnectionLost = (reason) => lose(reason);
     return c;
   }
 
   async function leaveRoom() {
+    raceView.stop();
+    mode = null;
     await conn?.leave().catch(() => {});
     saveSession(null);
     room = null;
@@ -271,7 +320,7 @@ export async function startApp() {
 
   function refreshLobby() {
     if (!room) return;
-    renderLobby(room, myId, conn?.rtt ?? 0, (id) => lobbyAction(() => conn!.setTrack(id)));
+    renderLobby(room, myId, conn?.rtt ?? 0);
     loadTheme(room.trackId); // precarga mientras se espera en el lobby
     previews.lobby.setFrames(kartFrames[myColor()]);
   }
@@ -315,7 +364,7 @@ export async function startApp() {
       navigator
         .share({
           title: 'Michi Racer',
-          text: `🏁 ¡Únete a mi carrera de michis en Michi Racer! Sala ${room.code}`,
+          text: t('l.inviteText', { code: room.code }),
           url: inviteLink(room.code),
         })
         .catch(() => {}); // cancelado por el usuario
@@ -323,7 +372,7 @@ export async function startApp() {
     }
     navigator.clipboard
       .writeText(inviteLink(room.code))
-      .then(() => toast(`Link copiado: ${inviteLink(room!.code)}`))
+      .then(() => toast(t('share.copied', { url: inviteLink(room!.code) })))
       .catch(() => toast(inviteLink(room!.code)));
   }
 
@@ -337,8 +386,8 @@ export async function startApp() {
   function renderGarage() {
     const taken = new Set(room?.players.filter((p) => p.id !== myId).map((p) => p.color) ?? []);
     $('g-colors').innerHTML = KART_COLORS.map(
-      (c, i) =>
-        `<li data-color="${i}" class="${i === garageColor ? 'selected' : ''}"><span class="color-dot" style="background:${swatch(i)}"></span>${c.name.toUpperCase()}${taken.has(i) ? '<span class="taken">EN USO</span>' : ''}</li>`,
+      (_, i) =>
+        `<li data-color="${i}" class="${i === garageColor ? 'selected' : ''}"><span class="color-dot" style="background:${swatch(i)}"></span>${colorName(i).toUpperCase()}${taken.has(i) ? `<span class="taken">${t('g.taken')}</span>` : ''}</li>`,
     ).join('');
     previews.garage.setFrames(kartFrames[garageColor]);
   }
@@ -366,54 +415,151 @@ export async function startApp() {
     // la sesión se crea ya (para no perder snapshots); el tema suele estar precargado desde el lobby
     const session = new OnlineSession(getTrack(start.trackId), conn, controls, start, myId);
     currentOnline = session;
-    $('hud-hint').textContent = session.spectator
-      ? '👁 MODO ESPECTADOR · entrarás a correr en la próxima carrera · M sonido · ESC×2 salir · F3 diagnóstico'
-      : '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO ítem · 🎮 gamepad · M sonido · ESC×2 salir · F3 diagnóstico';
+    $('hud-hint').textContent = session.spectator ? t('race.hintSpectator') : t('race.hint');
     raceView.onEvent = () => {};
+    flowToken++;
     loadTheme(start.trackId).then((theme) => {
       if (currentOnline !== session) return;
+      podium.hide();
       raceView.start(session, frames, theme);
       show('race');
+      announceRace(start.trackId);
     });
   }
   let currentOnline: OnlineSession | null = null;
 
   function showOnlineResults(results: ResultsDto) {
     raceFinished();
+    const next = results.final ? null : TOURNAMENT_ORDER[results.raceIndex + 1];
     showResults({
       trackName: results.trackName,
-      rows: results.rows.map((r) => ({ name: r.name, place: r.place, finishTime: r.finishTime, bestLap: r.bestLap, me: r.id === myId })),
-      actionLabel: 'VOLVER AL LOBBY ⟶',
-      onAction: () => {
-        raceView.stop();
-        mode = null;
-        enterLobby();
-      },
+      raceIndex: results.raceIndex,
+      totalRaces: results.totalRaces,
+      rows: results.rows,
+      standings: results.standings,
+      myId,
+      nextTrackName: next ? trackName(next) : null,
+      nextRaceIn: results.nextRaceIn,
     });
+    if (next) loadTheme(next); // precarga durante el intermedio
+    if (results.final) {
+      const token = ++flowToken;
+      setTimeout(() => token === flowToken && showOnlinePodium(results.standings), 4500);
+    }
+  }
+
+  // ---------------- podio (online) ----------------
+  function showOnlinePodium(standings: StandingDto[]) {
+    hideResults();
+    raceView.stop();
+    const mine = standings.findIndex((s) => s.id === myId);
+    podium.show({ top: podiumTop(standings), myId, myPlace: mine + 1, myPoints: standings[mine]?.points ?? 0, ...podiumActions() }).then(refreshVotes);
+  }
+
+  /** Host: reiniciar o nuevo torneo. Invitado: votar reinicio o salir. */
+  function podiumActions(): Pick<PodiumOptions, 'primary' | 'secondary'> {
+    const isHost = room?.ownerId === myId;
+    const restart = () => conn?.voteRestart().catch((e) => toast(cleanError(e)));
+    return isHost
+      ? {
+          primary: { label: t('pod.restart'), onClick: restart },
+          secondary: { label: t('pod.newTour'), onClick: () => conn?.backToLobby().catch((e) => toast(cleanError(e))) },
+        }
+      : { primary: { label: t('pod.vote'), onClick: restart }, secondary: { label: t('pod.leave'), onClick: () => leaveRoom() } };
+  }
+
+  /** Votos para reiniciar: "2/3"; el invitado que ya votó ve su botón marcado. */
+  function refreshVotes() {
+    const tour = room?.tournament;
+    if (!tour || !podium.visible) return;
+    const isHost = room!.ownerId === myId;
+    const actions = podiumActions();
+    podium.setActions(actions.primary, actions.secondary);
+    const voted = tour.votes.includes(myId);
+    const text = t('pod.votes', { n: tour.votes.length, need: tour.votesNeeded });
+    if (isHost) podium.setVotes(text);
+    else podium.setVotes(text, voted ? t('pod.voted') : t('pod.vote'), voted);
   }
 
   // ---------------- práctica local ----------------
-  async function startPractice() {
+  // ---------------- práctica local: torneo de 4 carreras contra bots ----------------
+  let practiceTour: LocalTournament | null = null;
+
+  async function startPractice(fresh: boolean) {
     mode = 'practice';
-    enterFullscreen(); // dentro del gesto (clic en PRÁCTICA / REVANCHA)
-    const theme = await loadTheme(localTrack);
-    const session = new PracticeSession(getTrack(localTrack), controls, playerName());
-    const frames = new Map<string, KartFrames>([[session.player.id, kartFrames[localColor]]]);
+    if (fresh) {
+      practiceTour = new LocalTournament();
+      enterFullscreen(); // dentro del gesto (clic en PRÁCTICA / REVANCHA)
+    }
+    const tour = practiceTour!;
+    const token = ++flowToken;
+    const trackId = tour.trackId;
+    const theme = await loadTheme(trackId);
+    if (token !== flowToken) return;
+    const session = new PracticeSession(getTrack(trackId), controls, playerName(), tour.raceIndex > 0 ? tour.gridOrder() : null);
     const botColors = KART_COLORS.map((_, i) => i).filter((i) => i !== localColor);
-    PRACTICE_BOTS.forEach((_, i) => frames.set(`bot${i}`, kartFrames[botColors[i % botColors.length]]));
-    $('hud-hint').textContent = '← → dirección · ↑ gas · ↓ freno · SHIFT derrape · ESPACIO ítem · 🎮 gamepad · M sonido · ESC salir';
+    const colorOf = (id: string) => (id === session.player.id ? localColor : botColors[Number(id.replace('bot', '')) % botColors.length]);
+    const frames = new Map<string, KartFrames>([[session.player.id, kartFrames[localColor]]]);
+    PRACTICE_BOTS.forEach((_, i) => frames.set(`bot${i}`, kartFrames[colorOf(`bot${i}`)]));
+    $('hud-hint').textContent = t('race.hintPractice');
     raceView.onEvent = (e) => {
       if (e.type !== 'end') return;
       raceFinished();
+      const ranking = session.race.ranking();
+      const earned = tour.record(ranking, colorOf);
+      const standings = tour.ranked();
+      const next = tour.final ? null : TOURNAMENT_ORDER[tour.raceIndex + 1];
       showResults({
         trackName: session.race.track.def.name,
-        rows: session.race.ranking().map((r, i) => ({ name: r.name, place: i + 1, finishTime: r.finishTime, bestLap: r.bestLap, me: r === session.player })),
-        actionLabel: '⟳ REVANCHA',
-        onAction: () => startPractice(),
+        raceIndex: tour.raceIndex,
+        totalRaces: TOURNAMENT_ORDER.length,
+        rows: ranking.map((r, i) => ({ id: r.id, name: r.name, place: i + 1, finishTime: r.finishTime, points: earned.get(r.id) ?? 0 })),
+        standings,
+        myId: session.player.id,
+        nextTrackName: next ? trackName(next) : null,
+        nextRaceIn: INTERMISSION_SECONDS,
       });
+      const after = ++flowToken;
+      if (next) {
+        loadTheme(next);
+        setTimeout(() => {
+          if (after !== flowToken || practiceTour !== tour) return;
+          tour.next();
+          startPractice(false);
+        }, INTERMISSION_SECONDS * 1000);
+      } else {
+        setTimeout(() => after === flowToken && showPracticePodium(standings, session.player.id), 4500);
+      }
     };
     raceView.start(session, frames, theme);
     show('race');
+    announceRace(trackId);
+  }
+
+  function showPracticePodium(standings: ReturnType<LocalTournament['ranked']>, me: string) {
+    hideResults();
+    raceView.stop();
+    const mine = standings.findIndex((s) => s.id === me);
+    podium.show({
+      top: podiumTop(standings),
+      myId: me,
+      myPlace: mine + 1,
+      myPoints: standings[mine]?.points ?? 0,
+      primary: {
+        label: t('pod.rematch'),
+        onClick: () => {
+          podium.hide();
+          startPractice(true);
+        },
+      },
+      secondary: {
+        label: t('pod.leave'),
+        onClick: () => {
+          mode = null;
+          showWelcome();
+        },
+      },
+    });
   }
 
   // ESC (o ✕ en táctil): sale de la práctica; en online pide confirmación porque abandona la sala.
@@ -434,13 +580,18 @@ export async function startApp() {
       leaveRoom();
     }
   };
-  controls.keyboard.onPress('Escape', () => exitRace('Presiona ESC otra vez para salir de la sala'));
+  controls.keyboard.onPress('Escape', () => {
+    // ESC cierra primero la configuración si está abierta
+    const modal = $('settings');
+    if (!modal.hidden) modal.hidden = true;
+    else exitRace(t('race.escAgain'));
+  });
   raceView.onFrame = (s) => {
     const p = s.player;
     touch?.setItemIcon(p.item !== 0 && p.itemRoll <= 0 ? itemIcon(p.item) : null);
   };
   if (touch) {
-    touch.onExit = () => exitRace('Toca ✕ otra vez para salir de la sala');
+    touch.onExit = () => exitRace(t('race.tapAgain'));
     // los invitados entran a la carrera sin gesto propio: el primer toque activa la pantalla completa
     touch.onFirstTouch = () => enterFullscreen();
   }
@@ -459,13 +610,14 @@ export async function startApp() {
       const info = await fetchRoom(code);
       if (!info) {
         forgetInvite();
-        showError('w-error', `La sala ${code} ya no existe o se cerró. Crea una sala nueva o únete con otro código.`);
+        showError('w-error', t('w.roomGone', { code }));
         return;
       }
       const host = info.players.find((p) => p.isOwner)?.name;
       $('w-invite-code').textContent = info.code;
       $('w-invite-info').textContent =
-        `${host ? `Host: ${host} · ` : ''}${info.players.length}/${info.maxPlayers} pilotos` + (info.phase === 'racing' ? ' · carrera en curso, entrarás en la próxima' : '');
+        t('w.invite.info', { host: host ? t('w.invite.host', { name: host }) : '', n: info.players.length, max: info.maxPlayers }) +
+        (info.phase !== 'lobby' ? t('w.invite.racing') : '');
       $('w-invite').hidden = false;
       $('w-invite-join').focus();
     } catch (e) {
@@ -479,7 +631,106 @@ export async function startApp() {
     history.replaceState(null, '', `/${location.search}`);
   }
 
-  showWelcome();
+  // ---------------- inicio (portada) ----------------
+  function showHome() {
+    show('home');
+    ogFile ??= fetch('/og/michi-racer.png')
+      .then((r) => r.blob())
+      .then((b) => new File([b], 'michi-racer.png', { type: 'image/png' }))
+      .then((f) => (ogReady = f))
+      .catch(() => null);
+  }
+  $('h-play').onclick = () => showWelcome();
+  $('w-home').onclick = () => showHome();
+  $('h-share').onclick = () => shareGame();
+
+  // compartir el juego: en celular, menú nativo con la imagen del juego + texto + link; en PC, copiar
+  let ogFile: Promise<File | null> | null = null;
+  let ogReady: File | null = null;
+  function shareGame() {
+    const url = `${location.origin}/`;
+    const text = t('share.text');
+    if (isTouch && navigator.share) {
+      // navigator.share debe llamarse en el mismo gesto: se usa la imagen solo si ya está cargada
+      if (ogReady && navigator.canShare?.({ files: [ogReady] })) {
+        navigator.share({ files: [ogReady], title: t('share.title'), text: `${text}\n${url}` }).catch(() => {});
+      } else {
+        navigator.share({ title: t('share.title'), text, url }).catch(() => {});
+      }
+      return;
+    }
+    navigator.clipboard
+      .writeText(`${text}\n${url}`)
+      .then(() => toast(t('share.copied', { url })))
+      .catch(() => toast(url));
+  }
+
+  // configuración (modal): brillo, volúmenes e idioma
+  const settingsModal = $('settings');
+  const sliders: [string, 'brightness' | 'master' | 'music' | 'sfx'][] = [
+    ['s-brightness', 'brightness'],
+    ['s-master', 'master'],
+    ['s-music', 'music'],
+    ['s-sfx', 'sfx'],
+  ];
+  const renderSettings = () => {
+    const s = getSettings();
+    for (const [id, key] of sliders) {
+      $<HTMLInputElement>(id).value = String(Math.round(s[key] * 100));
+      $(`${id}-v`).textContent = `${Math.round(s[key] * 100)}%`;
+    }
+    document.querySelectorAll<HTMLElement>('#s-lang [data-lang]').forEach((b) => b.classList.toggle('selected', b.dataset.lang === getLang()));
+  };
+  for (const [id, key] of sliders) {
+    $<HTMLInputElement>(id).oninput = (e) => {
+      updateSettings({ [key]: Number((e.target as HTMLInputElement).value) / 100 });
+      renderSettings();
+    };
+  }
+  // al soltar el volumen de efectos, un "blip" de prueba
+  $('s-sfx').onchange = () => sfx.click();
+  $('s-lang').onclick = (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-lang]');
+    if (!b) return;
+    setLang(b.dataset.lang as Lang);
+    renderSettings();
+  };
+  document.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('[data-open-settings]')) {
+      renderSettings();
+      settingsModal.hidden = false;
+    } else if (e.target === settingsModal) settingsModal.hidden = true;
+  });
+  $('s-done').onclick = () => (settingsModal.hidden = true);
+
+  // contadores (Firebase): en línea ahora y total histórico
+  let stats: PresenceStats = { online: null, total: null };
+  const fmt = (n: number) => n.toLocaleString(getLang() === 'es' ? 'es' : 'en');
+  const renderStatsBar = () => {
+    $('h-online').textContent = stats.online === null ? t('home.loadingStats') : t('home.online', { n: fmt(stats.online) });
+    $('h-total-wrap').hidden = stats.total === null;
+    if (stats.total !== null) $('h-total').textContent = t('home.total', { n: fmt(stats.total) });
+  };
+  startPresence((s) => {
+    stats = s;
+    renderStatsBar();
+  }).catch(() => {
+    $('h-online').textContent = '—';
+  });
+
+  // al cambiar el idioma se vuelven a dibujar las partes generadas por código
+  onLangChange(() => {
+    renderStatsBar();
+    renderWelcomeTrack();
+    renderStats($('l-stats'));
+    renderStats($('g-stats'));
+    if (room) refreshLobby();
+    if ($('screen-garage').classList.contains('active')) renderGarage();
+  });
+
+  // con link de sala (/room/PX-1234) se va directo a unirse; si no, la portada
+  if (/^\/room\//i.test(location.pathname)) showWelcome();
+  else showHome();
 }
 
 function normalizeCode(raw: string) {
@@ -491,5 +742,5 @@ function normalizeCode(raw: string) {
 function cleanError(e: unknown) {
   const msg = e instanceof Error ? e.message : String(e);
   // SignalR envuelve los HubException: "An unexpected error occurred invoking 'X' on the server. HubException: mensaje"
-  return msg.split('HubException: ').pop()!.replace(/^Error: /, '');
+  return tServer(msg.split('HubException: ').pop()!.replace(/^Error: /, ''));
 }

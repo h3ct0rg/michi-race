@@ -1,6 +1,7 @@
 // Controles táctiles de carrera: joystick virtual a la izquierda (girar; abajo = frenar)
 // y botones de acelerar, derrape y turbo a la derecha. Multitáctil con Pointer Events.
 import type { Input } from '../sim/input';
+import { t } from '../i18n';
 
 const DEADZONE = 0.12;
 const BRAKE_THRESHOLD = 0.55; // joystick hacia abajo más allá de esto = freno
@@ -29,11 +30,11 @@ export class TouchControls {
   constructor(root: HTMLElement) {
     this.root = root;
     root.innerHTML = `
-      <button class="tc-exit" aria-label="Salir">✕</button>
-      <button class="tc-sound" data-sound aria-label="Sonido">🔊</button>
+      <button class="tc-exit" aria-label="${t('touch.exit')}">✕</button>
+      <button class="tc-sound" data-sound aria-label="${t('sound')}">🔊</button>
       <div class="tc-stick"><div class="tc-knob"></div></div>
       <div class="tc-buttons">
-        <button class="tc-btn tc-item" data-key="useItem"><span class="tc-item-label">ÍTEM</span></button>
+        <button class="tc-btn tc-item" data-key="useItem"><span class="tc-item-label">${t('touch.item')}</span></button>
         <button class="tc-btn tc-drift" data-key="drift">DRIFT</button>
         <button class="tc-btn tc-gas" data-key="throttle">GAS</button>
       </div>`;

@@ -79,6 +79,7 @@ public sealed class GameLoop(RoomManager rooms, IHubContext<RaceHub, IRaceClient
                 var group = hub.Clients.Group(room.Code);
                 if (output.Results is not null) sends.Add(group.Results(output.Results));
                 if (output.RoomState is not null) sends.Add(group.RoomState(output.RoomState));
+                if (output.Start is not null) sends.Add(group.RaceStarted(output.Start));
             }
             catch (Exception e)
             {

@@ -13,6 +13,7 @@ import { Race, RaceEvent } from '../sim/race';
 import { SEGMENT_LENGTH, Track } from '../sim/track';
 import { TICK, TICK_RATE, VEHICLES, deriveParams } from '../sim/vehicles';
 import type { RaceSession } from './session';
+import { t as tr } from '../i18n';
 
 const MAX_CATCH_UP = 5;
 const SNAP_CORRECTION = 2500; // por encima de esto (reaparición) la corrección es instantánea
@@ -262,7 +263,7 @@ export class OnlineSession implements RaceSession {
       r.finishTime = b.r[o + R.ft] < 0 ? null : b.r[o + R.ft];
       r.place = b.r[o + R.pl] || null;
       applyFlags(r, flags);
-      if (r !== this.me && !r.bot) this.labels.set(r.id, flags & FLAG.away ? `${r.name} (AUSENTE)` : r.name);
+      if (r !== this.me && !r.bot) this.labels.set(r.id, flags & FLAG.away ? tr('race.away', { name: r.name }) : r.name);
     });
   }
 
@@ -280,7 +281,7 @@ export class OnlineSession implements RaceSession {
   netInfo() {
     const avg = this.corrections.length ? this.corrections.reduce((a, b) => a + b, 0) / this.corrections.length : 0;
     const sim = this.conn.netsimLabel;
-    return `${this.spectator ? '👁 ESPECTADOR · ' : ''}PING ${this.conn.rtt} MS · CORR ${avg.toFixed(0)}${sim ? ` · ${sim}` : ''}`;
+    return `${this.spectator ? tr('race.spectator') : ''}PING ${this.conn.rtt} MS · CORR ${avg.toFixed(0)}${sim ? ` · ${sim}` : ''}`;
   }
 
   stats() {

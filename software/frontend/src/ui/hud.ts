@@ -4,7 +4,8 @@ import type { Race } from '../sim/race';
 import { BASE_SPEED } from '../sim/vehicles';
 import { Minimap } from './minimap';
 import { isTouch } from '../device';
-import { ITEM_KEYS, ITEM_LABELS } from '../sim/items';
+import { ITEM_KEYS } from '../sim/items';
+import { t, type Key } from '../i18n';
 
 export const itemIcon = (item: number) => `/assets/items/icon-${ITEM_KEYS[item]}.png`;
 
@@ -21,12 +22,18 @@ export class Hud {
   private readonly minimap: Minimap;
   private flashUntil = 0;
   private flashText = '';
+  private subtitle = '';
 
   constructor(
     race: Race,
     private readonly getPlayer: () => Racer,
   ) {
     this.minimap = new Minimap($('minimap') as HTMLCanvasElement, race.track);
+  }
+
+  /** Texto chico bajo la cuenta regresiva (p. ej. "CARRERA 2/4 · COASTAL ROAD"). */
+  setSubtitle(text: string) {
+    this.subtitle = text;
   }
 
   /** Mensaje grande temporal en el centro (vuelta, meta...). */
@@ -42,7 +49,7 @@ export class Hud {
 
     $('hud-pos').textContent = `${ranking.indexOf(p) + 1}°`;
     $('hud-of').textContent = `/${ranking.length}`;
-    $('hud-lap').textContent = `VUELTA ${Math.min(laps, Math.max(1, p.lap))} / ${laps}`;
+    $('hud-lap').textContent = t('hud.lap', { n: Math.min(laps, Math.max(1, p.lap)), total: laps });
     $('hud-time').textContent = fmtTime(p.finishTime ?? race.time);
     $('hud-best').textContent = p.bestLap === null ? '--:--.--' : fmtTime(p.bestLap);
     $('hud-speed').textContent = String(Math.round((p.speed / BASE_SPEED) * 160));
@@ -51,7 +58,7 @@ export class Hud {
     const drift = $('hud-drift');
     const c = p.drift.charge;
     drift.className = 'drift ' + (!p.drift.active ? '' : c >= 1.4 ? 'orange' : c >= 0.6 ? 'blue' : 'on');
-    drift.textContent = !p.drift.active ? (isTouch ? 'DERRAPE' : 'DERRAPE [SHIFT]') : c >= 1.4 ? 'MINI-TURBO ★★' : c >= 0.6 ? 'MINI-TURBO ★' : 'DERRAPANDO...';
+    drift.textContent = !p.drift.active ? t(isTouch ? 'hud.drift' : 'hud.driftKey') : t(c >= 1.4 ? 'hud.mini2' : c >= 0.6 ? 'hud.mini1' : 'hud.drifting');
 
     this.updateStandings(ranking, p);
     this.updateWarning(race, p);
@@ -59,8 +66,9 @@ export class Hud {
 
     const banner = $('banner');
     if (race.phase === 'countdown') banner.textContent = race.countdown > 2 ? '3' : race.countdown > 1 ? '2' : '1';
-    else if (race.time < 0.8) banner.textContent = '¡YA!';
+    else if (race.time < 0.8) banner.textContent = t('hud.go');
     else banner.textContent = performance.now() < this.flashUntil ? this.flashText : '';
+    $('banner-sub').textContent = race.phase === 'countdown' || race.time < 2 ? this.subtitle : '';
   }
 
   /** Casilla de ítem: ruleta mientras se sortea, el ítem listo para usar y los efectos activos. */
@@ -77,15 +85,15 @@ export class Hud {
     }
     $('hud-item-box').classList.toggle('ready', p.item !== 0 && !rolling);
     $('hud-item-box').classList.toggle('rolling', rolling);
-    $('hud-item-name').textContent = rolling ? '???' : p.item ? ITEM_LABELS[p.item] : '—';
-    $('hud-item-key').textContent = p.item && !rolling ? (isTouch ? 'TOCA ÍTEM' : '[ESPACIO] USAR') : 'TOMA UNA CAJA ?';
+    $('hud-item-name').textContent = rolling ? '???' : p.item ? t(`item.${p.item}` as Key) : '—';
+    $('hud-item-key').textContent = p.item && !rolling ? t(isTouch ? 'hud.useTouch' : 'hud.useKey') : t('hud.getBox');
     const effects: string[] = [];
-    if (p.shieldLeft > 0) effects.push('🛡️ ESCUDO');
-    if (p.magnetLeft > 0) effects.push('🧲 IMÁN');
-    if (p.turboLeft > 0) effects.push('⚡ TURBO');
-    if (p.shockLeft > 0) effects.push('⚡ ELECTROCUTADO');
-    if (p.frozenLeft > 0) effects.push('❄️ CONGELADO');
-    if (p.spinLeft > 0) effects.push('💫 TROMPO');
+    if (p.shieldLeft > 0) effects.push(t('fx.shield'));
+    if (p.magnetLeft > 0) effects.push(t('fx.magnet'));
+    if (p.turboLeft > 0) effects.push(t('fx.turbo'));
+    if (p.shockLeft > 0) effects.push(t('fx.shock'));
+    if (p.frozenLeft > 0) effects.push(t('fx.frozen'));
+    if (p.spinLeft > 0) effects.push(t('fx.spin'));
     $('hud-effects').textContent = effects.join(' · ');
   }
 
@@ -97,7 +105,7 @@ export class Hud {
       .map((r) => {
         const pos = ranking.indexOf(r) + 1;
         let gap: string;
-        if (r === leader) gap = 'LÍDER';
+        if (r === leader) gap = t('hud.leader');
         else if (r.finishTime !== null && leader.finishTime !== null) gap = `+${(r.finishTime - leader.finishTime).toFixed(2)}s`;
         else gap = `+${Math.max(0, (leader.distance - r.distance) / (BASE_SPEED * 0.85)).toFixed(2)}s`;
         const me = r === p ? ' class="me"' : '';
@@ -117,9 +125,9 @@ export class Hud {
         const curve = segs[(start + i) % segs.length].curve;
         if (Math.abs(curve) >= 3.5) {
           const meters = Math.round((i * METERS_PER_SEGMENT) / 10) * 10;
-          const dir = curve > 0 ? 'DERECHA' : 'IZQUIERDA';
+          const dir = t(curve > 0 ? 'hud.right' : 'hud.left');
           const arrow = curve > 0 ? '➜ ➜' : '⬅ ⬅';
-          text = `${arrow}  CURVA CERRADA A LA ${dir} EN ${meters}M`;
+          text = t('hud.curve', { arrow, dir, m: meters });
           break;
         }
       }

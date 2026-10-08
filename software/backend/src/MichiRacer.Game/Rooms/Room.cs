@@ -5,7 +5,8 @@ using MichiRacer.Game.Sim.Tracks;
 
 namespace MichiRacer.Game.Rooms;
 
-public enum RoomPhase { Lobby, Racing }
+/// <summary>Lobby → (Racing → Intermission) × 3 → Racing → Podium. Torneo de 4 carreras.</summary>
+public enum RoomPhase { Lobby, Racing, Intermission, Podium }
 
 public sealed class RoomException(string message) : Exception(message);
 
@@ -15,7 +16,8 @@ public sealed record SnapshotBundle(int T, int Ph, float[] R, float[] P, int[] B
 public sealed record SnapshotTarget(string ConnectionId, double[]? Me);
 
 /// <summary>Lo que el gateway debe enviar tras un tick. Empty: la sala quedó vacía y debe eliminarse.</summary>
-public sealed record RoomTickOutput(SnapshotBundle? Snapshot, ResultsDto? Results, RoomStateDto? RoomState, bool Empty);
+/// <summary>Start: arrancó la siguiente carrera del torneo (fin del intermedio).</summary>
+public sealed record RoomTickOutput(SnapshotBundle? Snapshot, ResultsDto? Results, RoomStateDto? RoomState, bool Empty, RaceStartDto? Start = null);
 
 /// <summary>
 /// Una sala: jugadores, ownership, lobby y la carrera autoritativa.
@@ -46,6 +48,14 @@ public sealed class Room
     private Race? _race;
     private RaceStartDto? _raceStart;
     private float[] _snapshotBuffer = [];
+
+    // torneo
+    private readonly List<Standing> _standings = [];
+    private readonly List<(string Id, string Name, int Color, double Skill)> _bots = [];
+    private readonly HashSet<string> _votes = [];
+    private int _raceIndex;
+    private DateTime _nextRaceAt;
+    private DateTime _now = DateTime.UtcNow;
 
     public string Code { get; }
     public string OwnerId { get; private set; } = "";
@@ -135,16 +145,17 @@ public sealed class Room
         var p = _players.Find(x => x.Id == playerId);
         if (p is null) return;
         _players.Remove(p);
+        _votes.Remove(playerId);
         if (Phase == RoomPhase.Racing && RacerOf(p) is { } racer) racer.Bot ??= Autopilot(); // el kart sigue en pista
         if (OwnerId == playerId && _players.Count > 0)
             OwnerId = (_players.Find(x => x.Connected) ?? _players[0]).Id;
-        if (Phase == RoomPhase.Racing && !_players.Any(x => x.Connected)) EndRace();
+        if (Phase != RoomPhase.Lobby && !_players.Any(x => x.Connected)) AbortTournament();
     }
 
     private bool ExpireDisconnected(DateTime now)
     {
         var expired = _players
-            .Where(p => p.DisconnectedAt is { } at && now - at > (Phase == RoomPhase.Racing && p.InRace ? RaceGrace : LobbyGrace))
+            .Where(p => p.DisconnectedAt is { } at && now - at > (Phase != RoomPhase.Lobby ? RaceGrace : LobbyGrace))
             .Select(p => p.Id)
             .ToList();
         foreach (var id in expired) RemovePlayer(id);
@@ -171,14 +182,6 @@ public sealed class Room
 
     public RoomStateDto SetFillBots(string playerId, bool fill) => OwnerMutate(playerId, () => FillBots = fill);
 
-    /// <summary>El owner elige la pista (solo en el lobby).</summary>
-    public RoomStateDto SetTrack(string playerId, string trackId) =>
-        OwnerMutate(playerId, () =>
-        {
-            if (Phase != RoomPhase.Lobby) throw new RoomException("No se puede cambiar la pista durante la carrera.");
-            _track = BuiltTracks.GetValueOrDefault(trackId ?? "") ?? throw new RoomException("Pista desconocida.");
-        });
-
     public RoomStateDto SetGridSize(string playerId, int size) =>
         OwnerMutate(playerId, () => GridSize = Math.Clamp(size, MinGrid, MaxPlayers));
 
@@ -187,51 +190,118 @@ public sealed class Room
         lock (_gate) return _players.Find(p => p.Id == playerId)?.AllowCall() ?? false;
     }
 
-    /// <summary>El owner inicia la carrera cuando todos los demás pilotos conectados están listos.</summary>
+    /// <summary>El owner inicia el torneo cuando todos los demás pilotos conectados están listos.</summary>
     public RaceStartDto StartRace(string playerId)
     {
         lock (_gate)
         {
             RequireOwner(playerId);
-            if (Phase != RoomPhase.Lobby) throw new RoomException("La carrera ya comenzó.");
+            if (Phase != RoomPhase.Lobby) throw new RoomException("El torneo ya comenzó.");
             var humans = _players.Where(p => p.Connected).ToList();
             if (humans.Any(p => p.Id != OwnerId && !p.Ready)) throw new RoomException("Todavía hay pilotos que no están listos.");
-
-            var vehicle = Vehicles.Derive(Vehicles.All["michi"].Stats);
-            var checkpoints = _track.Def.Checkpoints;
-            var racers = new List<Racer>();
-            foreach (var p in _players)
-            {
-                p.InRace = p.Connected;
-                p.ResetInputs();
-                if (!p.InRace) continue;
-                var (d, x) = Race.GridSlot(racers.Count);
-                racers.Add(new Racer(p.Id, p.Name, vehicle, d, x, checkpoints) { Color = p.Color });
-            }
-            if (FillBots)
-            {
-                var free = Enumerable.Range(0, ColorCount).Where(c => humans.All(p => p.Color != c)).ToList();
-                if (free.Count == 0) free = Enumerable.Range(0, ColorCount).ToList();
-                for (var i = 0; racers.Count < Math.Max(GridSize, humans.Count); i++)
-                {
-                    var (d, x) = Race.GridSlot(racers.Count);
-                    racers.Add(new Racer($"bot{i}", BotNames[i % BotNames.Length], vehicle, d, x, checkpoints)
-                    {
-                        Color = free[i % free.Count],
-                        Bot = new BotState { Skill = 0.8 + (i % 10) * 0.012, Lane = x, LaneTimer = 2 },
-                    });
-                }
-            }
-            _race = new Race(_track, racers, (uint)Random.Shared.Next());
-            _raceStart = new RaceStartDto(
-                _track.Def.Id,
-                racers.Select(r => new RaceRacerDto(r.Id, r.Name, r.Color, r.Bot is not null)).ToList(),
-                GoTick());
-            _snapshotBuffer = new float[racers.Count * SnapshotLayout.RacerFields];
-            Phase = RoomPhase.Racing;
-            Touch();
-            return _raceStart;
+            return StartTournament();
         }
+    }
+
+    /// <summary>Podio: el host reinicia el torneo al instante; cada invitado vota y la mayoría lo reinicia.</summary>
+    public (RoomStateDto State, RaceStartDto? Start) VoteRestart(string playerId)
+    {
+        lock (_gate)
+        {
+            if (_players.Find(p => p.Id == playerId) is null) throw new RoomException("No estás en esta sala.");
+            if (Phase != RoomPhase.Podium) throw new RoomException("El torneo todavía no terminó.");
+            Touch();
+            if (playerId != OwnerId)
+            {
+                _votes.Add(playerId);
+                if (_votes.Count < VotesNeeded()) return (State(), null);
+            }
+            var start = StartTournament();
+            return (State(), start);
+        }
+    }
+
+    /// <summary>Podio: el host vuelve al lobby para armar un torneo nuevo (colores, bots, parrilla).</summary>
+    public RoomStateDto BackToLobby(string playerId) =>
+        OwnerMutate(playerId, () =>
+        {
+            if (Phase != RoomPhase.Podium) throw new RoomException("El torneo todavía no terminó.");
+            AbortTournament();
+        });
+
+    /// <summary>Mayoría simple de los humanos conectados.</summary>
+    private int VotesNeeded() => _players.Count(p => p.Connected) / 2 + 1;
+
+    private RaceStartDto StartTournament()
+    {
+        _standings.Clear();
+        _votes.Clear();
+        _bots.Clear();
+        _raceIndex = 0;
+        if (FillBots)
+        {
+            // los bots se eligen una vez y corren todo el torneo (mismos nombres y colores)
+            var humans = _players.Where(p => p.Connected).ToList();
+            var free = Enumerable.Range(0, ColorCount).Where(c => humans.All(p => p.Color != c)).ToList();
+            if (free.Count == 0) free = Enumerable.Range(0, ColorCount).ToList();
+            var count = Math.Min(MaxPlayers, Math.Max(GridSize, humans.Count)) - humans.Count;
+            for (var i = 0; i < count; i++)
+                _bots.Add(($"bot{i}", BotNames[i % BotNames.Length], free[i % free.Count], 0.8 + (i % 10) * 0.012));
+        }
+        return LaunchRace();
+    }
+
+    /// <summary>Arma la carrera actual del torneo. Desde la 2ª, la parrilla sigue la tabla (el líder adelante).</summary>
+    private RaceStartDto LaunchRace()
+    {
+        _track = BuiltTracks[TournamentRules.Order[_raceIndex]];
+        var vehicle = Vehicles.Derive(Vehicles.All["michi"].Stats);
+        var checkpoints = _track.Def.Checkpoints;
+        var entrants = new List<(string Id, string Name, int Color, double? Skill)>();
+        foreach (var p in _players)
+        {
+            p.InRace = p.Connected;
+            p.Ready = false;
+            p.ResetInputs();
+            if (p.InRace) entrants.Add((p.Id, p.Name, p.Color, null));
+        }
+        foreach (var b in _bots)
+            if (entrants.Count < MaxPlayers) entrants.Add((b.Id, b.Name, b.Color, b.Skill));
+
+        foreach (var e in entrants)
+        {
+            if (_standings.Find(x => x.Id == e.Id) is { } s)
+            {
+                s.Name = e.Name;
+                s.Color = e.Color;
+            }
+            else _standings.Add(new Standing(e.Id, e.Name, e.Color, e.Skill is not null, TournamentRules.Order.Length));
+        }
+        if (_raceIndex > 0)
+        {
+            var rank = Standing.Rank(_standings, _raceIndex - 1).Select(s => s.Id).ToList();
+            entrants = entrants.OrderBy(e => rank.IndexOf(e.Id)).ToList();
+        }
+
+        var racers = new List<Racer>();
+        foreach (var e in entrants)
+        {
+            var (d, x) = Race.GridSlot(racers.Count);
+            racers.Add(new Racer(e.Id, e.Name, vehicle, d, x, checkpoints)
+            {
+                Color = e.Color,
+                Bot = e.Skill is { } skill ? new BotState { Skill = skill, Lane = x, LaneTimer = 2 } : null,
+            });
+        }
+        _race = new Race(_track, racers, (uint)Random.Shared.Next());
+        _raceStart = new RaceStartDto(
+            _track.Def.Id,
+            racers.Select(r => new RaceRacerDto(r.Id, r.Name, r.Color, r.Bot is not null)).ToList(),
+            GoTick());
+        _snapshotBuffer = new float[racers.Count * SnapshotLayout.RacerFields];
+        Phase = RoomPhase.Racing;
+        Touch();
+        return _raceStart;
     }
 
     /// <summary>Tick en el que termina la cuenta regresiva (mismo cálculo de punto flotante que Race.Step).</summary>
@@ -264,10 +334,17 @@ public sealed class Room
     {
         lock (_gate)
         {
+            _now = now;
             var before = _players.Count;
             var stateChanged = ExpireDisconnected(now);
             // vacía porque se fue el último (una sala recién creada sin jugadores la limpia CleanupIdle)
             if (before > 0 && _players.Count == 0) return new RoomTickOutput(null, null, null, Empty: true);
+            if (Phase == RoomPhase.Intermission && now >= _nextRaceAt)
+            {
+                _raceIndex++;
+                var start = LaunchRace();
+                return new RoomTickOutput(null, null, State(), false, start);
+            }
             if (Phase != RoomPhase.Racing || _race is null)
                 return new RoomTickOutput(null, null, stateChanged ? State() : null, false);
 
@@ -290,15 +367,28 @@ public sealed class Room
             if (send || events.Count > 0 || finished) snapshot = BuildSnapshot(race, events);
             if (!finished) return new RoomTickOutput(snapshot, null, stateChanged ? State() : null, false);
 
-            var results = BuildResults(race);
-            EndRace();
+            var results = FinishRace(race, now);
             return new RoomTickOutput(snapshot, results, State(), false);
         }
     }
 
-    private void EndRace()
+    /// <summary>Suma los puntos de la carrera y pasa al intermedio (o al podio si era la última).</summary>
+    private ResultsDto FinishRace(Race race, DateTime now)
     {
-        Phase = RoomPhase.Lobby;
+        var ranking = race.Ranking();
+        var rows = new List<ResultRowDto>();
+        for (var i = 0; i < ranking.Count; i++)
+        {
+            var r = ranking[i];
+            var s = _standings.Find(x => x.Id == r.Id)!;
+            var points = TournamentRules.Points(i + 1);
+            s.Points += points;
+            s.Places[_raceIndex] = i + 1;
+            rows.Add(new ResultRowDto(r.Id, r.Name, r.Color, s.Bot, i + 1, r.FinishTime, r.BestLap, points, s.Points));
+        }
+        var final = _raceIndex >= TournamentRules.Order.Length - 1;
+        Phase = final ? RoomPhase.Podium : RoomPhase.Intermission;
+        _nextRaceAt = now + TournamentRules.Intermission;
         _race = null;
         _raceStart = null;
         foreach (var p in _players)
@@ -306,7 +396,31 @@ public sealed class Room
             p.Ready = false;
             p.InRace = false;
         }
+        return new ResultsDto(
+            _track.Def.Name, rows, _raceIndex, TournamentRules.Order.Length, final,
+            final ? 0 : TournamentRules.Intermission.TotalSeconds, StandingDtos());
     }
+
+    /// <summary>Se cancela el torneo (no queda nadie conectado o el host vuelve al lobby).</summary>
+    private void AbortTournament()
+    {
+        Phase = RoomPhase.Lobby;
+        _race = null;
+        _raceStart = null;
+        _standings.Clear();
+        _votes.Clear();
+        _raceIndex = 0;
+        foreach (var p in _players)
+        {
+            p.Ready = false;
+            p.InRace = false;
+        }
+    }
+
+    private List<StandingDto> StandingDtos() =>
+        Standing.Rank(_standings, _raceIndex)
+            .Select(s => new StandingDto(s.Id, s.Name, s.Color, s.Bot, s.Points, s.Places))
+            .ToList();
 
     private SnapshotBundle BuildSnapshot(Race race, List<RaceEvent> events)
     {
@@ -323,14 +437,6 @@ public sealed class Room
         return new SnapshotBundle(race.Tick, phase, r, SnapshotLayout.Projectiles(race.Projectiles), broken, events, targets);
     }
 
-    private ResultsDto BuildResults(Race race)
-    {
-        var rows = race.Ranking()
-            .Select((r, i) => new ResultRowDto(r.Id, r.Name, r.Color, _raceStart?.Racers.FirstOrDefault(x => x.Id == r.Id)?.Bot ?? r.Bot is not null, i + 1, r.FinishTime, r.BestLap))
-            .ToList();
-        return new ResultsDto(_track.Def.Name, rows);
-    }
-
     private Racer? RacerOf(Player p) => _race?.Racers.Find(r => r.Id == p.Id);
 
     private static BotState Autopilot() => new() { Skill = 0.85, Lane = 0, LaneTimer = 0 };
@@ -342,9 +448,13 @@ public sealed class Room
         lock (_gate)
         {
             return new RoomStateDto(
-                Code, OwnerId, Phase == RoomPhase.Lobby ? "lobby" : "racing",
+                Code, OwnerId, Phase switch { RoomPhase.Lobby => "lobby", RoomPhase.Racing => "racing", RoomPhase.Intermission => "intermission", _ => "podium" },
                 _track.Def.Id, _track.Def.Name, _track.Laps, FillBots, GridSize, MaxPlayers,
-                _players.Select(p => new PlayerDto(p.Id, p.Name, p.Color, p.Ready, p.Ping, p.Id == OwnerId, p.Connected)).ToList());
+                _players.Select(p => new PlayerDto(p.Id, p.Name, p.Color, p.Ready, p.Ping, p.Id == OwnerId, p.Connected)).ToList(),
+                Phase == RoomPhase.Lobby ? null : new TournamentDto(
+                    _raceIndex, TournamentRules.Order.Length, TournamentRules.Order, StandingDtos(),
+                    Phase == RoomPhase.Intermission ? Math.Max(0, (_nextRaceAt - _now).TotalSeconds) : 0,
+                    _votes.ToList(), VotesNeeded()));
         }
     }
 

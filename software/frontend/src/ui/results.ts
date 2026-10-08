@@ -1,49 +1,88 @@
-// Pantalla de resultados (versión MVP de designs/podio_y_resultados_finales).
+// Resultados de una carrera del torneo: tabla general ordenada por puntos acumulados, con el puesto
+// y los puntos de esta carrera, y la cuenta regresiva a la siguiente (o el pase al podio).
 import { fmtTime } from './hud';
+import { t } from '../i18n';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
-export interface ResultRow {
+export interface RaceRow {
+  id: string;
   name: string;
   place: number;
   finishTime: number | null;
-  bestLap: number | null;
-  me: boolean;
+  points: number;
+}
+
+export interface StandingRow {
+  id: string;
+  name: string;
+  points: number;
 }
 
 export interface ResultsOptions {
   trackName: string;
-  rows: ResultRow[];
-  actionLabel: string;
-  onAction: () => void;
+  raceIndex: number;
+  totalRaces: number;
+  rows: RaceRow[];
+  /** Tabla del torneo, ya ordenada. */
+  standings: StandingRow[];
+  myId: string;
+  /** Próxima pista; null si era la última (sigue el podio). */
+  nextTrackName: string | null;
+  nextRaceIn: number;
 }
 
-export function showResults({ trackName, rows, actionLabel, onAction }: ResultsOptions) {
+let countdown = 0;
+
+export function showResults(o: ResultsOptions) {
   const el = document.getElementById('results')!;
-  const sorted = [...rows].sort((a, b) => a.place - b.place);
-  const me = sorted.find((r) => r.me);
-  const body = sorted
-    .map((r) => {
-      const total = r.finishTime !== null ? fmtTime(r.finishTime) : 'NO TERMINÓ';
-      const best = r.bestLap !== null ? fmtTime(r.bestLap) : '--:--.--';
-      return `<tr${r.me ? ' class="me"' : ''}><td class="pos">${MEDALS[r.place - 1] ?? `${r.place}°`}</td><td>${escapeHtml(r.name)}</td><td>${total}</td><td>${best}</td></tr>`;
+  const race = new Map(o.rows.map((r) => [r.id, r]));
+  const winner = o.rows.find((r) => r.place === 1);
+  const me = race.get(o.myId);
+  const body = o.standings
+    .map((s, i) => {
+      const r = race.get(s.id);
+      const result = r ? `${r.place}° · ${r.finishTime !== null ? fmtTime(r.finishTime) : t('res.dnf')}` : '—';
+      return `<tr${s.id === o.myId ? ' class="me"' : ''}>
+        <td class="pos">${MEDALS[i] ?? `${i + 1}°`}</td>
+        <td>${escapeHtml(s.name)}</td>
+        <td class="race">${result}</td>
+        <td class="gain">${r ? `+${r.points}` : ''}</td>
+        <td class="total">${s.points}</td>
+      </tr>`;
     })
     .join('');
   el.innerHTML = `
     <div class="results-card">
-      <div class="results-title">🏁 ${escapeHtml(trackName.toUpperCase())} · RESULTADOS</div>
-      <div class="results-sub">Ganador: <b>${escapeHtml(sorted[0]?.name ?? '-')}</b>${me ? ` · Tu posición: <b>${me.place}°</b>` : ''}</div>
-      <table>
-        <thead><tr><th>POS</th><th>PILOTO</th><th>TIEMPO</th><th>MEJOR VUELTA</th></tr></thead>
-        <tbody>${body}</tbody>
-      </table>
-      <button class="results-action btn btn-secondary">${actionLabel}</button>
+      <div class="results-title">${t('res.title', { n: o.raceIndex + 1, total: o.totalRaces, track: escapeHtml(o.trackName.toUpperCase()) })}</div>
+      <div class="results-sub">${t('res.won', { name: escapeHtml(winner?.name ?? '-') })}${me ? t('res.mine', { place: me.place, pts: me.points }) : ''}</div>
+      <div class="results-scroll">
+        <table>
+          <thead><tr><th>${t('res.colTour')}</th><th>${t('res.colDriver')}</th><th>${t('res.colRace')}</th><th>${t('res.colPts')}</th><th>${t('res.colTotal')}</th></tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+      <div class="results-next" id="results-next"></div>
     </div>`;
-  el.querySelector('button')!.addEventListener('click', onAction);
   el.style.display = 'flex';
+
+  clearInterval(countdown);
+  const next = el.querySelector<HTMLElement>('#results-next')!;
+  const ends = performance.now() + o.nextRaceIn * 1000;
+  const tick = () => {
+    if (!o.nextTrackName) {
+      next.textContent = t('res.podium');
+      return;
+    }
+    const left = Math.ceil((ends - performance.now()) / 1000);
+    next.textContent = left > 0 ? t('res.next', { track: o.nextTrackName.toUpperCase(), n: left }) : t('res.preparing');
+  };
+  tick();
+  countdown = window.setInterval(tick, 250);
 }
 
 export function hideResults() {
+  clearInterval(countdown);
   document.getElementById('results')!.style.display = 'none';
 }
 

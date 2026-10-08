@@ -94,12 +94,10 @@ html.touch #hud-hint {
     gap: 8px;
   }
 
-  .brand-icon,
-  .brand.small .brand-icon {
-    width: 30px;
-    height: 30px;
-    font-size: 16px;
-    box-shadow: 2px 2px 0 var(--surface-lowest);
+  .brand-emblem,
+  .brand.small .brand-emblem {
+    width: 32px;
+    height: 32px;
   }
 
   .brand-name,

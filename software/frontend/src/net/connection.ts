@@ -5,6 +5,7 @@ import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import type { Input } from '../sim/input';
 import { DelayLine, NetSimConfig, readNetSim } from './netsim';
 import type { JoinResponse, RaceStartDto, ResultsDto, RoomStateDto, SnapshotDto } from './protocol';
+import { t } from '../i18n';
 
 type Handler<T> = (msg: T) => void;
 
@@ -66,7 +67,7 @@ export class GameConnection {
     this.hub.onreconnected(() => this.onReconnected());
     this.hub.onclose((e) => {
       clearInterval(this.pingTimer);
-      this.onConnectionLost(e?.message ?? 'Conexión cerrada');
+      this.onConnectionLost(e?.message ?? t('err.closed'));
     });
   }
 
@@ -114,7 +115,8 @@ export class GameConnection {
   selectColor = (color: number) => this.hub.invoke('SelectColor', color);
   setFillBots = (fill: boolean) => this.hub.invoke('SetFillBots', fill);
   setGridSize = (size: number) => this.hub.invoke('SetGridSize', size);
-  setTrack = (trackId: string) => this.hub.invoke('SetTrack', trackId);
+  voteRestart = () => this.hub.invoke('VoteRestart');
+  backToLobby = () => this.hub.invoke('BackToLobby');
   startRace = () => this.hub.invoke('StartRace');
 
   /** Fire-and-forget: los inputs viajan cada tick y no esperan respuesta. */
@@ -143,7 +145,7 @@ export class GameConnection {
 /** Crea una sala vía REST y devuelve su código. */
 export async function createRoom(trackId: string): Promise<string> {
   const res = await fetch(`/api/rooms?track=${encodeURIComponent(trackId)}`, { method: 'POST' });
-  if (!res.ok) throw new Error('No se pudo crear la sala. ¿Está corriendo el servidor?');
+  if (!res.ok) throw new Error(t('err.create'));
   return (await res.json()).code;
 }
 
@@ -151,6 +153,6 @@ export async function createRoom(trackId: string): Promise<string> {
 export async function fetchRoom(code: string): Promise<RoomStateDto | null> {
   const res = await fetch(`/api/rooms/${encodeURIComponent(code)}`);
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error('No se pudo consultar la sala. ¿Está corriendo el servidor?');
+  if (!res.ok) throw new Error(t('err.fetch'));
   return res.json();
 }

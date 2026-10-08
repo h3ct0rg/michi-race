@@ -16,7 +16,23 @@ public sealed record RoomStateDto(
     bool FillBots,
     int GridSize,
     int MaxPlayers,
-    IReadOnlyList<PlayerDto> Players);
+    IReadOnlyList<PlayerDto> Players,
+    TournamentDto? Tournament = null);
+
+public sealed record StandingDto(string Id, string Name, int Color, bool Bot, int Points, IReadOnlyList<int> Places);
+
+/// <summary>
+/// Estado del torneo (null en el lobby). Race: índice de la carrera actual o recién terminada.
+/// NextRaceIn: segundos hasta la próxima carrera (intermedio). Votes: ids que votaron reiniciar (podio).
+/// </summary>
+public sealed record TournamentDto(
+    int Race,
+    int TotalRaces,
+    IReadOnlyList<string> Tracks,
+    IReadOnlyList<StandingDto> Standings,
+    double NextRaceIn,
+    IReadOnlyList<string> Votes,
+    int VotesNeeded);
 
 /// <summary>Respuesta a Join/Rejoin. Token permite reconectarse al mismo kart; Race != null si hay carrera en curso.</summary>
 public sealed record JoinResponse(string PlayerId, string Token, RoomStateDto Room, RaceStartDto? Race);
@@ -94,6 +110,15 @@ public static class SnapshotLayout
     ];
 }
 
-public sealed record ResultRowDto(string Id, string Name, int Color, bool Bot, int Place, double? FinishTime, double? BestLap);
+/// <summary>Points: puntos ganados en esta carrera; Total: acumulado del torneo.</summary>
+public sealed record ResultRowDto(string Id, string Name, int Color, bool Bot, int Place, double? FinishTime, double? BestLap, int Points, int Total);
 
-public sealed record ResultsDto(string TrackName, IReadOnlyList<ResultRowDto> Rows);
+/// <summary>Resultado de una carrera del torneo; Final = era la última (sigue el podio).</summary>
+public sealed record ResultsDto(
+    string TrackName,
+    IReadOnlyList<ResultRowDto> Rows,
+    int RaceIndex,
+    int TotalRaces,
+    bool Final,
+    double NextRaceIn,
+    IReadOnlyList<StandingDto> Standings);

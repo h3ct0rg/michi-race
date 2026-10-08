@@ -28,7 +28,7 @@
     <meta name="twitter:title" content="Michi Racer · Carreras de michis multijugador" />
     <meta name="twitter:description" content="Carreras arcade de michis en pixel art. Crea una sala, comparte el link y corre con hasta 20 amigos desde el navegador, sin cuentas." />
     <meta name="twitter:image" content="__ORIGIN__/og/michi-racer.png" />
-    <link rel="icon" type="image/png" href="/assets/michi/south.png" />
+    <link rel="icon" type="image/png" href="/assets/brand/emblem.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
@@ -39,141 +39,187 @@
     <link rel="stylesheet" href="/src/mobile.css" />
   </head>
   <body>
+    <!-- ============ INICIO ============ -->
+    <section id="screen-home" class="screen home">
+      <canvas id="home-bg" class="home-bg" width="480" height="270"></canvas>
+      <div class="home-top">
+        <div class="home-stats">
+          <span class="home-stat"><i class="dot"></i><span id="h-online" data-i18n="home.loadingStats">CONECTANDO…</span></span>
+          <span class="home-stat" id="h-total-wrap" hidden>👥 <span id="h-total"></span></span>
+        </div>
+        <button class="btn btn-ghost sm sound-btn" data-sound aria-label="Sonido" data-i18n-aria="sound">🔊</button>
+      </div>
+      <div class="home-content">
+        <img src="/assets/brand/emblem.png" class="home-emblem" alt="" />
+        <h1 class="home-title"><span class="c1">MICHI</span> <span class="c2">RACER</span></h1>
+        <div class="home-tagline" data-i18n="home.tagline">CARRERAS ARCADE DE MICHIS · MULTIJUGADOR</div>
+        <div class="home-buttons">
+          <button id="h-play" class="btn btn-primary"><span data-i18n="home.play">▶ JUGAR</span></button>
+          <div class="home-row">
+            <button class="btn btn-cyan" data-open-settings><span data-i18n="home.settings">⚙ CONFIGURAR</span></button>
+            <button id="h-share" class="btn btn-ghost"><span data-i18n="home.share">🔗 COMPARTIR</span></button>
+          </div>
+        </div>
+      </div>
+      <footer class="home-footer" data-i18n="home.footer">HASTA 20 PILOTOS · SIN CUENTAS · TORNEO DE 4 CARRERAS</footer>
+    </section>
+
+    <!-- ============ CONFIGURACIÓN (modal) ============ -->
+    <div id="settings" class="modal" hidden>
+      <div class="modal-card">
+        <div class="card-head cyan" data-i18n="set.title">⚙ CONFIGURACIÓN</div>
+        <label class="slider-row"><span data-i18n="set.brightness">BRILLO</span><input type="range" id="s-brightness" min="50" max="150" step="5" /><b id="s-brightness-v"></b></label>
+        <label class="slider-row"><span data-i18n="set.volume">VOLUMEN GENERAL</span><input type="range" id="s-master" min="0" max="100" step="5" /><b id="s-master-v"></b></label>
+        <label class="slider-row"><span data-i18n="set.music">MÚSICA</span><input type="range" id="s-music" min="0" max="100" step="5" /><b id="s-music-v"></b></label>
+        <label class="slider-row"><span data-i18n="set.sfx">EFECTOS</span><input type="range" id="s-sfx" min="0" max="100" step="5" /><b id="s-sfx-v"></b></label>
+        <div class="slider-row">
+          <span data-i18n="set.language">IDIOMA</span>
+          <div class="lang-toggle" id="s-lang">
+            <button class="btn btn-ghost sm" data-lang="es">ESPAÑOL</button>
+            <button class="btn btn-ghost sm" data-lang="en">ENGLISH</button>
+          </div>
+        </div>
+        <button id="s-done" class="btn btn-primary wide" data-i18n="set.done">✔ LISTO</button>
+      </div>
+    </div>
+
     <!-- ============ BIENVENIDA ============ -->
     <section id="screen-welcome" class="screen">
       <header class="topbar">
         <div class="brand">
-          <span class="brand-icon">🐾</span>
+          <img class="brand-emblem" src="/assets/brand/emblem.png" alt="" />
           <div>
             <div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span> <span class="tag">2.5D TURBO</span></div>
             <div class="brand-sub">PIXEL GRAND PRIX // MULTIPLAYER KART RACING</div>
           </div>
         </div>
         <div class="topbar-right">
-          <div class="marquee">★ ACCIÓN ARCADE PURA · SIN CUENTA · COMPARTE EL LINK Y CORRE ★</div>
-          <button class="btn btn-ghost sm sound-btn" data-sound aria-label="Sonido">🔊</button>
+          <button id="w-home" class="btn btn-ghost sm"><span data-i18n="w.home">⟵ INICIO</span></button>
+          <div class="marquee"><span data-i18n="w.marquee">★ ACCIÓN ARCADE PURA · SIN CUENTA · COMPARTE EL LINK Y CORRE ★</span></div>
+          <button class="btn btn-ghost sm sound-btn" data-sound aria-label="Sonido" data-i18n-aria="sound">🔊</button>
+          <button class="btn btn-ghost sm" data-open-settings aria-label="Configurar">⚙</button>
         </div>
       </header>
 
       <main class="welcome-grid">
         <div class="card">
-          <div class="card-head">👤 PERFIL DE PILOTO</div>
-          <label class="field-label">APODO EN PISTA <span class="hint-right">MÁX 12</span></label>
+          <div class="card-head"><span data-i18n="w.profile">👤 PERFIL DE PILOTO</span></div>
+          <label class="field-label"><span data-i18n="w.nick">APODO EN PISTA</span> <span class="hint-right"><span data-i18n="w.max">MÁX 12</span></span></label>
           <div class="input-row">
-            <input id="w-name" class="input big" maxlength="12" autocomplete="off" placeholder="TU APODO" />
-            <button id="w-random" class="btn btn-ghost">🎲 RANDOM</button>
+            <input id="w-name" class="input big" maxlength="12" autocomplete="off" placeholder="TU APODO" data-i18n-ph="w.nickPh" />
+            <button id="w-random" class="btn btn-ghost"><span data-i18n="w.random">🎲 RANDOM</span></button>
           </div>
           <canvas id="w-preview" class="michi-preview" width="160" height="120"></canvas>
-          <div class="muted center">Elige el color de tu kart en el garaje del lobby</div>
+          <div class="muted center"><span data-i18n="w.colorHint">Elige el color de tu kart en el garaje del lobby</span></div>
         </div>
 
         <div class="col">
           <div id="w-invite" class="card invite" hidden>
-            <div class="card-head pink">✉️ TE INVITARON A UNA CARRERA</div>
+            <div class="card-head pink"><span data-i18n="w.invited">✉️ TE INVITARON A UNA CARRERA</span></div>
             <div class="invite-code" id="w-invite-code">PX-0000</div>
             <div class="muted center" id="w-invite-info"></div>
-            <button id="w-invite-join" class="btn btn-primary xl">UNIRSE A LA SALA →</button>
+            <button id="w-invite-join" class="btn btn-primary xl"><span data-i18n="w.inviteJoin">UNIRSE A LA SALA →</span></button>
           </div>
 
           <div class="card">
-            <div class="card-head pink">📡 CREAR SALA MULTIJUGADOR <span class="pill">ROOM MASTER</span></div>
-            <p class="muted create-desc">Crea una sala, comparte el link y arranca cuando todos estén listos. Los lugares vacíos se rellenan con bots.</p>
-            <button id="w-create" class="btn btn-primary xl">CREAR SALA Y JUGAR →</button>
+            <div class="card-head pink"><span data-i18n="w.createHead">📡 CREAR SALA MULTIJUGADOR</span> <span class="pill">ROOM MASTER</span></div>
+            <p class="muted create-desc"><span data-i18n="w.createDesc">Crea una sala, comparte el link y arranca cuando todos estén listos. Los lugares vacíos se rellenan con bots.</span></p>
+            <button id="w-create" class="btn btn-primary xl"><span data-i18n="w.create">CREAR SALA Y JUGAR →</span></button>
           </div>
 
           <div class="card">
-            <div class="card-head cyan">🔑 UNIRSE CON CÓDIGO DIRECTO</div>
+            <div class="card-head cyan"><span data-i18n="w.joinHead">🔑 UNIRSE CON CÓDIGO DIRECTO</span></div>
             <div class="input-row">
-              <input id="w-code" class="input mono" maxlength="20" placeholder="EJ: PX-4412" autocomplete="off" />
-              <button id="w-paste" class="btn btn-ghost">📋 PEGAR</button>
-              <button id="w-join" class="btn btn-cyan">UNIRSE 🏁</button>
+              <input id="w-code" class="input mono" maxlength="20" placeholder="EJ: PX-4412" data-i18n-ph="w.codePh" autocomplete="off" />
+              <button id="w-paste" class="btn btn-ghost"><span data-i18n="w.paste">📋 PEGAR</span></button>
+              <button id="w-join" class="btn btn-cyan"><span data-i18n="w.join">UNIRSE 🏁</span></button>
             </div>
           </div>
 
-          <button id="w-practice" class="btn btn-ghost wide">⚡ PRÁCTICA LOCAL CONTRA BOTS</button>
+          <button id="w-practice" class="btn btn-ghost wide"><span data-i18n="w.practice">⚡ PRÁCTICA LOCAL CONTRA BOTS</span></button>
           <div id="w-error" class="error" hidden></div>
         </div>
 
         <div class="col">
           <div class="card track-card">
-            <div class="card-head yellow">🏆 CIRCUITO <span class="pill dark">PRÁCTICA Y SALA NUEVA</span></div>
+            <div class="card-head yellow"><span data-i18n="w.tournament">🏆 TORNEO</span> <span class="pill dark"><span data-i18n="w.tourPill">4 CARRERAS · PUNTOS</span></span></div>
             <img id="w-track-img" alt="" class="track-img" />
             <div class="track-title" id="w-track-name"></div>
             <div class="muted" id="w-track-tag"></div>
             <div class="track-stats">
-              <div><span class="muted">VUELTAS</span><b id="w-track-laps"></b></div>
-              <div><span class="muted">DIFICULTAD</span><b class="yellow" id="w-track-diff"></b></div>
-              <div><span class="muted">PILOTOS</span><b>2–20</b></div>
+              <div><span class="muted"><span data-i18n="w.laps">VUELTAS</span></span><b id="w-track-laps"></b></div>
+              <div><span class="muted"><span data-i18n="w.difficulty">DIFICULTAD</span></span><b class="yellow" id="w-track-diff"></b></div>
+              <div><span class="muted"><span data-i18n="w.drivers">PILOTOS</span></span><b>2–20</b></div>
             </div>
             <div class="track-picker" id="w-tracks"></div>
           </div>
           <div class="card controls-card">
-            <div class="card-head cyan">🎮 CONTROLES</div>
+            <div class="card-head cyan"><span data-i18n="c.head">🎮 CONTROLES</span></div>
             <div class="controls-grid">
-              <div><span class="key">← →</span> girar</div>
-              <div><span class="key">↑</span> acelerar</div>
-              <div><span class="key">↓</span> frenar</div>
-              <div><span class="key">SHIFT</span> derrape</div>
-              <div><span class="key pink">ESPACIO</span> ítem</div>
+              <div><span class="key">← →</span> <span data-i18n="c.steer">girar</span></div>
+              <div><span class="key">↑</span> <span data-i18n="c.accel">acelerar</span></div>
+              <div><span class="key">↓</span> <span data-i18n="c.brake">frenar</span></div>
+              <div><span class="key">SHIFT</span> <span data-i18n="c.drift">derrape</span></div>
+              <div><span class="key pink"><span data-i18n="c.space">ESPACIO</span></span> <span data-i18n="c.item">ítem</span></div>
               <div><span class="key">🎮</span> gamepad</div>
             </div>
           </div>
         </div>
       </main>
-      <footer class="footbar">MICHI RACER · SIN CUENTAS · 100% RETRO SPIRIT</footer>
+      <footer class="footbar"><span data-i18n="w.footer">MICHI RACER · SIN CUENTAS · 100% RETRO SPIRIT</span></footer>
     </section>
 
     <!-- ============ LOBBY ============ -->
     <section id="screen-lobby" class="screen">
       <header class="topbar">
-        <div class="brand small"><span class="brand-icon">🐾</span><div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span></div></div>
+        <div class="brand small"><img class="brand-emblem" src="/assets/brand/emblem.png" alt="" /><div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span></div></div>
         <div class="status-chips">
           <span class="chip"><i class="dot"></i>ONLINE</span>
           <span class="chip" id="l-ping">-- MS</span>
-          <span class="chip">SALA: <b id="l-code" class="yellow">PX-0000</b></span>
-          <button id="l-copy" class="btn btn-cyan sm">🔗 <span class="copy-label">COPIAR LINK</span></button>
-          <button class="btn btn-ghost sm sound-btn" data-sound aria-label="Sonido">🔊</button>
+          <span class="chip"><span data-i18n="l.room">SALA:</span> <b id="l-code" class="yellow">PX-0000</b></span>
+          <button id="l-copy" class="btn btn-cyan sm">🔗 <span class="copy-label"><span data-i18n="l.copy">COPIAR LINK</span></span></button>
+          <button class="btn btn-ghost sm sound-btn" data-sound aria-label="Sonido" data-i18n-aria="sound">🔊</button>
         </div>
       </header>
 
       <main class="lobby-grid">
         <div class="col">
           <div class="card track-card">
-            <div class="card-head">🗺️ MAPA PRINCIPAL <span class="muted right" id="l-track-hint"></span></div>
+            <div class="card-head"><span data-i18n="w.tournament">🏆 TORNEO</span> <span class="muted right" id="l-track-hint"></span></div>
             <img id="l-track-img" alt="" class="track-img" />
             <div class="track-title" id="l-track">GREEN VALLEY</div>
             <div class="muted" id="l-track-tag"></div>
             <div class="track-stats">
-              <div><span class="muted">VUELTAS</span><b id="l-laps">3</b></div>
-              <div><span class="muted">DIFICULTAD</span><b class="yellow" id="l-diff"></b></div>
+              <div><span class="muted"><span data-i18n="w.laps">VUELTAS</span></span><b id="l-laps">3</b></div>
+              <div><span class="muted"><span data-i18n="w.difficulty">DIFICULTAD</span></span><b class="yellow" id="l-diff"></b></div>
             </div>
             <div class="track-picker" id="l-tracks"></div>
           </div>
           <div class="card">
-            <div class="card-head">⚙️ PARÁMETROS DE CARRERA</div>
-            <label class="toggle-row"><span>RELLENAR CON BOTS</span><input type="checkbox" id="l-bots" /></label>
-            <label class="toggle-row"><span>TAMAÑO DE PARRILLA</span>
+            <div class="card-head"><span data-i18n="l.params">⚙️ PARÁMETROS DE CARRERA</span></div>
+            <label class="toggle-row"><span><span data-i18n="l.fillBots">RELLENAR CON BOTS</span></span><input type="checkbox" id="l-bots" /></label>
+            <label class="toggle-row"><span><span data-i18n="l.gridSize">TAMAÑO DE PARRILLA</span></span>
               <select id="l-grid" class="select">
                 <option value="4">4 KARTS</option><option value="8">8 KARTS</option><option value="12">12 KARTS</option>
                 <option value="16">16 KARTS</option><option value="20">20 KARTS</option>
               </select>
             </label>
-            <div class="param-row"><span>COLISIONES</span><b class="cyan">ACTIVADAS</b></div>
-            <div class="param-row"><span>MÁXIMO PILOTOS</span><b>20 JUGADORES</b></div>
+            <div class="param-row"><span><span data-i18n="l.collisions">COLISIONES</span></span><b class="cyan"><span data-i18n="l.on">ACTIVADAS</span></b></div>
+            <div class="param-row"><span><span data-i18n="l.maxDrivers">MÁXIMO PILOTOS</span></span><b><span data-i18n="l.players20">20 JUGADORES</span></b></div>
           </div>
         </div>
 
         <div class="col">
           <div class="card grid-head">
             <div>
-              <div class="grid-title">PARRILLA DE SALIDA</div>
+              <div class="grid-title"><span data-i18n="l.gridTitle">PARRILLA DE SALIDA</span></div>
               <div class="muted" id="l-count">0/8 PILOTOS</div>
             </div>
             <div class="start-box" id="l-status">ESPERANDO</div>
           </div>
           <ol id="l-players" class="grid-list"></ol>
           <div class="lobby-actions">
-            <button id="l-garage" class="btn btn-ghost">🎨 CAMBIAR VEHÍCULO</button>
+            <button id="l-garage" class="btn btn-ghost"><span data-i18n="l.garage">🎨 CAMBIAR VEHÍCULO</span></button>
             <button id="l-ready" class="btn btn-primary grow">🏁 ¡LISTO PARA CORRER! ⚡</button>
           </div>
           <div id="l-error" class="error" hidden></div>
@@ -181,13 +227,13 @@
 
         <div class="col">
           <div class="card">
-            <div class="card-head">🏎️ TU BÓLIDO <span class="muted right">CLASE-S</span></div>
+            <div class="card-head"><span data-i18n="l.car">🏎️ TU BÓLIDO</span> <span class="muted right">CLASE-S</span></div>
             <canvas id="l-preview" class="michi-preview" width="160" height="120"></canvas>
             <div class="vehicle-name">MICHI RACER</div>
             <div class="muted" id="l-color-name">COLOR: HIELO</div>
             <div class="stats" id="l-stats"></div>
           </div>
-          <button id="l-leave" class="btn btn-ghost wide">⟵ SALIR DE LA SALA</button>
+          <button id="l-leave" class="btn btn-ghost wide"><span data-i18n="l.leave">⟵ SALIR DE LA SALA</span></button>
         </div>
       </main>
     </section>
@@ -195,30 +241,30 @@
     <!-- ============ GARAJE ============ -->
     <section id="screen-garage" class="screen">
       <header class="topbar">
-        <div class="brand small"><span class="brand-icon">🐾</span><div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span></div></div>
+        <div class="brand small"><img class="brand-emblem" src="/assets/brand/emblem.png" alt="" /><div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span></div></div>
         <div class="topbar-right">
-          <div class="crumbs">SYS://GARAJE / SELECCIÓN DE BÓLIDO</div>
-          <button class="btn btn-ghost sm sound-btn" data-sound aria-label="Sonido">🔊</button>
+          <div class="crumbs"><span data-i18n="g.crumbs">SYS://GARAJE / SELECCIÓN DE BÓLIDO</span></div>
+          <button class="btn btn-ghost sm sound-btn" data-sound aria-label="Sonido" data-i18n-aria="sound">🔊</button>
         </div>
       </header>
       <main class="garage-grid">
         <div class="card">
-          <div class="card-head">🎨 PINTURA DEL KART</div>
+          <div class="card-head"><span data-i18n="g.paint">🎨 PINTURA DEL KART</span></div>
           <ul id="g-colors" class="color-list"></ul>
         </div>
         <div class="card garage-center">
           <div class="garage-title">MICHI RACER</div>
-          <div class="muted">PROTOTIPO CLASE S · CHASIS #PX-MICHI</div>
+          <div class="muted"><span data-i18n="g.sub">PROTOTIPO CLASE S · CHASIS #PX-MICHI</span></div>
           <canvas id="g-preview" class="michi-preview large" width="320" height="220"></canvas>
           <div class="garage-actions">
-            <button id="g-back" class="btn btn-ghost">⟵ VOLVER AL LOBBY</button>
-            <button id="g-equip" class="btn btn-primary grow">✔ ¡EQUIPAR PARA LA CARRERA!</button>
+            <button id="g-back" class="btn btn-ghost"><span data-i18n="g.back">⟵ VOLVER AL LOBBY</span></button>
+            <button id="g-equip" class="btn btn-primary grow"><span data-i18n="g.equip">✔ ¡EQUIPAR PARA LA CARRERA!</span></button>
           </div>
         </div>
         <div class="card">
-          <div class="card-head cyan">📊 TELEMETRÍA</div>
+          <div class="card-head cyan"><span data-i18n="g.telemetry">📊 TELEMETRÍA</span></div>
           <div class="stats" id="g-stats"></div>
-          <p class="muted small">Más vehículos (Muscle, Formula, Heavy, Compact) llegarán en la fase de contenido.</p>
+          <p class="muted small"><span data-i18n="g.more">Más vehículos (Muscle, Formula, Heavy, Compact) llegarán en la fase de contenido.</span></p>
         </div>
       </main>
     </section>
@@ -234,14 +280,14 @@
               <span class="lap" id="hud-lap">VUELTA 1 / 3</span>
             </div>
             <div class="times">
-              <div><span class="label">TIEMPO</span><span id="hud-time">00:00.00</span></div>
-              <div><span class="label best">MEJOR VUELTA</span><span id="hud-best">--:--.--</span></div>
+              <div><span class="label"><span data-i18n="hud.time">TIEMPO</span></span><span id="hud-time">00:00.00</span></div>
+              <div><span class="label best"><span data-i18n="hud.best">MEJOR VUELTA</span></span><span id="hud-best">--:--.--</span></div>
             </div>
           </div>
           <div class="panel hud-map">
             <canvas id="minimap" width="140" height="140"></canvas>
             <div class="map-side">
-              <div class="map-title">POSICIONES</div>
+              <div class="map-title"><span data-i18n="hud.standings">POSICIONES</span></div>
               <ol id="standings"></ol>
             </div>
           </div>
@@ -249,7 +295,7 @@
           <div class="panel hud-item">
             <div class="item-box" id="hud-item-box"><img id="hud-item-img" alt="" hidden /></div>
             <div class="item-info">
-              <span class="label">ÍTEM</span>
+              <span class="label"><span data-i18n="hud.item">ÍTEM</span></span>
               <b id="hud-item-name">—</b>
               <span class="label item-key" id="hud-item-key">[ESPACIO] USAR</span>
               <span class="item-effects" id="hud-effects"></span>
@@ -265,8 +311,14 @@
           <div id="net-info" class="net-info"></div>
           <div id="debug-panel" class="debug-panel" hidden></div>
           <div id="banner" class="banner"></div>
+          <div id="banner-sub" class="banner-sub"></div>
         </div>
         <div id="results" class="results"></div>
+        <!-- final del torneo: podio animado (ver src/ui/podium.ts) -->
+        <div id="podium" class="podium" hidden>
+          <canvas id="podium-canvas" width="480" height="270"></canvas>
+          <div id="podium-ui" class="podium-ui"></div>
+        </div>
       </div>
       <!-- controles táctiles: solo en dispositivos táctiles (ver src/input/touch.ts) -->
       <div id="touch-controls" class="touch-controls" hidden></div>
@@ -275,8 +327,8 @@
     <!-- celular en vertical: pedir girarlo -->
     <div id="rotate-overlay" class="rotate-overlay">
       <div class="rotate-phone"><span></span></div>
-      <div class="rotate-title">GIRA TU CELULAR</div>
-      <div class="rotate-text">Michi Racer se juega en horizontal 🐾</div>
+      <div class="rotate-title"><span data-i18n="rot.title">GIRA TU CELULAR</span></div>
+      <div class="rotate-text"><span data-i18n="rot.text">Michi Racer se juega en horizontal 🐾</span></div>
     </div>
 
     <div id="toast" class="toast" hidden></div>

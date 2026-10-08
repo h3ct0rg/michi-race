@@ -55,7 +55,6 @@ public sealed class RaceHub(RoomManager rooms, ServerMetrics metrics, ILogger<Ra
 
     public Task SetGridSize(int size) => Broadcast((room, id) => room.SetGridSize(id, size));
 
-    public Task SetTrack(string trackId) => Broadcast((room, id) => room.SetTrack(id, trackId));
 
     public Task ReportPing(int ms) => Broadcast((room, id) => room.SetPing(id, ms));
 
@@ -66,6 +65,19 @@ public sealed class RaceHub(RoomManager rooms, ServerMetrics metrics, ILogger<Ra
         await Clients.Group(room.Code).RoomState(room.State());
         await Clients.Group(room.Code).RaceStarted(start);
     }
+
+    /// <summary>Podio: el host reinicia el torneo; un invitado suma su voto (la mayoría lo reinicia).</summary>
+    public async Task VoteRestart()
+    {
+        var (room, id) = Current();
+        if (!room.AllowCall(id)) throw new HubException("Demasiadas acciones seguidas, espera un momento.");
+        var (state, start) = Guard(() => room.VoteRestart(id));
+        await Clients.Group(room.Code).RoomState(state);
+        if (start is not null) await Clients.Group(room.Code).RaceStarted(start);
+    }
+
+    /// <summary>Podio: el host vuelve al lobby para armar un torneo nuevo.</summary>
+    public Task BackToLobby() => Broadcast((room, id) => room.BackToLobby(id));
 
     /// <summary>Input del tick (fire-and-forget). buttons: 1 gas, 2 freno, 4 derrape, 8 turbo.</summary>
     public void SendInput(int seq, double steer, int buttons)
