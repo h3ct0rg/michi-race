@@ -79,6 +79,7 @@ export class OnlineSession implements RaceSession {
   private snapRate = 0;
   private rateWindow = performance.now();
   private corrections: number[] = [];
+  private readonly snapshotHandler = (s: SnapshotDto) => this.onSnapshot(s);
 
   constructor(
     private readonly track: Track,
@@ -98,7 +99,7 @@ export class OnlineSession implements RaceSession {
     this.me = racers.find((r) => r.id === myId) ?? null;
     this.spectator = this.me === null;
     this.follow = this.me ?? racers[0];
-    conn.onSnapshot = (s) => this.onSnapshot(s);
+    conn.onSnapshot = this.snapshotHandler;
     if (import.meta.env.DEV) (window as unknown as { __online: OnlineSession }).__online = this; // depuración
   }
 
@@ -145,7 +146,9 @@ export class OnlineSession implements RaceSession {
 
     const dd = before.d - me.distance;
     const dx = before.x - me.x;
-    if (Math.abs(dd) > SNAP_CORRECTION || this.localTick === null) {
+    // sin predicción (terminó la carrera, piloto automático) el kart se dibuja interpolado como los rivales:
+    // la diferencia con el último snapshot es el retraso de interpolación, no un error a suavizar
+    if (!this.predicting || Math.abs(dd) > SNAP_CORRECTION || this.localTick === null) {
       this.errD = this.errX = 0;
     } else {
       this.errD += dd;
@@ -306,6 +309,7 @@ export class OnlineSession implements RaceSession {
   }
 
   dispose() {
-    this.conn.onSnapshot = () => {};
+    // la sesión de la carrera siguiente ya puede estar escuchando: solo se suelta el handler propio
+    if (this.conn.onSnapshot === this.snapshotHandler) this.conn.onSnapshot = () => {};
   }
 }
