@@ -1370,3 +1370,14 @@ li:first-child .slot {
   background: rgba(0, 240, 255, 0.08);
   color: var(--primary);
 }
+
+/* botón del garaje en el lobby: azul cielo apagado, visible sin competir con "¡INICIAR TORNEO!" */
+.btn-garage {
+  background: #24597a;
+  border-color: #5cc8ff;
+  color: #e6f6ff;
+}
+
+.btn-garage:hover {
+  background: #2c6a90;
+}
