@@ -83,6 +83,22 @@ const SONGS: Record<string, Song> = {
       [77, 75, 74, 72, 70, 0, 72, 0],
     ],
   },
+  // Cosmic Rainbow: épica espacial en La menor (Am – F – C – G)
+  'cosmic-rainbow': {
+    bpm: 156,
+    chords: [
+      [45, 69, 72, 76, 81],
+      [41, 69, 72, 77, 81],
+      [48, 67, 72, 76, 79],
+      [43, 67, 71, 74, 79],
+    ],
+    melody: [
+      [81, 0, 84, 81, 88, 0, 86, 84],
+      [84, 0, 81, 77, 81, 0, 84, 0],
+      [84, 0, 88, 91, 88, 0, 84, 0],
+      [86, 0, 83, 79, 83, 86, 0, 0],
+    ],
+  },
   // Coastal Road: calipso tropical sincopado (F – Bb – C – F)
   'coastal-road': {
     bpm: 140,

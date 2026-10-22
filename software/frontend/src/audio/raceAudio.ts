@@ -4,6 +4,7 @@ import type { RaceSession } from '../game/session';
 import type { Racer } from '../sim/physics';
 import type { RaceEvent } from '../sim/race';
 import { audio, sfx } from './audio';
+import { THEMES } from '../render/themes';
 import { EngineSound } from './engine';
 import { music } from './music';
 import { HIT, ITEM, PROJ_STATE } from '../sim/items';
@@ -83,7 +84,7 @@ export class RaceAudio {
       if (p.charge < DRIFT_ORANGE && r.drift.charge >= DRIFT_ORANGE) sfx.driftLevel(2);
     }
     if (r.bump < p.bump && r.bump < 0.15) sfx.bump();
-    if (r.splash > p.splash + 0.05) sfx.splash();
+    if (r.splash > p.splash + 0.05) (THEMES[this.trackId]?.coast?.void ? sfx.fall : sfx.splash)();
     else if (r.respawn > p.respawn + 0.5) sfx.respawn();
     if (r.shieldLeft > p.shield + 1) sfx.shieldUp();
     if (r.magnetLeft > p.magnet + 1) sfx.magnet();

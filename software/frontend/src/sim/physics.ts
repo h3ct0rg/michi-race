@@ -12,6 +12,8 @@ const DRIFT_CHARGE_BLUE = 0.6; // segundos de derrape para mini-turbo azul
 const DRIFT_CHARGE_ORANGE = 1.4; // ... y naranja
 const RESPAWN_AFTER = 2.5; // segundos perdido lejos de la pista
 export const SPLASH_TIME = 0.8;
+const SLOPE_SPEED = 0.3; // con pendiente 1 el tope de velocidad baja (o sube) un 30 %
+const SLOPE_GRAVITY = 3000; // empuje de la gravedad por unidad de pendiente (unidades/s²)
 
 export interface Racer {
   id: string;
@@ -179,6 +181,12 @@ export function stepRacer(r: Racer, input: Input, track: Track, dt: number) {
   let maxSpeed = boosting ? p.maxSpeed * p.turboMult : p.maxSpeed;
   if (r.magnetLeft > 0) maxSpeed *= 1.12;
   if (r.shockLeft > 0) maxSpeed *= 0.55;
+  // pendientes (pistas con slopePhysics): subiendo baja el tope y se frena; bajando, al revés
+  if (seg.slope !== 0) {
+    const s = Math.max(-1, Math.min(1, seg.slope));
+    maxSpeed *= 1 - SLOPE_SPEED * s;
+    r.speed -= SLOPE_GRAVITY * s * dt;
+  }
   if (boosting) r.speed += p.accel * 2 * dt;
   else if (throttle) r.speed += p.accel * (r.magnetLeft > 0 ? 1.5 : 1) * dt;
   else if (brake) r.speed -= p.braking * dt;

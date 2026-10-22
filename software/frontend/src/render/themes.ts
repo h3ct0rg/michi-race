@@ -32,12 +32,14 @@ export interface TrackTheme {
   sky: [string, string];
   sun?: SunDef;
   /** Ambientación nocturna: estrellas, lluvia y líneas de neón en la pista. */
-  night?: { stars: boolean; rain: boolean; laneGlow: string; edgeGlow: string };
+  night?: { stars: boolean; rain: boolean; laneGlow: string; edgeGlow: string; deepStars?: boolean };
+  /** Calzada arcoíris (franjas de colores a lo ancho, con un brillo que corre). */
+  rainbow?: boolean;
   road: { light: RoadColors; dark: RoadColors; fog: string };
   layers: ThemeLayer[];
   sprites: Record<string, ThemeSprite>;
   /** Mar junto a la pista (sim: segment.water/shore): agua, espuma, tablero y baranda del puente. */
-  coast?: { water: [string, string]; deep: string; foam: string; deck: [string, string]; rail: string; post: string };
+  coast?: { water: [string, string]; deep: string; foam: string; deck: [string, string]; rail: string; post: string; void?: boolean };
   /** Colores del polvo que levantan los karts fuera de pista. */
   dust: [string, string];
 }
@@ -196,12 +198,41 @@ const LIBERTY_RUN: TrackTheme = {
   dust: ['#9c9fa6', '#d8dde6'],
 };
 
+const COSMIC_RAINBOW: TrackTheme = {
+  trackId: 'cosmic-rainbow',
+  preview: '/assets/cosmic/preview.png',
+  tagline: 'Una ruta arcoíris en el espacio: subidas empinadas y caída al vacío',
+  difficulty: 5,
+  // arriba empata con la nebulosa; abajo, el negro del espacio (se ve bajo la ruta flotante)
+  sky: ['#1f0543', '#06021a'],
+  night: { stars: false, rain: false, laneGlow: '', edgeGlow: '#ffffff', deepStars: true },
+  rainbow: true,
+  road: {
+    light: { road: '#7a5cff', grass: '#06021a', rumble: '#ffffff', lane: '' },
+    dark: { road: '#6a4cef', grass: '#06021a', rumble: '#d65cff', lane: '' },
+    fog: '#2a0b5c',
+  },
+  // vacío: sin suelo ni barandas; el "salpicón" son chispas de estrellas
+  coast: { water: ['#ffe14d', '#d65cff'], deep: '#06021a', foam: '#ffffff', deck: ['#ffffff', '#ffffff'], rail: '#ffffff', post: '#ffffff', void: true },
+  layers: [
+    { src: '/assets/cosmic/nebula.png', fallback: () => ridge(80, 3, 0.5, ['#5b1a9e', '#d65cff', '#3a0d7a'], 30, 70), speed: 0.0008, y: 138 },
+    { src: '/assets/cosmic/planets.png', fallback: clouds, speed: 0.0004, y: 108 },
+  ],
+  sprites: {
+    star: { src: '/assets/cosmic/star.png', fallback: bush, worldWidth: 700 },
+    comet: { src: '/assets/cosmic/comet.png', fallback: bush, worldWidth: 1600 },
+    arch: { src: '/assets/cosmic/arch.png', fallback: proceduralTree, worldWidth: 7200 },
+  },
+  dust: ['#ffe14d', '#d65cff'],
+};
+
 export const THEMES: Record<string, TrackTheme> = {
   [GREEN_VALLEY.trackId]: GREEN_VALLEY,
   [DESERT_RUN.trackId]: DESERT_RUN,
   [NEON_CITY.trackId]: NEON_CITY,
   [COASTAL_ROAD.trackId]: COASTAL_ROAD,
   [LIBERTY_RUN.trackId]: LIBERTY_RUN,
+  [COSMIC_RAINBOW.trackId]: COSMIC_RAINBOW,
 };
 
 const cache = new Map<string, Promise<LoadedTheme>>();

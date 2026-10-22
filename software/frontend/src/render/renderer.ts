@@ -20,6 +20,8 @@ const RAIL_HEIGHT = 260; // altura de la baranda del puente (unidades de mundo)
 const SPLASH_SHOW = 0.8; // segundos que dura el salpicón dibujado
 /** Hasta dónde se ven los objetos `far` (p. ej. la Estatua de la Libertad), en segmentos. */
 const FAR_SEGMENTS = 800;
+/** Franjas de la calzada arcoíris, de un borde al otro. */
+const RAINBOW = ['#ff4d6d', '#ff9f1c', '#ffe14d', '#4dff88', '#3ec5ff', '#7a5cff', '#d65cff'];
 
 
 interface Particle {
@@ -118,6 +120,7 @@ export class Renderer {
     const yShift = Math.round(-playerY / 400);
     drawSky(ctx, WIDTH, HEIGHT, theme.sky);
     if (theme.night?.stars) this.drawStars(yShift);
+    if (theme.night?.deepStars) this.drawDeepStars();
     if (theme.sun) drawSun(ctx, theme.sun, ((this.skyOffset * 0.0004) % 1) * WIDTH, yShift, WIDTH);
     for (const layer of layers) drawLayer(ctx, layer, this.skyOffset * layer.speed, yShift, WIDTH);
 
@@ -165,13 +168,13 @@ export class Renderer {
     const others = race.racers.filter((r) => r !== player).map((r) => ({ r, ...view(r) }));
     for (let n = drawn.length - 1; n > 0; n--) {
       const seg = drawn[n];
-      if (seg.water === 3) this.drawRails(seg);
+      if (seg.water === 3 && !this.assets.theme.coast?.void) this.drawRails(seg);
       for (const s of seg.sprites) {
         const def = this.assets.sprites[s.kind];
         if (!def) continue;
         const scale = seg.p1.screen.scale;
         const sx = seg.p1.screen.x + scale * s.offset * ROAD_WIDTH * (WIDTH / 2);
-        const align = s.kind === 'banner' ? -0.5 : s.offset < 0 ? -1 : 0;
+        const align = s.kind === 'banner' || s.offset === 0 ? -0.5 : s.offset < 0 ? -1 : 0;
         this.drawSprite(def.img, def.worldWidth, scale, sx, seg.p1.screen.y, align, seg.clip);
       }
       if (seg.itemRow !== null) this.drawItemBoxes(race, seg);
@@ -221,14 +224,21 @@ export class Renderer {
       const left = Math.round(cx - w);
       const right = Math.round(cx + w);
 
-      ctx.fillStyle = colors.grass;
-      ctx.fillRect(0, y, WIDTH, 1);
-      if (seg.water !== 0) this.drawWaterRow(seg, cx, w, y, t);
+      // en el espacio (vacío) no hay suelo: a los costados de la ruta se ve el cielo estrellado
+      const voidSpace = !!this.assets.theme.coast?.void;
+      if (!voidSpace) {
+        ctx.fillStyle = colors.grass;
+        ctx.fillRect(0, y, WIDTH, 1);
+        if (seg.water !== 0) this.drawWaterRow(seg, cx, w, y, t);
+      }
       ctx.fillStyle = colors.rumble;
       ctx.fillRect(Math.round(cx - w - rumble), y, Math.round(rumble), 1);
       ctx.fillRect(right, y, Math.round(rumble), 1);
-      ctx.fillStyle = colors.road;
-      ctx.fillRect(left, y, right - left, 1);
+      if (this.assets.theme.rainbow) this.drawRainbowRow(seg, left, right, y);
+      else {
+        ctx.fillStyle = colors.road;
+        ctx.fillRect(left, y, right - left, 1);
+      }
 
       if (seg.start) {
         const cells = 12;
@@ -270,7 +280,8 @@ export class Renderer {
       if (seg.fog < 1) {
         ctx.globalAlpha = 1 - seg.fog;
         ctx.fillStyle = palette.fog;
-        ctx.fillRect(0, y, WIDTH, 1);
+        if (voidSpace) ctx.fillRect(Math.round(cx - w - rumble), y, Math.round(2 * (w + rumble)), 1);
+        else ctx.fillRect(0, y, WIDTH, 1);
         ctx.globalAlpha = 1;
       }
     }
@@ -525,6 +536,39 @@ export class Renderer {
       ctx.fillStyle = band % 2 === 0 ? '#f3db00' : '#ff506e';
       ctx.fillRect(l + px, y, step, 1);
     }
+  }
+
+  // Calzada arcoíris: franjas de colores a lo ancho; los segmentos oscuros dan sensación de velocidad y
+  // un brillo blanco recorre la pista.
+  private drawRainbowRow(seg: Segment, left: number, right: number, y: number) {
+    const ctx = this.ctx;
+    const k = RAINBOW.length;
+    const sw = (right - left) / k;
+    for (let i = 0; i < k; i++) {
+      ctx.fillStyle = RAINBOW[i];
+      ctx.fillRect(Math.round(left + i * sw), y, Math.ceil(sw), 1);
+    }
+    const sheen = (seg.index + Math.floor(this.time * 14)) % 22;
+    if (seg.dark || sheen < 2) {
+      ctx.globalAlpha = sheen < 2 ? 0.45 : 0.18;
+      ctx.fillStyle = sheen < 2 ? '#ffffff' : '#000000';
+      ctx.fillRect(left, y, right - left, 1);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Cielo estrellado en toda la pantalla (espacio): se ve también por debajo de la ruta flotante.
+  private drawDeepStars() {
+    const ctx = this.ctx;
+    for (let i = 0; i < 160; i++) {
+      const x = (((i * 131 + Math.floor(this.skyOffset * 0.05)) % WIDTH) + WIDTH) % WIDTH;
+      const y = (i * 71) % HEIGHT;
+      const twinkle = Math.sin(this.time * 2.5 + i * 1.3) > 0.7;
+      ctx.fillStyle = twinkle ? '#ffffff' : ['#ff9ae6', '#7df4ff', '#ffe14d'][i % 3];
+      ctx.globalAlpha = twinkle ? 1 : 0.5;
+      ctx.fillRect(x, y, i % 9 === 0 ? 2 : 1, i % 9 === 0 ? 2 : 1);
+    }
+    ctx.globalAlpha = 1;
   }
 
   // Estrellas fijas con titileo (solo arriba del skyline).

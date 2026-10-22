@@ -63,5 +63,6 @@ public static class Tracks
         [NeonCity.Def.Id] = NeonCity.Def,
         [CoastalRoad.Def.Id] = CoastalRoad.Def,
         [LibertyRun.Def.Id] = LibertyRun.Def,
+        [CosmicRainbow.Def.Id] = CosmicRainbow.Def,
     };
 }

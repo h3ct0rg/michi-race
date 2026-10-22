@@ -134,6 +134,7 @@ const es = {
   'track.desert-run': 'Dunas, cañones y mesas al atardecer',
   'track.neon-city': 'Ciudad nocturna, neón y lluvia',
   'track.liberty-run': 'Nueva York de día: rascacielos, taxis y la Estatua de la Libertad',
+  'track.cosmic-rainbow': 'Una ruta arcoíris en el espacio: subidas empinadas y caída al vacío',
   'track.laps': '{n} VUELTAS',
   // ---- carrera / HUD
   'hud.lap': 'VUELTA {n} / {total}',
@@ -409,6 +410,7 @@ const en: Record<Key, string> = {
   'track.desert-run': 'Dunes, canyons and mesas at sunset',
   'track.neon-city': 'Night city, neon and rain',
   'track.liberty-run': 'New York by day: skyscrapers, taxis and the Statue of Liberty',
+  'track.cosmic-rainbow': 'A rainbow road in space: steep climbs and a fall into the void',
   'track.laps': '{n} LAPS',
   'hud.lap': 'LAP {n} / {total}',
   'hud.time': 'TIME',

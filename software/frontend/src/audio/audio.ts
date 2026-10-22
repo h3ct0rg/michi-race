@@ -238,6 +238,12 @@ export const sfx = {
     audio.tone({ type: 'triangle', freq: midiToFreq(60), dur: 0.8, vol: 0.25, delay: 0.36 });
     audio.noise({ dur: 0.6, vol: 0.12, filter: 'highpass', freq: 6000, delay: 0.36 });
   },
+  // caída al vacío: silbido que baja y un destello de campanitas
+  fall: () => {
+    audio.tone({ type: 'sine', freq: 900, freqEnd: 90, dur: 0.7, vol: 0.3 });
+    audio.noise({ dur: 0.6, vol: 0.15, filter: 'bandpass', freq: 2500, freqEnd: 400, q: 3 });
+    [0, 0.08, 0.16, 0.24].forEach((d, i) => audio.tone({ type: 'triangle', freq: midiToFreq(96 - i * 4), dur: 0.12, vol: 0.1, delay: 0.55 + d }));
+  },
   splash: () => {
     // golpe contra el agua + rocío que cae
     audio.noise({ dur: 0.25, vol: 0.5, filter: 'lowpass', freq: 2200, freqEnd: 300 });

@@ -70,6 +70,8 @@ public static class Physics
     private const double DriftChargeOrange = 1.4;
     private const double RespawnAfter = 2.5;
     public const double SplashTime = 0.8;
+    private const double SlopeSpeed = 0.3;
+    private const double SlopeGravity = 3000;
 
     public static double WrapZ(double z, double len) => ((z % len) + len) % len;
     public static double ZOf(Racer r, Track track) => WrapZ(r.Distance, track.Length);
@@ -165,6 +167,13 @@ public static class Physics
         var maxSpeed = boosting ? p.MaxSpeed * p.TurboMult : p.MaxSpeed;
         if (r.MagnetLeft > 0) maxSpeed *= 1.12;
         if (r.ShockLeft > 0) maxSpeed *= 0.55;
+        // pendientes (pistas con SlopePhysics): subiendo baja el tope y se frena; bajando, al revés
+        if (seg.Slope != 0)
+        {
+            var s = Math.Max(-1, Math.Min(1, seg.Slope));
+            maxSpeed *= 1 - SlopeSpeed * s;
+            r.Speed -= SlopeGravity * s * dt;
+        }
         if (boosting) r.Speed += p.Accel * 2 * dt;
         else if (throttle) r.Speed += p.Accel * (r.MagnetLeft > 0 ? 1.5 : 1) * dt;
         else if (brake) r.Speed -= p.Braking * dt;

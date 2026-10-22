@@ -1,7 +1,8 @@
 namespace MichiRacer.Game.Sim;
 
 /// <summary>Tramo de pista: [enter, hold, leave, curve, hill]. Hill no afecta la simulación.</summary>
-public sealed record RoadPiece(int Enter, int Hold, int Leave, double Curve);
+/// <summary>Hill: altura que sube el tramo (en segmentos); solo la usa la física si la pista tiene SlopePhysics.</summary>
+public sealed record RoadPiece(int Enter, int Hold, int Leave, double Curve, double Hill = 0);
 
 public sealed record BoostPadDef(int Segment, double X);
 
@@ -35,7 +36,8 @@ public sealed record TrackDef(
     IReadOnlyList<HazardDef> Hazards,
     DecorDef Decor,
     SeaDef? Sea = null,
-    IReadOnlyList<LandmarkDef>? Landmarks = null);
+    IReadOnlyList<LandmarkDef>? Landmarks = null,
+    bool SlopePhysics = false);
 
 public sealed record RoadsideSprite(string Kind, double Offset, bool Collides);
 
@@ -48,6 +50,8 @@ public sealed class Segment(int index, double curve)
     public (int Kind, double X)? Hazard { get; set; }
     public int? ItemRow { get; set; }
     public int? Checkpoint { get; set; }
+    /// <summary>Pendiente para la física (+ sube, - baja); 0 si la pista no usa SlopePhysics.</summary>
+    public double Slope { get; set; }
     /// <summary>1 = agua a la izquierda, 2 = a la derecha, 3 = ambos (puente).</summary>
     public int Water { get; set; }
     public double Shore { get; set; }
@@ -102,6 +106,23 @@ public sealed class Track
         var t = new Track(def);
         foreach (var r in def.Roads) t.AddRoad(r.Enter, r.Hold, r.Leave, r.Curve);
         var n = t.Segments.Count;
+
+        // pendientes para la física (mismo perfil triangular que TypeScript)
+        if (def.SlopePhysics)
+        {
+            var i = 0;
+            foreach (var r in def.Roads)
+            {
+                var total = r.Enter + r.Hold + r.Leave;
+                var avg = r.Hill / total;
+                for (var k = 0; k < total; k++)
+                {
+                    var p = (k + 0.5) / total;
+                    t.Segments[i + k].Slope = 2 * avg * (1 - Math.Abs(2 * p - 1));
+                }
+                i += total;
+            }
+        }
 
         t.AddSprite(8, "banner", 0, collides: false);
 

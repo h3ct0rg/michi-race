@@ -43,6 +43,11 @@ export interface TrackDef {
    */
   landmarks?: { segment: number; kind: string; offset: number; far?: boolean }[];
   decor: DecorDef;
+  /**
+   * Las subidas frenan y las bajadas aceleran. La pendiente sale de `hill` de cada tramo con un perfil
+   * triangular (solo sumas y productos: idéntica en el servidor C#). Sin esto las colinas son solo visuales.
+   */
+  slopePhysics?: boolean;
 }
 
 /**
@@ -83,6 +88,7 @@ export interface Segment {
   sprites: RoadsideSprite[];
   pad: number | null; // x central de un pad de turbo
   hazard: { kind: number; x: number; part: number } | null;
+  slope: number; // pendiente para la física (+ sube, - baja); 0 si la pista no usa slopePhysics
   water: number; // 1 = agua a la izquierda, 2 = a la derecha, 3 = ambos (puente)
   shore: number; // x donde empieza el agua
   itemRow: number | null; // índice de fila de cajas que empieza en este segmento
@@ -140,6 +146,7 @@ export class Track {
       sprites: [],
       pad: null,
       hazard: null,
+      slope: 0,
       water: 0,
       shore: 0,
       itemRow: null,
@@ -172,6 +179,20 @@ export function buildTrack(def: TrackDef): Track {
     t.addRoad(enter, hold, leave, curve, hill ?? -t.lastY() / SEGMENT_LENGTH);
   }
   const n = t.segments.length;
+
+  // pendientes para la física: cada tramo sube `hill` segmentos de altura con un perfil triangular
+  if (def.slopePhysics) {
+    let i = 0;
+    for (const [enter, hold, leave, , hill] of def.roads) {
+      const total = enter + hold + leave;
+      const avg = (hill ?? 0) / total;
+      for (let k = 0; k < total; k++) {
+        const p = (k + 0.5) / total;
+        t.segments[i + k].slope = 2 * avg * (1 - Math.abs(2 * p - 1));
+      }
+      i += total;
+    }
+  }
 
   for (let i = 0; i < 3; i++) t.segments[i].start = true;
   t.addSprite(8, 'banner', 0, false);

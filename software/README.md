@@ -116,6 +116,7 @@ espejo para la práctica en `frontend/src/game/tournament.ts`.
 | Desert Run | Atardecer, mesas, dunas, cañón de curvas en S, ruinas |
 | Neon City | Noche, rascacielos, neón, lluvia, paso elevado y chicana |
 | Coastal Road | Isla tropical al mediodía, playa, faro y un puente sobre el mar (salirse por la orilla = caer al agua) |
+| Cosmic Rainbow | Ruta arcoíris flotando en el espacio, de noche: subidas y bajadas empinadas (subiendo frenas, bajando aceleras) y sin barandas (salirse = caer al vacío) |
 | Liberty Run | Nueva York de día: avenidas con rascacielos, taxis y el puerto; la Estatua de la Libertad aparece a lo lejos y se pasa a su lado por un puente |
 
 ## Power-ups y obstáculos
@@ -140,7 +141,8 @@ Agregar una pista:
 1. Lógica: `frontend/src/sim/tracks/<pista>.ts` (curvas, colinas, pads, reglas de decoración) y registrarla en `tracks/index.ts`;
    la misma definición en `backend/src/MichiRacer.Game/Sim/Tracks/` y en `Tracks.All`.
    Opcional: `sea` (lado del mar, orilla, puentes y `ranges` = tramos con mar) y `landmarks` (objetos puntuales sin
-   colisión; con `far: true` se ven desde lejos, más allá de la distancia de dibujo).
+   colisión; con `far: true` se ven desde lejos, más allá de la distancia de dibujo). `slopePhysics: true` hace que las
+   subidas frenen y las bajadas aceleren (en C# los tramos llevan `Hill`).
    Para que entre al torneo: agregarla a `TournamentRules.Order` (C#) y `TOURNAMENT_ORDER` (TS).
 2. Ambientación: un `TrackTheme` en `frontend/src/render/themes.ts` (paleta, cielo, sol, capas de fondo, objetos)
    y su arte en `frontend/public/assets/<pista>/`. Si falta una imagen se usa un placeholder procedural.
