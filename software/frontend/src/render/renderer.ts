@@ -18,6 +18,8 @@ const DRAW_DISTANCE = 220;
 const FOG_DENSITY = 3.5;
 const RAIL_HEIGHT = 260; // altura de la baranda del puente (unidades de mundo)
 const SPLASH_SHOW = 0.8; // segundos que dura el salpicón dibujado
+/** Hasta dónde se ven los objetos `far` (p. ej. la Estatua de la Libertad), en segmentos. */
+const FAR_SEGMENTS = 800;
 
 
 interface Particle {
@@ -140,6 +142,23 @@ export class Renderer {
       if (seg.p1.camera.z <= this.cameraDepth || seg.p2.screen.y >= seg.p1.screen.y || seg.p2.screen.y >= maxy) continue;
       this.drawSegment(seg, maxy);
       maxy = Math.max(0, Math.ceil(seg.p2.screen.y));
+    }
+
+    // objetos gigantes vistos de lejos (más allá de la distancia de dibujo): se apoyan en el horizonte de la
+    // pista con la misma perspectiva que los objetos normales, así al entrar en rango siguen creciendo sin saltos
+    const farthest = drawn[drawn.length - 1];
+    for (const lm of track.def.landmarks ?? []) {
+      if (!lm.far || !farthest) continue;
+      const dz = wrapZ(lm.segment * SEGMENT_LENGTH - camZ, track.length);
+      if (dz <= DRAW_DISTANCE * SEGMENT_LENGTH || dz > FAR_SEGMENTS * SEGMENT_LENGTH) continue;
+      const def = this.assets.sprites[lm.kind];
+      if (!def) continue;
+      const scale = this.cameraDepth / dz;
+      const sx = farthest.p2.screen.x + scale * lm.offset * ROAD_WIDTH * (WIDTH / 2);
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, (FAR_SEGMENTS * SEGMENT_LENGTH - dz) / (60 * SEGMENT_LENGTH)); // aparece suave
+      this.drawSprite(def.img, def.worldWidth, scale, sx, maxy, lm.offset < 0 ? -1 : 0, maxy);
+      ctx.restore();
     }
 
     // sprites y karts rivales de atrás hacia adelante

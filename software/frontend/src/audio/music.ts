@@ -67,6 +67,22 @@ const SONGS: Record<string, Song> = {
       [69, 70, 73, 0, 76, 0, 73, 0],
     ],
   },
+  // Liberty Run: swing de gran ciudad en Si bemol (Bb – G7 – Cm – F7)
+  'liberty-run': {
+    bpm: 150,
+    chords: [
+      [46, 62, 65, 70, 74],
+      [43, 59, 62, 65, 71],
+      [48, 63, 67, 70, 75],
+      [41, 63, 65, 69, 72],
+    ],
+    melody: [
+      [74, 0, 77, 74, 82, 0, 81, 79],
+      [77, 0, 74, 71, 74, 0, 0, 79],
+      [79, 0, 75, 79, 84, 0, 82, 79],
+      [77, 75, 74, 72, 70, 0, 72, 0],
+    ],
+  },
   // Coastal Road: calipso tropical sincopado (F – Bb – C – F)
   'coastal-road': {
     bpm: 140,

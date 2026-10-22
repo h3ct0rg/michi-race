@@ -18,7 +18,8 @@ public sealed record DecorDef(
     IReadOnlyList<string>? Sea = null);
 
 /// <summary>Mar a un costado (Side -1 izquierda, 1 derecha) desde Shore; en los puentes hay agua a ambos lados.</summary>
-public sealed record SeaDef(int Side, double Shore, IReadOnlyList<(int From, int To)> Bridges, double BridgeShore);
+/// <summary>Ranges: tramos con mar (inclusive); null = mar en toda la pista.</summary>
+public sealed record SeaDef(int Side, double Shore, IReadOnlyList<(int From, int To)> Bridges, double BridgeShore, IReadOnlyList<(int From, int To)>? Ranges = null);
 
 public sealed record LandmarkDef(int Segment, string Kind, double Offset);
 
@@ -124,10 +125,13 @@ public sealed class Track
         // mar y puentes
         if (def.Sea is { } sea)
         {
-            foreach (var seg in t.Segments)
+            foreach (var (from, to) in sea.Ranges ?? [(0, n - 1)])
             {
-                seg.Water = sea.Side < 0 ? 1 : 2;
-                seg.Shore = sea.Shore;
+                for (var i = from; i <= to && i < n; i++)
+                {
+                    t.Segments[i].Water = sea.Side < 0 ? 1 : 2;
+                    t.Segments[i].Shore = sea.Shore;
+                }
             }
             foreach (var (from, to) in sea.Bridges)
             {

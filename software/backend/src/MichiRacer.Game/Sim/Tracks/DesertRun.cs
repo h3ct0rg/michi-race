@@ -62,5 +62,6 @@ public static class Tracks
         [DesertRun.Def.Id] = DesertRun.Def,
         [NeonCity.Def.Id] = NeonCity.Def,
         [CoastalRoad.Def.Id] = CoastalRoad.Def,
+        [LibertyRun.Def.Id] = LibertyRun.Def,
     };
 }

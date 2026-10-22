@@ -3,6 +3,7 @@ import { COASTAL_ROAD } from './coastalRoad';
 import { DESERT_RUN } from './desertRun';
 import { GREEN_VALLEY } from './greenValley';
 import { NEON_CITY } from './neonCity';
+import { LIBERTY_RUN } from './libertyRun';
 
 /** Pistas disponibles, en el orden del torneo (ver game/tournament.ts). Espejo de Tracks.All en el backend. */
 export const TRACKS: Record<string, TrackDef> = {
@@ -10,6 +11,7 @@ export const TRACKS: Record<string, TrackDef> = {
   [COASTAL_ROAD.id]: COASTAL_ROAD,
   [DESERT_RUN.id]: DESERT_RUN,
   [NEON_CITY.id]: NEON_CITY,
+  [LIBERTY_RUN.id]: LIBERTY_RUN,
 };
 
 export const DEFAULT_TRACK = GREEN_VALLEY.id;

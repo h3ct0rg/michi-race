@@ -3,7 +3,7 @@
 import { drawLayer, drawSky, drawSun } from '../render/parallax';
 import type { KartFrames } from '../render/sprites';
 import { loadTheme, type LoadedTheme } from '../render/themes';
-import { TOURNAMENT_ORDER } from '../game/tournament';
+import { TRACKS } from '../sim/tracks';
 
 const H = 270;
 const SCENE_SECONDS = 9;
@@ -37,9 +37,10 @@ export class HomeBackground {
   ) {
     this.ctx = canvas.getContext('2d')!;
     // el primer tema llega rápido (precargado); el resto en segundo plano
-    loadTheme(TOURNAMENT_ORDER[0]).then((th) => {
+    const ids = Object.keys(TRACKS);
+    loadTheme(ids[0]).then((th) => {
       this.themes[0] = th;
-      TOURNAMENT_ORDER.slice(1).forEach((id, i) => loadTheme(id).then((x) => (this.themes[i + 1] = x)));
+      ids.slice(1).forEach((id, i) => loadTheme(id).then((x) => (this.themes[i + 1] = x)));
     });
   }
 

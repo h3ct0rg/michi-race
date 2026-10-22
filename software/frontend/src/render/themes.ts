@@ -159,11 +159,49 @@ const COASTAL_ROAD: TrackTheme = {
   dust: ['#f3d99c', '#fff4d6'],
 };
 
+const LIBERTY_RUN: TrackTheme = {
+  trackId: 'liberty-run',
+  preview: '/assets/liberty/preview.png',
+  tagline: 'Nueva York de día: rascacielos, taxis y la Estatua de la Libertad',
+  difficulty: 4,
+  sky: ['#3d9bff', '#cfeeff'],
+  sun: { color: '#fff6c2', stripe: '#fff6c2', radius: 13, y: 30 },
+  road: {
+    light: { road: '#5f626b', grass: '#a6a9b0', rumble: '#ffffff', lane: '#f2f2f2' },
+    dark: { road: '#585b63', grass: '#9c9fa6', rumble: '#f2c400', lane: '' },
+    fog: '#cfe4f2',
+  },
+  coast: {
+    water: ['#2f8fb0', '#2b86a6'],
+    deep: '#1f6f92',
+    foam: '#e8f6ff',
+    deck: ['#7c7f88', '#72757e'],
+    rail: '#d8dde6',
+    post: '#3a5f8a',
+  },
+  layers: [
+    { fallback: clouds, speed: 0.0005, y: 92 },
+    { src: '/assets/liberty/skyline.png', fallback: () => ridge(120, 4, 0.5, ['#3b5c9e', '#6f93d6', '#2c477f'], 50, 110), speed: 0.001, y: 136 },
+    { src: '/assets/liberty/harbor.png', fallback: () => ridge(40, 5, 0.3, ['#2f8fb0', '#7fd0e0', '#2b86a6'], 4, 10), speed: 0.0015, y: 160, ground: '#368295' },
+  ],
+  sprites: {
+    tower: { src: '/assets/liberty/tower.png', fallback: proceduralTree, worldWidth: 2300 },
+    nylamp: { src: '/assets/liberty/nylamp.png', fallback: bush, worldWidth: 500 },
+    taxi: { src: '/assets/liberty/taxi.png', fallback: bush, worldWidth: 1300 },
+    hotdog: { src: '/assets/liberty/hotdog.png', fallback: bush, worldWidth: 900 },
+    ferry: { src: '/assets/liberty/ferry.png', fallback: bush, worldWidth: 1800 },
+    boat: { src: '/assets/coastal/boat.png', fallback: bush, worldWidth: 1500 },
+    liberty: { src: '/assets/liberty/liberty.png', fallback: proceduralTree, worldWidth: 7000 },
+  },
+  dust: ['#9c9fa6', '#d8dde6'],
+};
+
 export const THEMES: Record<string, TrackTheme> = {
   [GREEN_VALLEY.trackId]: GREEN_VALLEY,
   [DESERT_RUN.trackId]: DESERT_RUN,
   [NEON_CITY.trackId]: NEON_CITY,
   [COASTAL_ROAD.trackId]: COASTAL_ROAD,
+  [LIBERTY_RUN.trackId]: LIBERTY_RUN,
 };
 
 const cache = new Map<string, Promise<LoadedTheme>>();

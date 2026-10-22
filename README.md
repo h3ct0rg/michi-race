@@ -19,7 +19,7 @@ Juego de carreras arcade **multijugador** para navegador, en **2.5D** y **pixel 
   reinicia o los invitados votan la revancha.
 - **Gameplay**: derrape con mini-turbo, pads de velocidad, choques, checkpoints, 3 vueltas, resultados.
 - **Power-ups**: turbo, escudo, bomba, rayo, imán, hielo y cohete, más obstáculos (aceite, arena, charcos).
-- **Pistas**: *Green Valley* (bosques y montañas nevadas), *Desert Run* (atardecer, dunas y cañón) , *Neon City* (noche, neón y lluvia) y *Coastal Road* (isla tropical con puente: si te sales al mar, ¡salpicón!).
+- **Pistas**: *Green Valley* (bosques y montañas nevadas), *Desert Run* (atardecer, dunas y cañón) , *Neon City* (noche, neón y lluvia) , *Coastal Road* (isla tropical con puente: si te sales al mar, ¡salpicón!) y *Liberty Run* (Nueva York, pasando junto a la Estatua de la Libertad).
 - **Sonido** chiptune generado en vivo (motor, efectos y música por pista).
 - **Práctica local** contra bots, teclado o gamepad.
 - Arte generado con [PixelLab](https://www.pixellab.ai/).

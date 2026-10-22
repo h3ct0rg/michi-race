@@ -29,9 +29,19 @@ export interface TrackDef {
    * Mar a un costado (-1 izquierda, 1 derecha) a partir de `shore` (en x). En los puentes hay agua
    * a ambos lados desde `bridgeShore`. Pasar la orilla = caer al agua.
    */
-  sea?: { side: number; shore: number; bridges: [number, number][]; bridgeShore: number };
-  /** Objetos puntuales sin colisión (faros, etc.). */
-  landmarks?: { segment: number; kind: string; offset: number }[];
+  sea?: {
+    side: number;
+    shore: number;
+    bridges: [number, number][];
+    bridgeShore: number;
+    /** Tramos con mar (segmentos, inclusive); sin esto hay mar en toda la pista. */
+    ranges?: [number, number][];
+  };
+  /**
+   * Objetos puntuales sin colisión (faros, estatuas...). `far`: se ve desde lejos, más allá de la distancia
+   * de dibujo de la pista (p. ej. la Estatua de la Libertad apareciendo en el horizonte).
+   */
+  landmarks?: { segment: number; kind: string; offset: number; far?: boolean }[];
   decor: DecorDef;
 }
 
@@ -185,9 +195,12 @@ export function buildTrack(def: TrackDef): Track {
 
   // mar y puentes
   if (def.sea) {
-    for (const seg of t.segments) {
-      seg.water = def.sea.side < 0 ? 1 : 2;
-      seg.shore = def.sea.shore;
+    const ranges = def.sea.ranges ?? [[0, n - 1]];
+    for (const [from, to] of ranges) {
+      for (let i = from; i <= to && i < n; i++) {
+        t.segments[i].water = def.sea.side < 0 ? 1 : 2;
+        t.segments[i].shore = def.sea.shore;
+      }
     }
     for (const [from, to] of def.sea.bridges) {
       for (let i = from; i <= to && i < n; i++) {
