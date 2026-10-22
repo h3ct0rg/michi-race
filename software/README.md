@@ -73,6 +73,13 @@ Referencia (localhost, 3 salas × 20 pilotos): tick 0,23 ms de 33 ms, snapshot d
   `online/<id>` una entrada por pestaña abierta (se borra sola con `onDisconnect`) y `totalPlayers`, que suma 1 la
   primera vez que entra cada navegador. Son informativos: la base es pública y cualquiera podría modificarlos.
 
+## Control (gamepad)
+
+Se reconoce cualquier control con mapeo estándar (Xbox, PlayStation…) al apretar un botón. En Configurar → Control:
+estado del control, **reasignación** de botones (principal y alternativo por acción; un botón no puede quedar en dos
+acciones), zona muerta del stick, girar con el stick derecho, vibración (Chrome/Edge) y restablecer. En los menús se
+navega con la cruceta o el stick, A elige y B vuelve. Código: `frontend/src/input/gamepad.ts` y `input/padMenu.ts`.
+
 ## Récords mundiales
 
 Top 10 por pista de **carrera completa** y **mejor vuelta**, compartidos por todos los jugadores, en Firebase

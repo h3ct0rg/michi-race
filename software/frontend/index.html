@@ -83,6 +83,15 @@
             <button class="btn btn-ghost sm" data-lang="en">ENGLISH</button>
           </div>
         </div>
+        <!-- control (gamepad): estado, botones reasignables y ajustes -->
+        <div class="card-head cyan pad-head"><span data-i18n="pad.title">🎮 CONTROL</span></div>
+        <div class="pad-status" id="s-pad-status"></div>
+        <div class="pad-binds" id="s-pad-binds"></div>
+        <div class="pad-hint muted" data-i18n="pad.hint">Toca un botón de la tabla y presiona el botón del control que quieras usar.</div>
+        <label class="slider-row"><span data-i18n="pad.deadzone">ZONA MUERTA DEL STICK</span><input type="range" id="s-pad-dead" min="0" max="40" step="5" /><b id="s-pad-dead-v"></b></label>
+        <label class="toggle-row"><span data-i18n="pad.rightStick">GIRAR CON EL STICK DERECHO</span><input type="checkbox" id="s-pad-right" /></label>
+        <label class="toggle-row"><span data-i18n="pad.vibration">VIBRACIÓN</span><input type="checkbox" id="s-pad-vib" /></label>
+        <button id="s-pad-reset" class="btn btn-ghost sm" data-i18n="pad.reset">⟲ RESTABLECER CONTROL</button>
         <button id="s-done" class="btn btn-primary wide" data-i18n="set.done">✔ LISTO</button>
       </div>
     </div>

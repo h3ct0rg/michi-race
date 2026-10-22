@@ -12,6 +12,7 @@ import { RaceAudio } from '../audio/raceAudio';
 import { HIT, ITEM } from '../sim/items';
 import { t } from '../i18n';
 import { onRecords, recordsOf } from '../net/records';
+import { rumble } from '../input/gamepad';
 
 export class RaceView {
   private session: RaceSession | null = null;
@@ -23,6 +24,9 @@ export class RaceView {
   readonly debug = new DebugPanel();
   private readonly audio = new RaceAudio();
   private stopRecords: () => void = () => {};
+  /** Estado previo del kart propio para detectar choques y caídas al agua (vibración del control). */
+  private prevBump = 99;
+  private prevSplash = 0;
   onEvent: (e: RaceEvent) => void = () => {};
   /** Se llama en cada frame (p. ej. para actualizar el botón táctil de ítem). */
   onFrame: (s: RaceSession) => void = () => {};
@@ -69,7 +73,10 @@ export class RaceView {
       } else if (e.type === 'use' && e.item === ITEM.lightning) {
         this.renderer!.flash('#fff6a0', 0.35);
         if (e.id !== s.player.id) this.hud!.flash(t('flash.lightning'), 1.2);
+      } else if (e.type === 'item' && e.id === s.player.id) {
+        rumble('item');
       } else if (e.type === 'hit' && e.id === s.player.id) {
+        rumble('hit');
         if (e.hit === HIT.freeze) {
           this.renderer!.flash('#9fe8ff', 0.4);
           this.hud!.flash(t('flash.frozen'), 1.4);
@@ -84,6 +91,11 @@ export class RaceView {
       this.onEvent(e);
     }
     this.audio.frame(s);
+    const p = s.player;
+    if (p.bump < this.prevBump && p.bump < 0.15) rumble('bump');
+    if (p.splash > this.prevSplash + 0.05) rumble('splash');
+    this.prevBump = p.bump;
+    this.prevSplash = p.splash;
     this.renderer!.render(s.race, s.player, alpha, dt, { viewOffset: s.viewOffset?.bind(s), labels: s.labels });
     this.hud!.update(s.race);
     document.getElementById('net-info')!.textContent = s.netInfo?.() ?? '';

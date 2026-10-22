@@ -1381,3 +1381,64 @@ li:first-child .slot {
 .btn-garage:hover {
   background: #2c6a90;
 }
+
+/* ---------- control (gamepad) ---------- */
+.pad-head {
+  margin-top: 4px;
+}
+
+.pad-status {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pad-status.on {
+  color: #3dff7a;
+}
+
+.pad-binds {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 6px;
+  align-items: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+}
+
+.pad-binds .th {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.pad-binds .btn {
+  padding: 6px 4px;
+  font-size: 12px;
+}
+
+.pad-binds .btn.capturing {
+  background: var(--tertiary);
+  color: #11131c;
+  animation: blink 0.8s steps(2) infinite;
+}
+
+.pad-hint {
+  font-size: 11px;
+}
+
+.modal-card .toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* foco al navegar con el control */
+.pad-focus {
+  outline: 3px solid var(--tertiary) !important;
+  outline-offset: 2px;
+}

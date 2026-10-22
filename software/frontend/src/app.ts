@@ -35,6 +35,8 @@ import type { StandingDto } from './net/protocol';
 import { applyI18n, getLang, onLangChange, setLang, t, tServer, type Key, type Lang } from './i18n';
 import { applySettings, getSettings, updateSettings } from './settings';
 import { HomeBackground } from './ui/homeBackground';
+import { PadMenu } from './input/padMenu';
+import { activePad, bindButton, buttonName, DEFAULT_PAD, PAD_ACTIONS, padConfig, padLabel, savePadConfig, type PadAction } from './input/gamepad';
 import { startPresence, type PresenceStats } from './net/presence';
 
 type ScreenId = 'home' | 'local' | 'records' | 'welcome' | 'lobby' | 'garage' | 'race';
@@ -746,7 +748,10 @@ export async function startApp() {
   controls.keyboard.onPress('Escape', () => {
     // ESC cierra primero la configuración si está abierta
     const modal = $('settings');
-    if (!modal.hidden) modal.hidden = true;
+    if (padMenu.capturing) {
+      padMenu.captureNext(null); // cancela la reasignación en curso
+      renderPad();
+    } else if (!modal.hidden) modal.hidden = true;
     else exitRace(t('race.escAgain'));
   });
   raceView.onFrame = (s) => {
@@ -848,6 +853,56 @@ export async function startApp() {
       $(`${id}-v`).textContent = `${Math.round(s[key] * 100)}%`;
     }
     document.querySelectorAll<HTMLElement>('#s-lang [data-lang]').forEach((b) => b.classList.toggle('selected', b.dataset.lang === getLang()));
+    renderPad();
+  };
+
+  // ---------------- control (gamepad) ----------------
+  /** Reasignación en curso: acción y casillero (principal/alternativo). */
+  let capturing: { action: PadAction; slot: 0 | 1 } | null = null;
+  function renderPad() {
+    const pad = activePad();
+    const status = $('s-pad-status');
+    status.textContent = pad ? `${t('pad.connected', { name: padLabel(pad) })} · ${t('pad.menus')}` : t('pad.none');
+    status.classList.toggle('on', !!pad);
+    const cfg = padConfig();
+    const slotBtn = (a: PadAction, slot: 0 | 1) => {
+      const active = capturing?.action === a && capturing.slot === slot;
+      return `<button class="btn btn-ghost sm${active ? ' capturing' : ''}" data-bind="${a}" data-slot="${slot}">${active ? t('pad.press') : buttonName(cfg.bindings[a][slot])}</button>`;
+    };
+    $('s-pad-binds').innerHTML =
+      `<span class="th">${t('pad.action')}</span><span class="th">${t('pad.main')}</span><span class="th">${t('pad.alt')}</span>` +
+      `<span>${t('pad.steer')}</span><span class="muted">${t('pad.steerKeys')}</span><span></span>` +
+      PAD_ACTIONS.map((a) => `<span>${t(`pad.${a}` as Key)}</span>${slotBtn(a, 0)}${slotBtn(a, 1)}`).join('');
+    $<HTMLInputElement>('s-pad-dead').value = String(Math.round(cfg.deadzone * 100));
+    $('s-pad-dead-v').textContent = `${Math.round(cfg.deadzone * 100)}%`;
+    $<HTMLInputElement>('s-pad-right').checked = cfg.rightStick;
+    $<HTMLInputElement>('s-pad-vib').checked = cfg.vibration;
+  }
+  $('s-pad-binds').onclick = (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-bind]');
+    if (!b) return;
+    capturing = { action: b.dataset.bind as PadAction, slot: Number(b.dataset.slot) as 0 | 1 };
+    renderPad();
+    // el clic pudo venir del propio botón A: se espera a que se suelte antes de escuchar
+    setTimeout(() => {
+      padMenu.captureNext((button) => {
+        if (capturing) savePadConfig(bindButton(padConfig(), capturing.action, capturing.slot, button));
+        capturing = null;
+        renderPad();
+      });
+    }, 250);
+  };
+  $<HTMLInputElement>('s-pad-dead').oninput = (e) => {
+    savePadConfig({ ...padConfig(), deadzone: Number((e.target as HTMLInputElement).value) / 100 });
+    renderPad();
+  };
+  $<HTMLInputElement>('s-pad-right').onchange = (e) => savePadConfig({ ...padConfig(), rightStick: (e.target as HTMLInputElement).checked });
+  $<HTMLInputElement>('s-pad-vib').onchange = (e) => savePadConfig({ ...padConfig(), vibration: (e.target as HTMLInputElement).checked });
+  $('s-pad-reset').onclick = () => {
+    capturing = null;
+    padMenu.captureNext(null);
+    savePadConfig(DEFAULT_PAD);
+    renderPad();
   };
   for (const [id, key] of sliders) {
     $<HTMLInputElement>(id).oninput = (e) => {
@@ -870,6 +925,32 @@ export async function startApp() {
     } else if (e.target === settingsModal) settingsModal.hidden = true;
   });
   $('s-done').onclick = () => (settingsModal.hidden = true);
+
+  // navegación de menús con el control y avisos de conexión
+  const padMenu = new PadMenu({
+    container: () => {
+      if (!settingsModal.hidden) return settingsModal.querySelector<HTMLElement>('.modal-card');
+      if (podium.visible) return $('podium-ui');
+      const active = document.querySelector<HTMLElement>('.screen.active');
+      return active && active.id !== 'screen-race' ? active : null;
+    },
+    back: () => {
+      if (!settingsModal.hidden) {
+        settingsModal.hidden = true;
+        return;
+      }
+      const active = document.querySelector<HTMLElement>('.screen.active');
+      active?.querySelector<HTMLElement>('[data-go-home], #g-back, #w-home')?.click();
+    },
+  });
+  padMenu.onConnect = (pad) => {
+    toast(t('pad.connected', { name: padLabel(pad) }));
+    if (!settingsModal.hidden) renderPad();
+  };
+  padMenu.onDisconnect = () => {
+    toast(t('pad.disconnected'));
+    if (!settingsModal.hidden) renderPad();
+  };
 
   // contadores (Firebase): en línea ahora y total histórico
   let stats: PresenceStats = { online: null, total: null };
