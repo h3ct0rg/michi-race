@@ -113,6 +113,7 @@ export class GameConnection {
 
   setReady = (ready: boolean) => this.hub.invoke('SetReady', ready);
   selectColor = (color: number) => this.hub.invoke('SelectColor', color);
+  selectDriver = (driver: string) => this.hub.invoke('SelectDriver', driver);
   setFillBots = (fill: boolean) => this.hub.invoke('SetFillBots', fill);
   setGridSize = (size: number) => this.hub.invoke('SetGridSize', size);
   voteRestart = () => this.hub.invoke('VoteRestart');

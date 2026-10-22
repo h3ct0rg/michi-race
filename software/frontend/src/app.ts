@@ -65,7 +65,6 @@ export async function startApp() {
   const karts = Object.fromEntries(
     await Promise.all(DRIVERS.map(async (d) => [d, await Promise.all(KART_COLORS.map((c) => loadKart(driverBase(d), c.shift, keepsWarmFur(d))))] as const)),
   ) as Record<DriverId, KartFrames[]>;
-  const kartFrames = karts[DEFAULT_DRIVER];
   loadTheme(DEFAULT_TRACK); // precarga del tema por defecto
   const tracks = new Map<string, Track>();
   const getTrack = (id: string) => {
@@ -125,6 +124,7 @@ export async function startApp() {
   /** Cambia en cada carrera/torneo nuevo: invalida temporizadores pendientes (pase al podio, siguiente carrera). */
   let flowToken = 0;
   let garageColor = localColor;
+  let garageDriver: DriverId = DEFAULT_DRIVER;
 
   const show = (id: ScreenId) => {
     for (const s of ['home', 'local', 'records', 'welcome', 'lobby', 'garage', 'race']) $(`screen-${s}`).classList.toggle('active', s === id);
@@ -162,6 +162,13 @@ export async function startApp() {
     setTimeout(() => (el.hidden = true), 2200);
   };
   const myColor = () => room?.players.find((p) => p.id === myId)?.color ?? localColor;
+  /** Piloto del jugador en la sala (o el elegido localmente si todavía no está en una). */
+  const myDriver = (): DriverId => {
+    const d = room?.players.find((p) => p.id === myId)?.driver;
+    return isDriver(d) ? d : localDriver;
+  };
+  /** Frames del kart de un piloto/color que llegan del servidor (texto libre: se valida). */
+  const kartOf = (driver: string | undefined, color: number) => karts[isDriver(driver) ? driver : DEFAULT_DRIVER][color % KART_COLORS.length];
   const nameInput = $<HTMLInputElement>('w-name');
   /** Apodo del input indicado (bienvenida online o modo local); si está vacío se inventa uno. */
   const playerName = (input = nameInput) => {
@@ -182,7 +189,7 @@ export async function startApp() {
     );
   renderWelcomeTrack();
   nameInput.value = store.get('name') ?? '';
-  previews.welcome.setFrames(kartFrames[localColor]);
+  previews.welcome.setFrames(karts[localDriver][localColor]);
   $('w-random').onclick = () => {
     nameInput.value = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)] + Math.floor(Math.random() * 90 + 10);
   };
@@ -273,6 +280,8 @@ export async function startApp() {
     if (requestColor && myColor() !== localColor && !room.players.some((p) => p.id !== myId && p.color === localColor)) {
       await conn!.selectColor(localColor).catch(() => {});
     }
+    // y el gato que eligió la última vez
+    if (requestColor && myDriver() !== localDriver) await conn!.selectDriver(localDriver).catch(() => {});
     // invitado que entra por primera vez: "¡Bienvenido al torneo {nombre}!"
     if (requestColor && room.ownerId !== myId) welcomeBanner(room);
     if (res.race) startOnlineRace(res.race); // carrera en curso: a tu kart, o como espectador
@@ -344,7 +353,7 @@ export async function startApp() {
     if (!room) return;
     renderLobby(room, myId, conn?.rtt ?? 0, (name, tracks) => lobbyAction(() => conn!.setTournament(name, tracks)));
     loadTheme(room.trackId); // precarga mientras se espera en el lobby
-    previews.lobby.setFrames(kartFrames[myColor()]);
+    previews.lobby.setFrames(kartOf(myDriver(), myColor()));
   }
 
   function enterLobby() {
@@ -401,6 +410,7 @@ export async function startApp() {
   // ---------------- garaje ----------------
   function openGarage() {
     garageColor = myColor();
+    garageDriver = myDriver();
     renderGarage();
     show('garage');
   }
@@ -411,8 +421,18 @@ export async function startApp() {
       (_, i) =>
         `<li data-color="${i}" class="${i === garageColor ? 'selected' : ''}"><span class="color-dot" style="background:${swatch(i)}"></span>${colorName(i).toUpperCase()}${taken.has(i) ? `<span class="taken">${t('g.taken')}</span>` : ''}</li>`,
     ).join('');
-    previews.garage.setFrames(kartFrames[garageColor]);
+    previews.garage.setFrames(karts[garageDriver][garageColor]);
+    $('g-drivers').innerHTML = DRIVERS.map(
+      (d) => `<button data-driver="${d}" class="${d === garageDriver ? 'selected' : ''}"><img src="${driverBase(d)}/south.png" alt="" />${t(`driver.${d}` as Key)}</button>`,
+    ).join('');
   }
+
+  $('g-drivers').onclick = (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-driver]');
+    if (!b || !isDriver(b.dataset.driver)) return;
+    garageDriver = b.dataset.driver;
+    renderGarage();
+  };
 
   $('g-colors').onclick = (e) => {
     const li = (e.target as HTMLElement).closest<HTMLElement>('[data-color]');
@@ -423,9 +443,14 @@ export async function startApp() {
   $('g-back').onclick = () => enterLobby();
   $('g-equip').onclick = async () => {
     localColor = garageColor;
+    localDriver = garageDriver;
     store.set('color', String(localColor));
-    previews.welcome.setFrames(kartFrames[localColor]);
-    if (conn && room) await lobbyAction(() => conn!.selectColor(garageColor));
+    store.set('driver', localDriver);
+    previews.welcome.setFrames(karts[localDriver][localColor]);
+    if (conn && room) {
+      await lobbyAction(() => conn!.selectColor(garageColor));
+      await lobbyAction(() => conn!.selectDriver(garageDriver));
+    }
     enterLobby();
   };
 
@@ -433,7 +458,7 @@ export async function startApp() {
   function startOnlineRace(start: RaceStartDto) {
     if (!conn) return;
     mode = 'online';
-    const frames = new Map<string, KartFrames>(start.racers.map((r) => [r.id, kartFrames[r.color]]));
+    const frames = new Map<string, KartFrames>(start.racers.map((r) => [r.id, kartOf(r.driver, r.color)]));
     // la sesión se crea ya (para no perder snapshots); el tema suele estar precargado desde el lobby
     const session = new OnlineSession(getTrack(start.trackId), conn, controls, start, myId);
     currentOnline = session;
@@ -492,7 +517,10 @@ export async function startApp() {
     podium
       .show({
         tournamentName: room ? tournamentTitle(room) : '',
-        top: podiumTop(standings),
+        top: podiumTop(standings, (id) => {
+          const d = standings.find((s) => s.id === id)?.driver;
+          return isDriver(d) ? d : DEFAULT_DRIVER;
+        }),
         myId,
         myPlace: mine + 1,
         myPoints: standings[mine]?.points ?? 0,
@@ -587,7 +615,7 @@ export async function startApp() {
     if (!b) return;
     localColor = Number(b.dataset.color);
     store.set('color', String(localColor));
-    previews.welcome.setFrames(kartFrames[localColor]);
+    previews.welcome.setFrames(karts[localDriver][localColor]);
     renderLocal();
   };
   $('lo-random').onclick = () => {
@@ -779,7 +807,7 @@ export async function startApp() {
   }
   $('h-local').onclick = () => openLocal();
   $('h-records').onclick = () => showRecordsScreen();
-  $('h-online').onclick = () => showWelcome();
+  $('h-play-online').onclick = () => showWelcome();
   document.querySelectorAll<HTMLElement>('[data-go-home]').forEach((b) => (b.onclick = () => showHome()));
   $('w-home').onclick = () => showHome();
   $('h-share').onclick = () => shareGame();

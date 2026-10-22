@@ -9,6 +9,8 @@ export interface PlayerDto {
   ping: number;
   isOwner: boolean;
   connected: boolean;
+  /** Gato que maneja ('michi', 'ragdoll'...). */
+  driver: string;
 }
 
 export interface RoomStateDto {
@@ -37,6 +39,7 @@ export interface StandingDto {
   bot: boolean;
   points: number;
   places: number[];
+  driver: string;
 }
 
 /** race: carrera actual o recién terminada (0..3). nextRaceIn: segundos del intermedio. votes: ids que votaron reiniciar. */
@@ -55,6 +58,7 @@ export interface RaceRacerDto {
   name: string;
   color: number;
   bot: boolean;
+  driver: string;
 }
 
 /** goTick: último tick de la cuenta regresiva; los karts se mueven desde goTick + 1. */

@@ -1,5 +1,7 @@
 // Lobby multijugador (versión MVP de designs/lobby_multijugador_sala_px_8820_desktop), hasta 20 pilotos.
 import { colorName, swatch } from '../colors';
+import { isDriver } from '../drivers';
+import type { Key } from '../i18n';
 import { t } from '../i18n';
 import type { RoomStateDto } from '../net/protocol';
 import { escapeHtml } from './results';
@@ -79,7 +81,7 @@ export function renderLobby(room: RoomStateDto, myId: string, rtt: number, onTou
       <span class="color-dot" style="background:${swatch(p.color)}"></span>
       <div class="p-info">
         <div class="p-name">${p.isOwner ? '<span class="host">HOST</span>' : ''}${escapeHtml(p.name)}${p.id === myId ? t('l.you') : ''}</div>
-        <div class="p-sub">${colorName(p.color).toUpperCase()} · ${p.ping} MS</div>
+        <div class="p-sub">${isDriver(p.driver) ? t(`driver.${p.driver}` as Key) : ''} · ${colorName(p.color).toUpperCase()} · ${p.ping} MS</div>
       </div>
       ${state}
     </li>`;

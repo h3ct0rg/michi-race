@@ -228,6 +228,32 @@ public class RoomTests
     }
 
     [Fact]
+    public void Each_player_picks_driver_and_color_and_everyone_sees_them_in_the_race()
+    {
+        var room = NewRoom();
+        var host = room.Join("ca", "Host");
+        var guest = room.Join("cb", "Guest");
+        Assert.Equal(Room.DefaultDriver, room.State().Players[0].Driver);
+        Assert.Throws<RoomException>(() => room.SelectDriver(guest.PlayerId, "dragon"));
+
+        room.SelectDriver(host.PlayerId, "ragdoll");
+        room.SelectColor(host.PlayerId, 3);
+        room.SelectDriver(guest.PlayerId, "michi");
+        var state = room.SelectColor(guest.PlayerId, 5);
+        Assert.Equal(("ragdoll", 3), (state.Players.Single(p => p.Id == host.PlayerId).Driver, state.Players.Single(p => p.Id == host.PlayerId).Color));
+        Assert.Equal(("michi", 5), (state.Players.Single(p => p.Id == guest.PlayerId).Driver, state.Players.Single(p => p.Id == guest.PlayerId).Color));
+
+        room.SetReady(guest.PlayerId, true);
+        var start = room.StartRace(host.PlayerId);
+        var h = start.Racers.Single(r => r.Id == host.PlayerId);
+        var g = start.Racers.Single(r => r.Id == guest.PlayerId);
+        Assert.Equal(("ragdoll", 3), (h.Driver, h.Color));
+        Assert.Equal(("michi", 5), (g.Driver, g.Color));
+        Assert.Contains(start.Racers, r => r.Bot && r.Driver == "ragdoll"); // los bots también mezclan gatos
+        Assert.Equal("ragdoll", room.State().Tournament!.Standings.Single(s => s.Id == host.PlayerId).Driver);
+    }
+
+    [Fact]
     public void Points_follow_the_mario_kart_style_table()
     {
         Assert.Equal([25, 20, 16, 13, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0],

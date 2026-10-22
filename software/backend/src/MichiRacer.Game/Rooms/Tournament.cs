@@ -35,6 +35,7 @@ public sealed class Standing(string id, string name, int color, bool bot, int ra
     public string Id { get; } = id;
     public string Name { get; set; } = name;
     public int Color { get; set; } = color;
+    public string Driver { get; set; } = Room.DefaultDriver;
     public bool Bot { get; } = bot;
     public int Points { get; set; }
     public int[] Places { get; } = new int[races];

@@ -157,7 +157,7 @@ cd frontend && GOLDEN=1 npx vitest run src/sim/golden.test.ts
 | --- | --- |
 | `JoinRoom(code, name)` → `{ playerId, token, room, race }` | `RoomState` |
 | `RejoinRoom(code, playerId, token)` | `RaceStarted` (`racers`, `goTick`) |
-| `SetReady`, `SelectColor`, `SetFillBots`, `SetGridSize` | `Snapshot` (20/s: `t`, `ph`, `r`, `me`, `ev`) |
+| `SetReady`, `SelectColor`, `SelectDriver` (michi / ragdoll), `SetFillBots`, `SetGridSize` | `Snapshot` (20/s: `t`, `ph`, `r`, `me`, `ev`) |
 | `StartRace` (solo el owner: inicia el torneo) | `Results` (carrera, puntos, tabla, `final`) |
 | `SetTournament(nombre, pistas[])` (host, en el lobby) | `RaceStarted` incluye `raceIndex` y `totalRaces` |
 | `VoteRestart` (podio: el host reinicia, un invitado vota), `BackToLobby` (host) | `RoomState.tournament` (tabla, votos, intermedio) |

@@ -28,6 +28,12 @@ public sealed class Room
     public const int MaxPlayers = 20;
     public const int MinGrid = 2;
     public const int ColorCount = 8;
+    /// <summary>Gatos disponibles (frames en frontend/public/assets/&lt;id&gt;). Espejo de frontend/src/drivers.ts.</summary>
+    public static readonly string[] Drivers = ["michi", "ragdoll"];
+    public const string DefaultDriver = "michi";
+
+    /// <summary>Piloto de un bot: uno de cada tres es ragdoll (igual que en el modo local).</summary>
+    public static string BotDriver(int index) => index % 3 == 1 ? "ragdoll" : DefaultDriver;
     public const int MaxNameLength = 12;
     /// <summary>Snapshots a 20 Hz con la simulación a 30 Hz: se envían 2 de cada 3 ticks.</summary>
     public const int SnapshotSkipEvery = 3;
@@ -51,7 +57,7 @@ public sealed class Room
 
     // torneo
     private readonly List<Standing> _standings = [];
-    private readonly List<(string Id, string Name, int Color, double Skill)> _bots = [];
+    private readonly List<(string Id, string Name, int Color, double Skill, string Driver)> _bots = [];
     private readonly HashSet<string> _votes = [];
     private int _raceIndex;
     /// <summary>Nombre que eligió el host ("" = "Torneo de {host}") y pistas elegidas en el lobby.</summary>
@@ -183,6 +189,12 @@ public sealed class Room
         return Mutate(playerId, p => p.Color = color);
     }
 
+    public RoomStateDto SelectDriver(string playerId, string driver)
+    {
+        if (!Drivers.Contains(driver)) throw new RoomException("Piloto inválido.");
+        return Mutate(playerId, p => p.Driver = driver);
+    }
+
     public RoomStateDto SetPing(string playerId, int ping) => Mutate(playerId, p => p.Ping = Math.Clamp(ping, 0, 9999));
 
     public RoomStateDto SetFillBots(string playerId, bool fill) => OwnerMutate(playerId, () => FillBots = fill);
@@ -264,7 +276,7 @@ public sealed class Room
             if (free.Count == 0) free = Enumerable.Range(0, ColorCount).ToList();
             var count = Math.Min(MaxPlayers, Math.Max(GridSize, humans.Count)) - humans.Count;
             for (var i = 0; i < count; i++)
-                _bots.Add(($"bot{i}", BotNames[i % BotNames.Length], free[i % free.Count], 0.8 + (i % 10) * 0.012));
+                _bots.Add(($"bot{i}", BotNames[i % BotNames.Length], free[i % free.Count], 0.8 + (i % 10) * 0.012, BotDriver(i)));
         }
         return LaunchRace();
     }
@@ -275,16 +287,16 @@ public sealed class Room
         _track = BuiltTracks[_tracks[_raceIndex]];
         var vehicle = Vehicles.Derive(Vehicles.All["michi"].Stats);
         var checkpoints = _track.Def.Checkpoints;
-        var entrants = new List<(string Id, string Name, int Color, double? Skill)>();
+        var entrants = new List<(string Id, string Name, int Color, double? Skill, string Driver)>();
         foreach (var p in _players)
         {
             p.InRace = p.Connected;
             p.Ready = false;
             p.ResetInputs();
-            if (p.InRace) entrants.Add((p.Id, p.Name, p.Color, null));
+            if (p.InRace) entrants.Add((p.Id, p.Name, p.Color, null, p.Driver));
         }
         foreach (var b in _bots)
-            if (entrants.Count < MaxPlayers) entrants.Add((b.Id, b.Name, b.Color, b.Skill));
+            if (entrants.Count < MaxPlayers) entrants.Add((b.Id, b.Name, b.Color, b.Skill, b.Driver));
 
         foreach (var e in entrants)
         {
@@ -292,8 +304,9 @@ public sealed class Room
             {
                 s.Name = e.Name;
                 s.Color = e.Color;
+                s.Driver = e.Driver;
             }
-            else _standings.Add(new Standing(e.Id, e.Name, e.Color, e.Skill is not null, _tracks.Count));
+            else _standings.Add(new Standing(e.Id, e.Name, e.Color, e.Skill is not null, _tracks.Count) { Driver = e.Driver });
         }
         if (_raceIndex > 0)
         {
@@ -314,7 +327,7 @@ public sealed class Room
         _race = new Race(_track, racers, (uint)Random.Shared.Next());
         _raceStart = new RaceStartDto(
             _track.Def.Id,
-            racers.Select(r => new RaceRacerDto(r.Id, r.Name, r.Color, r.Bot is not null)).ToList(),
+            racers.Select((r, i) => new RaceRacerDto(r.Id, r.Name, r.Color, r.Bot is not null, entrants[i].Driver)).ToList(),
             GoTick(),
             _raceIndex,
             _tracks.Count);
@@ -440,7 +453,7 @@ public sealed class Room
 
     private List<StandingDto> StandingDtos() =>
         Standing.Rank(_standings, _raceIndex)
-            .Select(s => new StandingDto(s.Id, s.Name, s.Color, s.Bot, s.Points, s.Places))
+            .Select(s => new StandingDto(s.Id, s.Name, s.Color, s.Bot, s.Points, s.Places, s.Driver))
             .ToList();
 
     private SnapshotBundle BuildSnapshot(Race race, List<RaceEvent> events)
@@ -471,7 +484,7 @@ public sealed class Room
             return new RoomStateDto(
                 Code, OwnerId, Phase switch { RoomPhase.Lobby => "lobby", RoomPhase.Racing => "racing", RoomPhase.Intermission => "intermission", _ => "podium" },
                 _track.Def.Id, _track.Def.Name, _track.Laps, FillBots, GridSize, MaxPlayers,
-                _players.Select(p => new PlayerDto(p.Id, p.Name, p.Color, p.Ready, p.Ping, p.Id == OwnerId, p.Connected)).ToList(),
+                _players.Select(p => new PlayerDto(p.Id, p.Name, p.Color, p.Ready, p.Ping, p.Id == OwnerId, p.Connected, p.Driver)).ToList(),
                 Phase == RoomPhase.Lobby ? null : new TournamentDto(
                     _raceIndex, _tracks.Count, _tracks, StandingDtos(),
                     Phase == RoomPhase.Intermission ? Math.Max(0, (_nextRaceAt - _now).TotalSeconds) : 0,

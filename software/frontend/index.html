@@ -56,7 +56,7 @@
         <div class="home-buttons">
           <div class="home-row">
             <button id="h-local" class="btn btn-primary home-play"><span data-i18n="home.playLocal">🏁 JUGAR LOCAL</span></button>
-            <button id="h-online" class="btn btn-cyan home-play"><span data-i18n="home.playOnline">📡 JUGAR ONLINE</span></button>
+            <button id="h-play-online" class="btn btn-cyan home-play"><span data-i18n="home.playOnline">📡 JUGAR ONLINE</span></button>
           </div>
           <div class="home-row three">
             <button class="btn btn-ghost" data-open-settings><span data-i18n="home.settings">⚙ CONFIGURAR</span></button>
@@ -329,6 +329,8 @@
       </header>
       <main class="garage-grid">
         <div class="card">
+          <div class="card-head"><span data-i18n="lo.driverPick">PILOTO</span></div>
+          <div class="driver-row" id="g-drivers"></div>
           <div class="card-head"><span data-i18n="g.paint">🎨 PINTURA DEL KART</span></div>
           <ul id="g-colors" class="color-list"></ul>
         </div>

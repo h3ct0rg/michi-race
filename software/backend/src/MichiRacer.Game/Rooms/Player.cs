@@ -14,6 +14,8 @@ public sealed class Player(string name, int color)
     public string Token { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
     public string Name { get; } = name;
     public int Color { get; set; } = color;
+    /// <summary>Gato que maneja (ver Room.Drivers).</summary>
+    public string Driver { get; set; } = Room.DefaultDriver;
     public bool Ready { get; set; }
     public int Ping { get; set; }
     public string? ConnectionId { get; set; }

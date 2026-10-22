@@ -16,8 +16,8 @@ const start: RaceStartDto = {
   raceIndex: 0,
   totalRaces: 1,
   racers: [
-    { id: 'me', name: 'Me', color: 0, bot: false },
-    { id: 'bot0', name: 'Bot', color: 1, bot: true },
+    { id: 'me', name: 'Me', color: 0, bot: false, driver: 'michi' },
+    { id: 'bot0', name: 'Bot', color: 1, bot: true, driver: 'ragdoll' },
   ],
 };
 const fakeConn = () => ({ onSnapshot: (_: SnapshotDto) => {}, rtt: 0, sendInput() {}, netsimLabel: '', protocol: 'msgpack' }) as unknown as GameConnection;

@@ -4,7 +4,7 @@ namespace MichiRacer.Game.Rooms;
 
 // Mensajes SignalR (MessagePack o JSON). El cliente normaliza las claves a camelCase.
 
-public sealed record PlayerDto(string Id, string Name, int Color, bool Ready, int Ping, bool IsOwner, bool Connected);
+public sealed record PlayerDto(string Id, string Name, int Color, bool Ready, int Ping, bool IsOwner, bool Connected, string Driver = Room.DefaultDriver);
 
 public sealed record RoomStateDto(
     string Code,
@@ -21,7 +21,7 @@ public sealed record RoomStateDto(
     string TournamentName = "",
     IReadOnlyList<string>? TrackList = null);
 
-public sealed record StandingDto(string Id, string Name, int Color, bool Bot, int Points, IReadOnlyList<int> Places);
+public sealed record StandingDto(string Id, string Name, int Color, bool Bot, int Points, IReadOnlyList<int> Places, string Driver = Room.DefaultDriver);
 
 /// <summary>
 /// Estado del torneo (null en el lobby). Race: índice de la carrera actual o recién terminada.
@@ -39,7 +39,7 @@ public sealed record TournamentDto(
 /// <summary>Respuesta a Join/Rejoin. Token permite reconectarse al mismo kart; Race != null si hay carrera en curso.</summary>
 public sealed record JoinResponse(string PlayerId, string Token, RoomStateDto Room, RaceStartDto? Race);
 
-public sealed record RaceRacerDto(string Id, string Name, int Color, bool Bot);
+public sealed record RaceRacerDto(string Id, string Name, int Color, bool Bot, string Driver = Room.DefaultDriver);
 
 /// <summary>GoTick: último tick de la cuenta regresiva; los karts se mueven desde GoTick + 1.</summary>
 /// <summary>RaceIndex/TotalRaces: número de carrera dentro del torneo (0-based) y cantidad de carreras.</summary>

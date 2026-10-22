@@ -51,6 +51,8 @@ public sealed class RaceHub(RoomManager rooms, ServerMetrics metrics, ILogger<Ra
 
     public Task SelectColor(int color) => Broadcast((room, id) => room.SelectColor(id, color));
 
+    public Task SelectDriver(string driver) => Broadcast((room, id) => room.SelectDriver(id, driver));
+
     public Task SetFillBots(bool fill) => Broadcast((room, id) => room.SetFillBots(id, fill));
 
     public Task SetGridSize(int size) => Broadcast((room, id) => room.SetGridSize(id, size));
