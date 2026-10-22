@@ -54,14 +54,18 @@
         <h1 class="home-title"><span class="c1">MICHI</span> <span class="c2">RACER</span></h1>
         <div class="home-tagline" data-i18n="home.tagline">CARRERAS ARCADE DE MICHIS · MULTIJUGADOR</div>
         <div class="home-buttons">
-          <button id="h-play" class="btn btn-primary"><span data-i18n="home.play">▶ JUGAR</span></button>
           <div class="home-row">
-            <button class="btn btn-cyan" data-open-settings><span data-i18n="home.settings">⚙ CONFIGURAR</span></button>
+            <button id="h-local" class="btn btn-primary home-play"><span data-i18n="home.playLocal">🏁 JUGAR LOCAL</span></button>
+            <button id="h-online" class="btn btn-cyan home-play"><span data-i18n="home.playOnline">📡 JUGAR ONLINE</span></button>
+          </div>
+          <div class="home-row three">
+            <button class="btn btn-ghost" data-open-settings><span data-i18n="home.settings">⚙ CONFIGURAR</span></button>
+            <button id="h-records" class="btn btn-ghost"><span data-i18n="home.records">🏆 RÉCORDS</span></button>
             <button id="h-share" class="btn btn-ghost"><span data-i18n="home.share">🔗 COMPARTIR</span></button>
           </div>
         </div>
       </div>
-      <footer class="home-footer" data-i18n="home.footer">HASTA 20 PILOTOS · SIN CUENTAS · TORNEO DE 4 CARRERAS</footer>
+      <footer class="home-footer" data-i18n="home.footer">HASTA 20 PILOTOS · SIN CUENTAS · TORNEOS CON PUNTOS</footer>
     </section>
 
     <!-- ============ CONFIGURACIÓN (modal) ============ -->
@@ -83,7 +87,75 @@
       </div>
     </div>
 
-    <!-- ============ BIENVENIDA ============ -->
+    <!-- ============ RÉCORDS MUNDIALES (Firebase) ============ -->
+    <section id="screen-records" class="screen">
+      <header class="topbar">
+        <div class="brand small"><img class="brand-emblem" src="/assets/brand/emblem.png" alt="" /><div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span></div></div>
+        <div class="topbar-right">
+          <button class="btn btn-ghost sm" data-go-home><span data-i18n="w.home">⟵ INICIO</span></button>
+          <button class="btn btn-ghost sm sound-btn" data-sound aria-label="Sonido" data-i18n-aria="sound">🔊</button>
+        </div>
+      </header>
+      <main class="records-wrap">
+        <div class="records-title" data-i18n="rec.title">🏆 RÉCORDS MUNDIALES</div>
+        <div class="records-tabs" id="rec-tabs"></div>
+        <div class="records-grid">
+          <div class="card">
+            <div class="card-head yellow"><span data-i18n="rec.race">🏁 CARRERA COMPLETA</span></div>
+            <ol class="records-list" id="rec-race"></ol>
+          </div>
+          <div class="card">
+            <div class="card-head cyan"><span data-i18n="rec.lap">⏱ MEJOR VUELTA</span></div>
+            <ol class="records-list" id="rec-lap"></ol>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ============ JUGAR LOCAL: arma tu torneo contra bots ============ -->
+    <section id="screen-local" class="screen">
+      <header class="topbar">
+        <div class="brand small"><img class="brand-emblem" src="/assets/brand/emblem.png" alt="" /><div class="brand-name"><span class="c1">MICHI</span> <span class="c2">RACER</span></div></div>
+        <div class="topbar-right">
+          <button class="btn btn-ghost sm" data-go-home><span data-i18n="w.home">⟵ INICIO</span></button>
+          <button class="btn btn-ghost sm sound-btn" data-sound aria-label="Sonido" data-i18n-aria="sound">🔊</button>
+          <button class="btn btn-ghost sm" data-open-settings aria-label="Configurar">⚙</button>
+        </div>
+      </header>
+      <main class="local-grid">
+        <div class="card">
+          <div class="card-head"><span data-i18n="lo.driver">👤 TU PILOTO</span></div>
+          <label class="field-label"><span data-i18n="w.nick">APODO EN PISTA</span> <span class="hint-right" data-i18n="w.max">MÁX 12</span></label>
+          <div class="input-row">
+            <input id="lo-name" class="input big" maxlength="12" autocomplete="off" placeholder="TU APODO" data-i18n-ph="w.nickPh" />
+            <button id="lo-random" class="btn btn-ghost"><span data-i18n="w.random">🎲 RANDOM</span></button>
+          </div>
+          <canvas id="lo-preview" class="michi-preview" width="160" height="120"></canvas>
+          <div class="field-label"><span data-i18n="lo.driverPick">PILOTO</span></div>
+          <div class="driver-row" id="lo-drivers"></div>
+          <div class="field-label"><span data-i18n="lo.color">COLOR DEL KART</span> <b class="hint-right" id="lo-color-name"></b></div>
+          <div class="swatch-row" id="lo-colors"></div>
+        </div>
+        <div class="card">
+          <div class="card-head yellow"><span data-i18n="lo.tracks">🗺️ PISTAS DEL TORNEO</span> <span class="pill dark" id="lo-races"></span></div>
+          <p class="muted"><span data-i18n="lo.tracksHint">Tócalas en el orden en que quieres correrlas</span></p>
+          <div class="track-picker" id="lo-tracks"></div>
+        </div>
+        <div class="card local-race">
+          <div class="card-head cyan"><span data-i18n="lo.race">⚙️ CARRERA</span></div>
+          <label class="slider-row"><span data-i18n="lo.rivals">RIVALES</span><input type="range" id="lo-rivals" min="1" max="19" step="1" /><b id="lo-rivals-v"></b></label>
+          <div class="field-label"><span data-i18n="lo.difficulty">DIFICULTAD DE LOS BOTS</span></div>
+          <div class="lang-toggle diff-toggle" id="lo-diff">
+            <button class="btn btn-ghost sm" data-diff="easy"><span data-i18n="lo.easy">FÁCIL</span></button>
+            <button class="btn btn-ghost sm" data-diff="normal"><span data-i18n="lo.normal">NORMAL</span></button>
+            <button class="btn btn-ghost sm" data-diff="hard"><span data-i18n="lo.hard">DIFÍCIL</span></button>
+          </div>
+          <button id="lo-start" class="btn btn-primary xl"><span data-i18n="lo.start">🏁 ¡A CORRER!</span></button>
+        </div>
+      </main>
+    </section>
+
+    <!-- ============ BIENVENIDA (JUGAR ONLINE) ============ -->
     <section id="screen-welcome" class="screen">
       <header class="topbar">
         <div class="brand">
@@ -116,6 +188,7 @@
         <div class="col">
           <div id="w-invite" class="card invite" hidden>
             <div class="card-head pink"><span data-i18n="w.invited">✉️ TE INVITARON A UNA CARRERA</span></div>
+            <div class="invite-tour" id="w-invite-tour" hidden></div>
             <div class="invite-code" id="w-invite-code">PX-0000</div>
             <div class="muted center" id="w-invite-info"></div>
             <button id="w-invite-join" class="btn btn-primary xl"><span data-i18n="w.inviteJoin">UNIRSE A LA SALA →</span></button>
@@ -124,6 +197,7 @@
           <div class="card">
             <div class="card-head pink"><span data-i18n="w.createHead">📡 CREAR SALA MULTIJUGADOR</span> <span class="pill">ROOM MASTER</span></div>
             <p class="muted create-desc"><span data-i18n="w.createDesc">Crea una sala, comparte el link y arranca cuando todos estén listos. Los lugares vacíos se rellenan con bots.</span></p>
+            <input id="w-tname" class="input" maxlength="24" autocomplete="off" placeholder="NOMBRE DEL TORNEO (OPCIONAL)" data-i18n-ph="w.tourNamePh" />
             <button id="w-create" class="btn btn-primary xl"><span data-i18n="w.create">CREAR SALA Y JUGAR →</span></button>
           </div>
 
@@ -136,7 +210,6 @@
             </div>
           </div>
 
-          <button id="w-practice" class="btn btn-ghost wide"><span data-i18n="w.practice">⚡ PRÁCTICA LOCAL CONTRA BOTS</span></button>
           <div id="w-error" class="error" hidden></div>
         </div>
 
@@ -185,7 +258,8 @@
       <main class="lobby-grid">
         <div class="col">
           <div class="card track-card">
-            <div class="card-head"><span data-i18n="w.tournament">🏆 TORNEO</span> <span class="muted right" id="l-track-hint"></span></div>
+            <div class="card-head"><span id="l-tname">🏆 TORNEO</span> <span class="muted right" id="l-track-hint"></span></div>
+            <input id="l-tname-input" class="input" maxlength="24" autocomplete="off" placeholder="NOMBRE DEL TORNEO" data-i18n-ph="l.tourNamePh" hidden />
             <img id="l-track-img" alt="" class="track-img" />
             <div class="track-title" id="l-track">GREEN VALLEY</div>
             <div class="muted" id="l-track-tag"></div>
@@ -238,6 +312,12 @@
       </main>
     </section>
 
+    <div id="l-welcome" class="welcome-banner" hidden>
+      <div class="welcome-title" data-i18n="l.welcome">¡BIENVENIDO AL TORNEO!</div>
+      <div class="welcome-name" id="l-welcome-name"></div>
+      <div class="welcome-by" id="l-welcome-by"></div>
+    </div>
+
     <!-- ============ GARAJE ============ -->
     <section id="screen-garage" class="screen">
       <header class="topbar">
@@ -282,6 +362,8 @@
             <div class="times">
               <div><span class="label"><span data-i18n="hud.time">TIEMPO</span></span><span id="hud-time">00:00.00</span></div>
               <div><span class="label best"><span data-i18n="hud.best">MEJOR VUELTA</span></span><span id="hud-best">--:--.--</span></div>
+              <div class="rec-row"><span class="label rec"><span data-i18n="hud.record">🏆 RÉCORD</span></span><span id="hud-record">--:--.--</span></div>
+              <div class="rec-row"><span class="label rec"><span data-i18n="hud.lapRecord">🏆 VUELTA</span></span><span id="hud-lap-record">--:--.--</span></div>
             </div>
           </div>
           <div class="panel hud-map">

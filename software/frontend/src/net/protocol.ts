@@ -24,6 +24,10 @@ export interface RoomStateDto {
   players: PlayerDto[];
   /** null en el lobby. */
   tournament: TournamentDto | null;
+  /** Nombre que puso el host ("" = "Torneo de {host}"). */
+  tournamentName: string;
+  /** Pistas del torneo en orden (en el lobby: las que eligió el host). */
+  trackList: string[];
 }
 
 export interface StandingDto {
@@ -58,6 +62,9 @@ export interface RaceStartDto {
   trackId: string;
   racers: RaceRacerDto[];
   goTick: number;
+  /** Carrera dentro del torneo (0-based) y total de carreras. */
+  raceIndex: number;
+  totalRaces: number;
 }
 
 export interface JoinResponse {
@@ -116,4 +123,5 @@ export interface ResultsDto {
   final: boolean;
   nextRaceIn: number;
   standings: StandingDto[];
+  nextTrackId: string | null;
 }

@@ -116,6 +116,7 @@ export class GameConnection {
   setFillBots = (fill: boolean) => this.hub.invoke('SetFillBots', fill);
   setGridSize = (size: number) => this.hub.invoke('SetGridSize', size);
   voteRestart = () => this.hub.invoke('VoteRestart');
+  setTournament = (name: string, tracks: string[]) => this.hub.invoke('SetTournament', name, tracks);
   backToLobby = () => this.hub.invoke('BackToLobby');
   startRace = () => this.hub.invoke('StartRace');
 

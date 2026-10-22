@@ -7,24 +7,41 @@ import { TICK, VEHICLES, deriveParams } from '../sim/vehicles';
 import type { RaceSession } from './session';
 import { t } from '../i18n';
 
-export const PRACTICE_BOTS = ['TurboCat', 'ApexMiau', 'Bigotes', 'Pelusa', 'Garfi', 'Nieve', 'Ronroneo'];
+/** Nombres de los bots (mismos que el servidor). */
+export const PRACTICE_BOTS = [
+  'TurboCat', 'ApexMiau', 'Bigotes', 'Pelusa', 'Garfi', 'Nieve', 'Ronroneo', 'Misifú', 'Zarpas', 'Michifuz',
+  'Tigrito', 'Canela', 'Bolita', 'Copito', 'Manchas', 'Sombra', 'Galleta', 'Pimienta', 'Rayo',
+];
+export const MAX_RIVALS = PRACTICE_BOTS.length;
+
+export type Difficulty = 'easy' | 'normal' | 'hard';
+/** Habilidad de los bots (fracción de la velocidad máxima que buscan): del más lento al más rápido. */
+const SKILL: Record<Difficulty, [number, number]> = { easy: [0.7, 0.8], normal: [0.8, 0.92], hard: [0.9, 1] };
+
+export interface PracticeOptions {
+  rivals: number;
+  difficulty: Difficulty;
+  /** ids en orden de largada (torneo: el líder adelante); sin él, el jugador sale último. */
+  gridOrder?: string[] | null;
+}
 
 export class PracticeSession implements RaceSession {
   readonly race: Race;
   readonly player: Racer;
   private acc = 0;
 
-  /** gridOrder: ids en orden de largada (torneo: el líder adelante); sin él, el jugador sale último. */
   constructor(
     track: Track,
     private readonly controls: Controls,
     playerName: string,
-    gridOrder: string[] | null = null,
+    { rivals, difficulty, gridOrder = null }: PracticeOptions = { rivals: 7, difficulty: 'normal' },
   ) {
     const vehicle = deriveParams(VEHICLES.michi.stats);
     const checkpoints = track.def.checkpoints;
+    const count = Math.max(1, Math.min(MAX_RIVALS, rivals));
+    const [lo, hi] = SKILL[difficulty];
     const entries = [
-      ...PRACTICE_BOTS.map((name, i) => ({ id: `bot${i}`, name, skill: 0.8 + (i / PRACTICE_BOTS.length) * 0.12 })),
+      ...PRACTICE_BOTS.slice(0, count).map((name, i) => ({ id: `bot${i}`, name, skill: lo + (count > 1 ? i / (count - 1) : 0.5) * (hi - lo) })),
       { id: 'player', name: playerName, skill: null },
     ];
     if (gridOrder) entries.sort((a, b) => gridOrder.indexOf(a.id) - gridOrder.indexOf(b.id));

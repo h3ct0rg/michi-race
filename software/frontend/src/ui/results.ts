@@ -20,6 +20,7 @@ export interface StandingRow {
 }
 
 export interface ResultsOptions {
+  tournamentName: string;
   trackName: string;
   raceIndex: number;
   totalRaces: number;
@@ -54,6 +55,7 @@ export function showResults(o: ResultsOptions) {
     .join('');
   el.innerHTML = `
     <div class="results-card">
+      <div class="results-tour">🏆 ${escapeHtml(o.tournamentName.toUpperCase())}</div>
       <div class="results-title">${t('res.title', { n: o.raceIndex + 1, total: o.totalRaces, track: escapeHtml(o.trackName.toUpperCase()) })}</div>
       <div class="results-sub">${t('res.won', { name: escapeHtml(winner?.name ?? '-') })}${me ? t('res.mine', { place: me.place, pts: me.points }) : ''}</div>
       <div class="results-scroll">

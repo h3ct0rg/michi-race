@@ -10,15 +10,27 @@ const W = 480;
 const H = 270;
 const KART = 64; // tamaño de dibujo del kart (frames de 96 px)
 const FLOOR = 266;
-const PODIUM_SCALE = 1.6;
-const PODIUM_X = 35;
-const PODIUM_BOTTOM = 258;
-const PODIUM_Y = PODIUM_BOTTOM - 112 * PODIUM_SCALE;
-/** Escalones (coordenadas de la imagen del podio): centro x y borde superior. Índice 0 = 1er puesto. */
+/** Base del podio (sobre el piso del escenario). */
+const PODIUM_BOTTOM = 250;
+const PODIUM_Y = 172; // borde superior del escalón más alto
+
+interface Metal {
+  lid: string; // tapa (cara superior)
+  bands: string[]; // frente, de claro a oscuro (sombreado en bandas, estilo pixel art)
+  edge: string; // brillo del borde izquierdo
+  shade: string; // sombra del borde derecho
+  ring: string; // aro del medallón
+  digit: string;
+}
+const GOLD: Metal = { lid: '#fff1a8', bands: ['#ffd84a', '#f5bd2a', '#e09b17', '#b97610'], edge: '#fff6c7', shade: '#8a520a', ring: '#8a520a', digit: '#fff1a8' };
+const SILVER: Metal = { lid: '#ffffff', bands: ['#eef3f9', '#cfd8e4', '#aeb9c9', '#8995a8'], edge: '#ffffff', shade: '#5d6779', ring: '#5d6779', digit: '#ffffff' };
+const BRONZE: Metal = { lid: '#ffd6ad', bands: ['#f2a465', '#dc8443', '#bb6631', '#8f4a22'], edge: '#ffe0c2', shade: '#5f2e14', ring: '#5f2e14', digit: '#ffe0c2' };
+
+/** Escalones: centro x, ancho y borde superior. Índice 0 = 1er puesto (centro, el más alto). */
 const STEPS = [
-  { x: PODIUM_X + 128 * PODIUM_SCALE, top: PODIUM_Y + 61 * PODIUM_SCALE, from: 1, digit: '#ffd23f' },
-  { x: PODIUM_X + 77 * PODIUM_SCALE, top: PODIUM_Y + 88 * PODIUM_SCALE, from: -1, digit: '#d7e1ee' },
-  { x: PODIUM_X + 180.5 * PODIUM_SCALE, top: PODIUM_Y + 90 * PODIUM_SCALE, from: 1, digit: '#ffb07a' },
+  { x: 240, w: 94, top: PODIUM_Y, from: 1, metal: GOLD },
+  { x: 154, w: 78, top: 204, from: -1, metal: SILVER },
+  { x: 326, w: 78, top: 216, from: 1, metal: BRONZE },
 ];
 /** Momento en que entra cada puesto (el 3º primero, el 1º al final). */
 const ENTER_AT = [4.1, 2.2, 0.3];
@@ -35,6 +47,7 @@ export interface PodiumEntry {
 }
 
 export interface PodiumOptions {
+  tournamentName: string;
   /** Los 3 primeros de la tabla (índice 0 = campeón). */
   top: PodiumEntry[];
   myId: string;
@@ -57,7 +70,7 @@ interface Confetti {
 let art: Promise<Record<string, Img>> | null = null;
 const loadArt = () =>
   (art ??= (async () => {
-    const names = ['stage', 'podium', 'bronze', 'silver', 'trophy'];
+    const names = ['stage', 'bronze', 'silver', 'trophy'];
     const imgs = await Promise.all(names.map((n) => loadImage(`/assets/podium/${n}.png`)));
     return Object.fromEntries(names.map((n, i) => [n, imgs[i]]));
   })());
@@ -76,6 +89,7 @@ export class PodiumScene {
   private opts: PodiumOptions | null = null;
   private imgs: Record<string, Img> = {};
   private confetti: Confetti[] = [];
+  private confettiAcc = 0;
   private played = new Set<string>();
 
   constructor() {
@@ -93,11 +107,13 @@ export class PodiumScene {
     if (this.opts !== opts) return;
     this.t = 0;
     this.confetti = [];
+    this.confettiAcc = 0;
     this.played.clear();
     const champ = opts.top[0];
     const iWon = champ?.id === opts.myId;
     this.ui.innerHTML = `
       <div class="podium-text">
+        <div class="podium-tour">${escapeHtml(t('pod.champOf', { name: opts.tournamentName.toUpperCase() }))}</div>
         <div class="podium-title">${t(iWon ? 'pod.youWin' : 'pod.wins')}</div>
         <div class="podium-name">${escapeHtml(champ?.name.toUpperCase() ?? '')}</div>
       </div>
@@ -108,7 +124,7 @@ export class PodiumScene {
       </div>
       <div class="podium-votes" id="podium-votes"></div>`;
     // el título del ganador va arriba y el nombre debajo: "¡YOU WIN!" / "GASTON"; para los demás "GASTON" / "WINS!"
-    if (!iWon) this.ui.querySelector('.podium-text')!.prepend(this.ui.querySelector('.podium-name')!);
+    if (!iWon) this.ui.querySelector('.podium-tour')!.after(this.ui.querySelector('.podium-name')!);
     this.ui.querySelector<HTMLElement>('[data-act=primary]')!.onclick = () => this.opts?.primary.onClick();
     this.ui.querySelector<HTMLElement>('[data-act=secondary]')!.onclick = () => this.opts?.secondary.onClick();
     this.ui.classList.remove('show');
@@ -168,12 +184,26 @@ export class PodiumScene {
   private draw(dt: number) {
     const ctx = this.ctx;
     const o = this.opts!;
-    const { stage, podium } = this.imgs;
+    const { stage } = this.imgs;
     ctx.fillStyle = '#0c0e17';
     ctx.fillRect(0, 0, W, H);
     ctx.drawImage(stage, 0, 0, W, Math.round(stage.height * (W / stage.width)));
-    // reflectores que barren el escenario
-    ctx.globalAlpha = 0.12;
+    // el estadio queda de fondo: se oscurece y se le pone viñeta para que resalten los karts y el podio
+    ctx.fillStyle = 'rgba(12, 14, 23, 0.5)';
+    ctx.fillRect(0, 0, W, H);
+    const vignette = ctx.createRadialGradient(W / 2, H * 0.62, 60, W / 2, H * 0.62, W * 0.62);
+    vignette.addColorStop(0, 'rgba(12, 14, 23, 0)');
+    vignette.addColorStop(1, 'rgba(12, 14, 23, 0.65)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, W, H);
+    // luz cálida sobre el podio
+    const pool = ctx.createRadialGradient(W / 2, PODIUM_Y + 40, 10, W / 2, PODIUM_Y + 40, 170);
+    pool.addColorStop(0, 'rgba(255, 236, 190, 0.22)');
+    pool.addColorStop(1, 'rgba(255, 236, 190, 0)');
+    ctx.fillStyle = pool;
+    ctx.fillRect(0, 0, W, H);
+    // reflectores que barren el escenario (suaves)
+    ctx.globalAlpha = 0.06;
     ctx.fillStyle = '#fff6c2';
     for (const [base, speed] of [[120, 0.7], [360, -0.6]]) {
       const tip = base + Math.sin(this.t * speed) * 90;
@@ -185,13 +215,7 @@ export class PodiumScene {
     }
     ctx.globalAlpha = 1;
 
-    ctx.drawImage(podium, PODIUM_X, Math.round(PODIUM_Y), Math.round(podium.width * PODIUM_SCALE), Math.round(podium.height * PODIUM_SCALE));
-    STEPS.forEach((s, i) => {
-      const face = PODIUM_BOTTOM - s.top - 4;
-      this.text(String(i + 1), s.x, s.top + Math.min(28, face * 0.6), 18, s.digit);
-      const e = o.top[i];
-      if (e) this.text(t('pod.pts', { n: e.points }), s.x, s.top + face - 2, 7, '#11131c', false);
-    });
+    this.drawPodium(o);
 
     // karts: entran del costado, suben al escalón y miran al público
     for (let i = o.top.length - 1; i >= 0; i--) this.drawEntry(i);
@@ -215,11 +239,14 @@ export class PodiumScene {
       if (p >= 1) this.text(o.top[i].name.toUpperCase(), s.x, restY - 4, 8, i === 0 ? '#f3db00' : '#e1e1ef');
     }
 
-    // confeti cuando ya tiene la copa el campeón
-    if (this.t > ENTER_AT[0] + DRIVE + HOP + DROP) {
+    // confeti cuando ya tiene la copa el campeón: una ráfaga y después una lluvia liviana
+    const since = this.t - (ENTER_AT[0] + DRIVE + HOP + DROP);
+    if (since > 0) {
       const colors = ['#ff506e', '#f3db00', '#00f0ff', '#7dff8a', '#ffffff', '#ff9ae6'];
-      for (let k = 0; k < 3; k++)
+      this.confettiAcc += dt * (since < 1.2 ? 45 : 14);
+      for (; this.confettiAcc >= 1 && this.confetti.length < 110; this.confettiAcc--)
         this.confetti.push({ x: Math.random() * W, y: -4, vx: (Math.random() - 0.5) * 30, vy: 30 + Math.random() * 40, rot: Math.random() * 6, color: colors[(Math.random() * colors.length) | 0] });
+      this.confettiAcc = Math.min(this.confettiAcc, 1);
     }
     this.confetti = this.confetti.filter((c) => c.y < H + 4);
     for (const c of this.confetti) {
@@ -228,6 +255,94 @@ export class PodiumScene {
       c.rot += dt * 8;
       ctx.fillStyle = c.color;
       ctx.fillRect(Math.round(c.x), Math.round(c.y), Math.cos(c.rot) > 0 ? 2 : 1, 2);
+    }
+  }
+
+  /** Podio en pixel art: base del escenario y tres tarimas de oro, plata y bronce. */
+  private drawPodium(o: PodiumOptions) {
+    const ctx = this.ctx;
+    // base común con borde de luz
+    const left = STEPS[1].x - STEPS[1].w / 2 - 10;
+    const right = STEPS[2].x + STEPS[2].w / 2 + 10;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.fillRect(left + 4, PODIUM_BOTTOM + 6, right - left, 6);
+    ctx.fillStyle = '#1d1f29';
+    ctx.fillRect(left, PODIUM_BOTTOM, right - left, 10);
+    ctx.fillStyle = '#4a4f63';
+    ctx.fillRect(left, PODIUM_BOTTOM, right - left, 1);
+    ctx.fillStyle = '#0c0e17';
+    ctx.fillRect(left, PODIUM_BOTTOM + 9, right - left, 1);
+    // los costados primero: el del centro tapa sus bordes
+    for (const i of [1, 2, 0]) this.drawStep(i, o.top[i]?.points ?? null);
+  }
+
+  private drawStep(i: number, points: number | null) {
+    const ctx = this.ctx;
+    const { x, w, top, metal } = STEPS[i];
+    const x0 = Math.round(x - w / 2);
+    const x1 = Math.round(x + w / 2);
+    const lid = 6; // tapa
+    const trim = 5; // franja de terciopelo
+    const faceTop = top + lid + trim;
+    const faceH = PODIUM_BOTTOM - faceTop;
+
+    // tapa con un poco de perspectiva (más angosta atrás)
+    ctx.fillStyle = metal.lid;
+    ctx.fillRect(x0 + 3, top, w - 6, 2);
+    ctx.fillRect(x0 + 1, top + 2, w - 2, lid - 2);
+    ctx.fillStyle = metal.bands[0];
+    ctx.fillRect(x0 + 1, top + lid - 1, w - 2, 1);
+
+    // franja de terciopelo con remaches dorados
+    ctx.fillStyle = '#b3203a';
+    ctx.fillRect(x0, top + lid, w, trim);
+    ctx.fillStyle = '#7d1328';
+    ctx.fillRect(x0, top + lid + trim - 1, w, 1);
+    ctx.fillStyle = '#ffd84a';
+    for (let rx = x0 + 5; rx < x1 - 3; rx += 8) ctx.fillRect(rx, top + lid + 2, 2, 1);
+
+    // frente metálico en bandas
+    metal.bands.forEach((c, b) => {
+      const y0 = faceTop + Math.round((faceH * b) / metal.bands.length);
+      const y1 = faceTop + Math.round((faceH * (b + 1)) / metal.bands.length);
+      ctx.fillStyle = c;
+      ctx.fillRect(x0, y0, w, y1 - y0);
+    });
+    // brillo a la izquierda, sombra a la derecha y un destello diagonal
+    ctx.fillStyle = metal.edge;
+    ctx.fillRect(x0 + 1, faceTop, 2, faceH);
+    ctx.fillStyle = metal.shade;
+    ctx.fillRect(x1 - 3, faceTop, 3, faceH);
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#ffffff';
+    for (let k = 0; k < Math.min(faceH, 26); k++) ctx.fillRect(x0 + 8 + k, faceTop + k, 2, 1);
+    ctx.globalAlpha = 1;
+
+    // contorno
+    ctx.fillStyle = '#0c0e17';
+    ctx.fillRect(x0 - 1, top, 1, PODIUM_BOTTOM - top);
+    ctx.fillRect(x1, top, 1, PODIUM_BOTTOM - top);
+    ctx.fillRect(x0 + 2, top - 1, w - 4, 1);
+
+    // medallón con el número y los puntos
+    const r = i === 0 ? 13 : 11;
+    const cy = faceTop + Math.min(faceH / 2, 26);
+    ctx.fillStyle = metal.ring;
+    this.disc(x, cy, r + 2);
+    ctx.fillStyle = metal.bands[2];
+    this.disc(x, cy, r);
+    ctx.fillStyle = metal.bands[0];
+    this.disc(x - 1, cy - 1, r - 3);
+    this.text(String(i + 1), x, cy + (i === 0 ? 8 : 7), i === 0 ? 18 : 15, metal.digit);
+    // puntos en la base, debajo de su tarima
+    if (points !== null) this.text(t('pod.pts', { n: points }), x, PODIUM_BOTTOM + 8, 7, metal.lid, false);
+  }
+
+  /** Círculo relleno pixelado (filas horizontales). */
+  private disc(cx: number, cy: number, r: number) {
+    for (let dy = -r; dy <= r; dy++) {
+      const half = Math.round(Math.sqrt(r * r - dy * dy));
+      this.ctx.fillRect(Math.round(cx - half), Math.round(cy + dy), half * 2, 1);
     }
   }
 

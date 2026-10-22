@@ -1,6 +1,7 @@
-// Flujo completo: Inicio → Bienvenida → Crear/Unirse (link) → Lobby ⇄ Garaje → Torneo (4 carreras con resultados entre
+// Flujo completo: Inicio → Jugar local (arma tu torneo) | Jugar online: Crear/Unirse (link) → Lobby ⇄ Garaje → Torneo (4 carreras con resultados entre
 // cada una) → Podio → Reiniciar (host o votación) / Lobby.
 import { KART_COLORS, colorName, swatch } from './colors';
+import { DEFAULT_DRIVER, DRIVERS, driverBase, isDriver, keepsWarmFur, type DriverId } from './drivers';
 import { Controls } from './input/controls';
 import { TouchControls } from './input/touch';
 import { enterFullscreen, exitFullscreen, isTouch } from './device';
@@ -13,23 +14,30 @@ import { loadTheme } from './render/themes';
 import { buildTrack, Track } from './sim/track';
 import { DEFAULT_TRACK, TRACKS } from './sim/tracks';
 import { OnlineSession } from './game/online';
-import { PRACTICE_BOTS, PracticeSession } from './game/practice';
+import { MAX_RIVALS, PRACTICE_BOTS, PracticeSession, type Difficulty } from './game/practice';
 import { RaceView } from './game/raceView';
 import { MichiPreview } from './ui/michiPreview';
 import { renderStats } from './ui/stats';
-import { renderLobby, showError } from './ui/lobby';
+import { renderLobby, showError, tournamentTitle } from './ui/lobby';
+import { renderTrackOrder } from './ui/trackOrder';
 import { renderTrackCard } from './ui/trackPicker';
 import { itemIcon } from './ui/hud';
-import { hideResults, showResults } from './ui/results';
+import { escapeHtml, hideResults, showResults } from './ui/results';
+import { onRecords, recordsOf, submitRecord, type RecordEntry, type RecordKind } from './net/records';
+import { fmtTime } from './ui/hud';
+import { THEMES } from './render/themes';
+import { BASE_SPEED } from './sim/vehicles';
+import type { RaceEvent } from './sim/race';
+import type { RaceSession } from './game/session';
 import { PodiumScene, type PodiumOptions } from './ui/podium';
 import { INTERMISSION_SECONDS, LocalTournament, TOURNAMENT_ORDER } from './game/tournament';
 import type { StandingDto } from './net/protocol';
-import { applyI18n, getLang, onLangChange, setLang, t, tServer, type Lang } from './i18n';
+import { applyI18n, getLang, onLangChange, setLang, t, tServer, type Key, type Lang } from './i18n';
 import { applySettings, getSettings, updateSettings } from './settings';
 import { HomeBackground } from './ui/homeBackground';
 import { startPresence, type PresenceStats } from './net/presence';
 
-type ScreenId = 'home' | 'welcome' | 'lobby' | 'garage' | 'race';
+type ScreenId = 'home' | 'local' | 'records' | 'welcome' | 'lobby' | 'garage' | 'race';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const RANDOM_NAMES = ['TurboCat', 'Bigotes', 'ApexMiau', 'Pelusa', 'Garfi', 'Nieve', 'Ronroneo', 'Misifu', 'Zarpas', 'Michifuz'];
@@ -53,7 +61,11 @@ const store = {
 export async function startApp() {
   applyI18n();
   applySettings();
-  const kartFrames = await Promise.all(KART_COLORS.map((c) => loadKart('/assets/michi', c.shift)));
+  // frames de cada piloto en los 8 colores de kart (online por ahora corre todo el mundo con el michi)
+  const karts = Object.fromEntries(
+    await Promise.all(DRIVERS.map(async (d) => [d, await Promise.all(KART_COLORS.map((c) => loadKart(driverBase(d), c.shift, keepsWarmFur(d))))] as const)),
+  ) as Record<DriverId, KartFrames[]>;
+  const kartFrames = karts[DEFAULT_DRIVER];
   loadTheme(DEFAULT_TRACK); // precarga del tema por defecto
   const tracks = new Map<string, Track>();
   const getTrack = (id: string) => {
@@ -93,9 +105,10 @@ export async function startApp() {
   refreshSoundButtons(audio.muted); // incluye el botón 🔊 de los controles táctiles
   if (import.meta.env.DEV) (window as unknown as { __controls: Controls }).__controls = controls; // depuración
   const raceView = new RaceView($('game') as HTMLCanvasElement);
-  const homeBg = new HomeBackground($('home-bg') as HTMLCanvasElement, kartFrames);
+  const homeBg = new HomeBackground($('home-bg') as HTMLCanvasElement, DRIVERS.flatMap((d) => karts[d]));
   const previews = {
     welcome: new MichiPreview($('w-preview') as HTMLCanvasElement),
+    local: new MichiPreview($('lo-preview') as HTMLCanvasElement),
     lobby: new MichiPreview($('l-preview') as HTMLCanvasElement),
     garage: new MichiPreview($('g-preview') as HTMLCanvasElement),
   };
@@ -107,13 +120,14 @@ export async function startApp() {
   let myId = '';
   let mode: 'practice' | 'online' | null = null;
   let localColor = Number(store.get('color') ?? 0) % KART_COLORS.length;
+  let localDriver: DriverId = isDriver(store.get('driver')) ? (store.get('driver') as DriverId) : DEFAULT_DRIVER;
   const podium = new PodiumScene();
   /** Cambia en cada carrera/torneo nuevo: invalida temporizadores pendientes (pase al podio, siguiente carrera). */
   let flowToken = 0;
   let garageColor = localColor;
 
   const show = (id: ScreenId) => {
-    for (const s of ['home', 'welcome', 'lobby', 'garage', 'race']) $(`screen-${s}`).classList.toggle('active', s === id);
+    for (const s of ['home', 'local', 'records', 'welcome', 'lobby', 'garage', 'race']) $(`screen-${s}`).classList.toggle('active', s === id);
     if (id === 'home') homeBg.start();
     else homeBg.stop();
     if (id === 'race') {
@@ -134,13 +148,13 @@ export async function startApp() {
   };
   const trackName = (id: string) => TRACKS[id]?.name ?? id;
   /** Cartel de largada: "CARRERA 2/4 · COASTAL ROAD". */
-  const announceRace = (trackId: string) => {
-    const i = TOURNAMENT_ORDER.indexOf(trackId);
-    raceView.announce(t('race.banner', { n: i + 1, total: TOURNAMENT_ORDER.length, track: trackName(trackId).toUpperCase() }));
-  };
+  const announceRace = (trackId: string, index: number, total: number) =>
+    raceView.announce(t('race.banner', { n: index + 1, total, track: trackName(trackId).toUpperCase() }));
   /** Los 3 primeros de la tabla con su kart, para el podio. */
-  const podiumTop = (standings: { id: string; name: string; color: number; points: number }[]) =>
-    standings.slice(0, 3).map((s) => ({ id: s.id, name: s.name, points: s.points, frames: kartFrames[s.color % kartFrames.length] }));
+  const podiumTop = (standings: { id: string; name: string; color: number; points: number }[], driverOf: (id: string) => DriverId = () => DEFAULT_DRIVER) =>
+    standings.slice(0, 3).map((s) => ({ id: s.id, name: s.name, points: s.points, frames: karts[driverOf(s.id)][s.color % KART_COLORS.length] }));
+  /** Piloto de cada corredor en el modo local: el elegido para el jugador; los bots alternan (uno de cada tres es ragdoll). */
+  const practiceDriver = (id: string): DriverId => (id === 'player' ? localDriver : Number(id.replace('bot', '')) % 3 === 1 ? 'ragdoll' : 'michi');
   const toast = (msg: string) => {
     const el = $('toast');
     el.textContent = msg;
@@ -149,9 +163,10 @@ export async function startApp() {
   };
   const myColor = () => room?.players.find((p) => p.id === myId)?.color ?? localColor;
   const nameInput = $<HTMLInputElement>('w-name');
-  const playerName = () => {
-    const n = nameInput.value.trim() || RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
-    nameInput.value = n;
+  /** Apodo del input indicado (bienvenida online o modo local); si está vacío se inventa uno. */
+  const playerName = (input = nameInput) => {
+    const n = input.value.trim() || RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+    input.value = n;
     store.set('name', n);
     return n;
   };
@@ -194,10 +209,15 @@ export async function startApp() {
       document.querySelectorAll<HTMLButtonElement>('#screen-welcome button').forEach((b) => (b.disabled = false));
     }
   };
-  $('w-create').onclick = () => busy(async () => joinRoom(await createRoom(TOURNAMENT_ORDER[0])));
+  $('w-create').onclick = () =>
+    busy(async () => {
+      await joinRoom(await createRoom(TOURNAMENT_ORDER[0]));
+      // nombre del torneo (opcional): las pistas se eligen después en el lobby
+      const name = $<HTMLInputElement>('w-tname').value.trim();
+      if (name && conn && room) await conn.setTournament(name, room.trackList).catch(() => {});
+    });
   $('w-join').onclick = () => busy(() => joinRoom($<HTMLInputElement>('w-code').value));
   $('w-invite-join').onclick = () => busy(() => joinRoom($('w-invite-code').textContent!));
-  $('w-practice').onclick = () => startPractice(true);
 
   // ---------------- conexión / sala ----------------
   // La sesión (código + id + token) se guarda por pestaña para volver al mismo lugar tras recargar o caerse la red.
@@ -253,6 +273,8 @@ export async function startApp() {
     if (requestColor && myColor() !== localColor && !room.players.some((p) => p.id !== myId && p.color === localColor)) {
       await conn!.selectColor(localColor).catch(() => {});
     }
+    // invitado que entra por primera vez: "¡Bienvenido al torneo {nombre}!"
+    if (requestColor && room.ownerId !== myId) welcomeBanner(room);
     if (res.race) startOnlineRace(res.race); // carrera en curso: a tu kart, o como espectador
     else if (room.phase === 'podium' && room.tournament) {
       // recargó la página durante el podio: vuelve a la escena final (con su voto)
@@ -320,7 +342,7 @@ export async function startApp() {
 
   function refreshLobby() {
     if (!room) return;
-    renderLobby(room, myId, conn?.rtt ?? 0);
+    renderLobby(room, myId, conn?.rtt ?? 0, (name, tracks) => lobbyAction(() => conn!.setTournament(name, tracks)));
     loadTheme(room.trackId); // precarga mientras se espera en el lobby
     previews.lobby.setFrames(kartFrames[myColor()]);
   }
@@ -416,22 +438,36 @@ export async function startApp() {
     const session = new OnlineSession(getTrack(start.trackId), conn, controls, start, myId);
     currentOnline = session;
     $('hud-hint').textContent = session.spectator ? t('race.hintSpectator') : t('race.hint');
-    raceView.onEvent = () => {};
+    raceView.onEvent = (e) => {
+      if (!session.spectator) submitTimes(session, e, 'online');
+    };
     flowToken++;
     loadTheme(start.trackId).then((theme) => {
       if (currentOnline !== session) return;
       podium.hide();
       raceView.start(session, frames, theme);
       show('race');
-      announceRace(start.trackId);
+      announceRace(start.trackId, start.raceIndex, start.totalRaces);
     });
+  }
+
+  /** Cartel de bienvenida al torneo para los invitados (unos segundos, sin bloquear). */
+  let welcomeTimer = 0;
+  function welcomeBanner(r: RoomStateDto) {
+    const host = r.players.find((p) => p.isOwner)?.name ?? '';
+    $('l-welcome-name').textContent = tournamentTitle(r).toUpperCase();
+    $('l-welcome-by').textContent = t('l.welcomeBy', { host });
+    $('l-welcome').hidden = false;
+    clearTimeout(welcomeTimer);
+    welcomeTimer = window.setTimeout(() => ($('l-welcome').hidden = true), 3500);
   }
   let currentOnline: OnlineSession | null = null;
 
   function showOnlineResults(results: ResultsDto) {
     raceFinished();
-    const next = results.final ? null : TOURNAMENT_ORDER[results.raceIndex + 1];
+    const next = results.final ? null : results.nextTrackId;
     showResults({
+      tournamentName: room ? tournamentTitle(room) : '',
       trackName: results.trackName,
       raceIndex: results.raceIndex,
       totalRaces: results.totalRaces,
@@ -453,7 +489,16 @@ export async function startApp() {
     hideResults();
     raceView.stop();
     const mine = standings.findIndex((s) => s.id === myId);
-    podium.show({ top: podiumTop(standings), myId, myPlace: mine + 1, myPoints: standings[mine]?.points ?? 0, ...podiumActions() }).then(refreshVotes);
+    podium
+      .show({
+        tournamentName: room ? tournamentTitle(room) : '',
+        top: podiumTop(standings),
+        myId,
+        myPlace: mine + 1,
+        myPoints: standings[mine]?.points ?? 0,
+        ...podiumActions(),
+      })
+      .then(refreshVotes);
   }
 
   /** Host: reiniciar o nuevo torneo. Invitado: votar reinicio o salir. */
@@ -481,38 +526,127 @@ export async function startApp() {
     else podium.setVotes(text, voted ? t('pod.voted') : t('pod.vote'), voted);
   }
 
-  // ---------------- práctica local ----------------
-  // ---------------- práctica local: torneo de 4 carreras contra bots ----------------
+  // ---------------- jugar local: arma tu torneo contra bots ----------------
+  interface LocalConfig {
+    rivals: number;
+    difficulty: Difficulty;
+    tracks: string[];
+  }
+  const loadLocalConfig = (): LocalConfig => {
+    try {
+      const c = JSON.parse(store.get('local') ?? '{}') as Partial<LocalConfig>;
+      const tracks = (c.tracks ?? []).filter((id) => TRACKS[id]).filter((id, i, a) => a.indexOf(id) === i).slice(0, 4);
+      return {
+        rivals: Math.max(1, Math.min(MAX_RIVALS, Number(c.rivals) || 7)),
+        difficulty: c.difficulty === 'easy' || c.difficulty === 'hard' ? c.difficulty : 'normal',
+        tracks: tracks.length ? tracks : [...TOURNAMENT_ORDER],
+      };
+    } catch {
+      return { rivals: 7, difficulty: 'normal', tracks: [...TOURNAMENT_ORDER] };
+    }
+  };
+  let localCfg = loadLocalConfig();
+  const saveLocalConfig = () => store.set('local', JSON.stringify(localCfg));
+  const localName = $<HTMLInputElement>('lo-name');
+
+  function renderLocal() {
+    $('lo-colors').innerHTML = KART_COLORS.map(
+      (_, i) => `<button data-color="${i}" class="${i === localColor ? 'selected' : ''}" style="background:${swatch(i)}" aria-label="${colorName(i)}"></button>`,
+    ).join('');
+    $('lo-color-name').textContent = colorName(localColor).toUpperCase();
+    previews.local.setFrames(karts[localDriver][localColor]);
+    $('lo-drivers').innerHTML = DRIVERS.map(
+      (d) => `<button data-driver="${d}" class="${d === localDriver ? 'selected' : ''}"><img src="${driverBase(d)}/south.png" alt="" />${t(`driver.${d}` as Key)}</button>`,
+    ).join('');
+    renderTrackOrder($('lo-tracks'), localCfg.tracks, (tracks) => {
+      localCfg.tracks = tracks;
+      saveLocalConfig();
+      renderLocal();
+    });
+    $('lo-races').textContent = t('lo.races', { n: localCfg.tracks.length });
+    $<HTMLInputElement>('lo-rivals').value = String(localCfg.rivals);
+    $('lo-rivals-v').textContent = String(localCfg.rivals);
+    document.querySelectorAll<HTMLElement>('#lo-diff [data-diff]').forEach((b) => b.classList.toggle('selected', b.dataset.diff === localCfg.difficulty));
+  }
+
+  function openLocal() {
+    localName.value = store.get('name') ?? nameInput.value;
+    renderLocal();
+    show('local');
+  }
+
+  $('lo-drivers').onclick = (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-driver]');
+    if (!b || !isDriver(b.dataset.driver)) return;
+    localDriver = b.dataset.driver;
+    store.set('driver', localDriver);
+    renderLocal();
+  };
+  $('lo-colors').onclick = (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-color]');
+    if (!b) return;
+    localColor = Number(b.dataset.color);
+    store.set('color', String(localColor));
+    previews.welcome.setFrames(kartFrames[localColor]);
+    renderLocal();
+  };
+  $('lo-random').onclick = () => {
+    localName.value = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)] + Math.floor(Math.random() * 90 + 10);
+  };
+  $<HTMLInputElement>('lo-rivals').oninput = (e) => {
+    localCfg.rivals = Number((e.target as HTMLInputElement).value);
+    saveLocalConfig();
+    $('lo-rivals-v').textContent = String(localCfg.rivals);
+  };
+  $('lo-diff').onclick = (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-diff]');
+    if (!b) return;
+    localCfg.difficulty = b.dataset.diff as Difficulty;
+    saveLocalConfig();
+    renderLocal();
+  };
+  $('lo-start').onclick = () => {
+    const name = playerName(localName);
+    nameInput.value = name;
+    startPractice(true);
+  };
+
   let practiceTour: LocalTournament | null = null;
 
   async function startPractice(fresh: boolean) {
     mode = 'practice';
     if (fresh) {
-      practiceTour = new LocalTournament();
-      enterFullscreen(); // dentro del gesto (clic en PRÁCTICA / REVANCHA)
+      practiceTour = new LocalTournament([...localCfg.tracks]);
+      enterFullscreen(); // dentro del gesto (clic en ¡A CORRER! / REVANCHA)
     }
     const tour = practiceTour!;
     const token = ++flowToken;
     const trackId = tour.trackId;
     const theme = await loadTheme(trackId);
     if (token !== flowToken) return;
-    const session = new PracticeSession(getTrack(trackId), controls, playerName(), tour.raceIndex > 0 ? tour.gridOrder() : null);
+    const session = new PracticeSession(getTrack(trackId), controls, playerName(localName), {
+      rivals: localCfg.rivals,
+      difficulty: localCfg.difficulty,
+      gridOrder: tour.raceIndex > 0 ? tour.gridOrder() : null,
+    });
     const botColors = KART_COLORS.map((_, i) => i).filter((i) => i !== localColor);
     const colorOf = (id: string) => (id === session.player.id ? localColor : botColors[Number(id.replace('bot', '')) % botColors.length]);
-    const frames = new Map<string, KartFrames>([[session.player.id, kartFrames[localColor]]]);
-    PRACTICE_BOTS.forEach((_, i) => frames.set(`bot${i}`, kartFrames[colorOf(`bot${i}`)]));
+    const frames = new Map<string, KartFrames>([[session.player.id, karts[localDriver][localColor]]]);
+    PRACTICE_BOTS.slice(0, localCfg.rivals).forEach((_, i) => frames.set(`bot${i}`, karts[practiceDriver(`bot${i}`)][colorOf(`bot${i}`)]));
     $('hud-hint').textContent = t('race.hintPractice');
     raceView.onEvent = (e) => {
+      submitTimes(session, e, 'local');
       if (e.type !== 'end') return;
       raceFinished();
       const ranking = session.race.ranking();
       const earned = tour.record(ranking, colorOf);
       const standings = tour.ranked();
-      const next = tour.final ? null : TOURNAMENT_ORDER[tour.raceIndex + 1];
+      const next = tour.nextTrackId;
       showResults({
+        tournamentName: t('lo.tourName'),
         trackName: session.race.track.def.name,
         raceIndex: tour.raceIndex,
-        totalRaces: TOURNAMENT_ORDER.length,
+        totalRaces: tour.tracks.length,
         rows: ranking.map((r, i) => ({ id: r.id, name: r.name, place: i + 1, finishTime: r.finishTime, points: earned.get(r.id) ?? 0 })),
         standings,
         myId: session.player.id,
@@ -533,7 +667,7 @@ export async function startApp() {
     };
     raceView.start(session, frames, theme);
     show('race');
-    announceRace(trackId);
+    announceRace(trackId, tour.raceIndex, tour.tracks.length);
   }
 
   function showPracticePodium(standings: ReturnType<LocalTournament['ranked']>, me: string) {
@@ -541,7 +675,8 @@ export async function startApp() {
     raceView.stop();
     const mine = standings.findIndex((s) => s.id === me);
     podium.show({
-      top: podiumTop(standings),
+      tournamentName: t('lo.tourName'),
+      top: podiumTop(standings, practiceDriver),
       myId: me,
       myPlace: mine + 1,
       myPoints: standings[mine]?.points ?? 0,
@@ -556,7 +691,7 @@ export async function startApp() {
         label: t('pod.leave'),
         onClick: () => {
           mode = null;
-          showWelcome();
+          openLocal();
         },
       },
     });
@@ -568,7 +703,7 @@ export async function startApp() {
     if (mode === 'practice') {
       raceView.stop();
       mode = null;
-      showWelcome();
+      openLocal();
     } else if (mode === 'online' && $('screen-race').classList.contains('active')) {
       if (performance.now() > escArmedUntil) {
         escArmedUntil = performance.now() + 2000;
@@ -614,6 +749,8 @@ export async function startApp() {
         return;
       }
       const host = info.players.find((p) => p.isOwner)?.name;
+      $('w-invite-tour').textContent = t('w.invite.tour', { name: tournamentTitle(info), host: host ?? '' });
+      $('w-invite-tour').hidden = false;
       $('w-invite-code').textContent = info.code;
       $('w-invite-info').textContent =
         t('w.invite.info', { host: host ? t('w.invite.host', { name: host }) : '', n: info.players.length, max: info.maxPlayers }) +
@@ -640,7 +777,10 @@ export async function startApp() {
       .then((f) => (ogReady = f))
       .catch(() => null);
   }
-  $('h-play').onclick = () => showWelcome();
+  $('h-local').onclick = () => openLocal();
+  $('h-records').onclick = () => showRecordsScreen();
+  $('h-online').onclick = () => showWelcome();
+  document.querySelectorAll<HTMLElement>('[data-go-home]').forEach((b) => (b.onclick = () => showHome()));
   $('w-home').onclick = () => showHome();
   $('h-share').onclick = () => shareGame();
 
@@ -718,6 +858,77 @@ export async function startApp() {
     $('h-online').textContent = '—';
   });
 
+  // ---------------- récords mundiales (Firebase) ----------------
+  /**
+   * Al cruzar la meta, el jugador sube su tiempo total y su mejor vuelta. Se descartan tiempos imposibles
+   * (más rápidos que recorrer la pista al doble de la velocidad base). Avisa si entró al top 10.
+   */
+  function submitTimes(session: RaceSession, e: RaceEvent, mode: RecordEntry['m']) {
+    const me = session.player;
+    if (e.type !== 'finish' || e.id !== me.id) return;
+    const track = session.race.track;
+    const minLap = track.length / (BASE_SPEED * 2);
+    const round = (x: number) => Math.round(x * 1000) / 1000;
+    const entry = (time: number): RecordEntry => ({ n: me.name, t: round(time), d: Date.now(), m: mode });
+    const tries: Promise<[RecordKind, number | null]>[] = [];
+    if (e.time >= minLap * track.laps) tries.push(submitRecord(track.def.id, 'race', entry(e.time)).then((r) => ['race', r]));
+    if (me.bestLap !== null && me.bestLap >= minLap) tries.push(submitRecord(track.def.id, 'lap', entry(me.bestLap)).then((r) => ['lap', r]));
+    Promise.all(tries)
+      .then((res) => {
+        const race = res.find(([k]) => k === 'race')?.[1] ?? null;
+        const lap = res.find(([k]) => k === 'lap')?.[1] ?? null;
+        const msg = race === 0 ? t('rec.newWorld') : lap === 0 ? t('rec.newLap') : race !== null ? t('rec.top', { n: race + 1 }) : lap !== null ? t('rec.top', { n: lap + 1 }) : null;
+        if (!msg) return;
+        if (race === 0 || lap === 0) sfx.record();
+        raceView.flash(msg, 3.5);
+        toast(msg);
+      })
+      .catch(() => {});
+  }
+
+  let recordsTrack = TOURNAMENT_ORDER[0];
+  function renderRecordsScreen() {
+    $('rec-tabs').innerHTML = Object.values(TRACKS)
+      .map((tr) => {
+        const best = recordsOf(tr.id).race[0];
+        return `<button class="track-option${tr.id === recordsTrack ? ' selected' : ''}" data-track="${tr.id}">
+          <img src="${THEMES[tr.id].preview}" alt="" />
+          <span>${escapeHtml(tr.name.toUpperCase())}</span>
+          <span class="rec">${best ? `🏆 ${fmtTime(best.t)}` : '—'}</span>
+        </button>`;
+      })
+      .join('');
+    const rec = recordsOf(recordsTrack);
+    const list = (entries: RecordEntry[]) =>
+      entries.length === 0
+        ? `<li class="empty">${t('rec.empty')}</li>`
+        : entries
+            .map(
+              (e, i) => `<li><span>${['🥇', '🥈', '🥉'][i] ?? `${i + 1}°`}</span>
+                <span class="who">${escapeHtml(e.n)}<small>${new Date(e.d).toLocaleDateString(getLang())} · ${t(e.m === 'online' ? 'rec.online' : 'rec.local')}</small></span>
+                <span class="time">${fmtTime(e.t)}</span></li>`,
+            )
+            .join('');
+    $('rec-race').innerHTML = list(rec.race);
+    $('rec-lap').innerHTML = list(rec.lap);
+  }
+  $('rec-tabs').onclick = (e) => {
+    const id = (e.target as HTMLElement).closest<HTMLElement>('[data-track]')?.dataset.track;
+    if (!id) return;
+    recordsTrack = id;
+    renderRecordsScreen();
+  };
+  function showRecordsScreen() {
+    renderRecordsScreen();
+    show('records');
+  }
+  // los récords llegan en vivo: se redibujan las pantallas que los muestran
+  onRecords(() => {
+    if ($('screen-records').classList.contains('active')) renderRecordsScreen();
+    if ($('screen-local').classList.contains('active')) renderLocal();
+    if (room && $('screen-lobby').classList.contains('active')) refreshLobby();
+  });
+
   // al cambiar el idioma se vuelven a dibujar las partes generadas por código
   onLangChange(() => {
     renderStatsBar();
@@ -726,6 +937,8 @@ export async function startApp() {
     renderStats($('g-stats'));
     if (room) refreshLobby();
     if ($('screen-garage').classList.contains('active')) renderGarage();
+    if ($('screen-local').classList.contains('active')) renderLocal();
+    if ($('screen-records').classList.contains('active')) renderRecordsScreen();
   });
 
   // con link de sala (/room/PX-1234) se va directo a unirse; si no, la portada

@@ -13,6 +13,8 @@ const controls = { read: () => NO_INPUT } as unknown as Controls;
 const start: RaceStartDto = {
   trackId: GREEN_VALLEY.id,
   goTick: 90,
+  raceIndex: 0,
+  totalRaces: 1,
   racers: [
     { id: 'me', name: 'Me', color: 0, bot: false },
     { id: 'bot0', name: 'Bot', color: 1, bot: true },

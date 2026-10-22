@@ -143,6 +143,7 @@
 
 /* ---------- layouts ---------- */
 .welcome-grid,
+.local-grid,
 .lobby-grid,
 .garage-grid {
   display: grid;
@@ -160,12 +161,17 @@
   grid-template-columns: minmax(260px, 1fr) minmax(340px, 1.6fr) minmax(260px, 1fr);
 }
 
+.local-grid {
+  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr) minmax(260px, 1fr);
+}
+
 .garage-grid {
   grid-template-columns: minmax(220px, 0.8fr) minmax(360px, 1.6fr) minmax(260px, 1fr);
 }
 
 @media (max-width: 1000px) {
   .welcome-grid,
+  .local-grid,
   .lobby-grid,
   .garage-grid {
     grid-template-columns: 1fr;
@@ -1087,4 +1093,280 @@ li:first-child .slot {
 .brand.small .brand-emblem {
   width: 42px;
   height: 42px;
+}
+
+/* ---------- jugar local / torneo ---------- */
+.home-buttons .home-play {
+  font-size: clamp(15px, 2.6vmin, 20px);
+  padding: 14px 10px;
+}
+
+.home-buttons #h-local {
+  animation: play-pulse 1.6s ease-in-out infinite;
+}
+
+.local-race {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.local-race #lo-start {
+  margin-top: auto;
+}
+
+.diff-toggle {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.diff-toggle .btn.selected {
+  background: var(--primary);
+  color: #00363a;
+}
+
+.swatch-row {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.swatch-row button {
+  aspect-ratio: 1;
+  border: 2px solid var(--surface-highest);
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch-row button.selected {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.track-option.ordered {
+  position: relative;
+}
+
+.order-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  background: var(--secondary);
+  color: #fff;
+  font-size: 13px;
+  box-shadow: 2px 2px 0 var(--surface-lowest);
+}
+
+#w-tname,
+#l-tname-input {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.invite-tour {
+  text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  color: var(--tertiary);
+  margin-top: 8px;
+}
+
+/* cartel "¡Bienvenido al torneo!" al entrar al lobby */
+.welcome-banner {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 40;
+  min-width: min(90vw, 420px);
+  padding: 22px 28px;
+  text-align: center;
+  background: var(--surface-container);
+  border: 3px solid var(--tertiary);
+  box-shadow: 8px 8px 0 var(--surface-lowest), 0 0 30px rgba(243, 219, 0, 0.35);
+  font-family: 'Space Mono', monospace;
+  animation: banner-in 0.45s cubic-bezier(0.2, 1.6, 0.4, 1);
+  pointer-events: none;
+}
+
+.welcome-banner[hidden] {
+  display: none;
+}
+
+.welcome-title {
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  color: var(--primary);
+}
+
+.welcome-name {
+  margin: 6px 0;
+  font-size: clamp(22px, 4vw, 34px);
+  font-weight: 700;
+  color: var(--tertiary);
+}
+
+.welcome-by {
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--muted);
+}
+
+@keyframes banner-in {
+  from {
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.podium-tour {
+  font-size: 1.3cqw;
+  letter-spacing: 0.12em;
+  color: var(--primary);
+  text-shadow: 0.15cqw 0.15cqw 0 #0c0e17;
+}
+
+/* ---------- récords mundiales ---------- */
+.home-row.three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.home-row.three .btn {
+  padding-left: 6px;
+  padding-right: 6px;
+  font-size: 12px;
+}
+
+.records-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 20px 28px;
+}
+
+.records-title {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--tertiary);
+  text-shadow: 3px 3px 0 var(--surface-lowest);
+  margin-bottom: 14px;
+}
+
+.records-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.records-tabs .track-option span.rec {
+  color: var(--tertiary);
+}
+
+.records-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.records-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+}
+
+.records-list li {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 4px;
+  border-bottom: 1px solid var(--surface-high);
+}
+
+.records-list li:first-child {
+  color: var(--tertiary);
+  font-weight: 700;
+}
+
+.records-list .who small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.records-list .time {
+  font-weight: 700;
+}
+
+.records-list .empty {
+  display: block;
+  color: var(--muted);
+  border: 0;
+}
+
+.track-option .rec {
+  color: var(--tertiary);
+  font-size: 9px;
+}
+
+@media (max-width: 760px), (orientation: landscape) and (max-height: 520px) {
+  .records-wrap {
+    padding: 10px 14px;
+  }
+  .records-title {
+    font-size: 20px;
+  }
+  .records-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .records-list {
+    font-size: 11px;
+  }
+  .records-list li {
+    padding: 4px 2px;
+  }
+}
+
+/* ---------- elegir piloto (modo local) ---------- */
+.driver-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 6px 0 12px;
+}
+
+.driver-row button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: var(--surface-low);
+  border: 2px solid var(--surface-highest);
+  color: var(--on-surface);
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.driver-row button img {
+  width: 44px;
+  height: 44px;
+  image-rendering: pixelated;
+}
+
+.driver-row button.selected {
+  border-color: var(--primary);
+  background: rgba(0, 240, 255, 0.08);
+  color: var(--primary);
 }

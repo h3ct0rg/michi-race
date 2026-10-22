@@ -17,7 +17,9 @@ public sealed record RoomStateDto(
     int GridSize,
     int MaxPlayers,
     IReadOnlyList<PlayerDto> Players,
-    TournamentDto? Tournament = null);
+    TournamentDto? Tournament = null,
+    string TournamentName = "",
+    IReadOnlyList<string>? TrackList = null);
 
 public sealed record StandingDto(string Id, string Name, int Color, bool Bot, int Points, IReadOnlyList<int> Places);
 
@@ -40,7 +42,8 @@ public sealed record JoinResponse(string PlayerId, string Token, RoomStateDto Ro
 public sealed record RaceRacerDto(string Id, string Name, int Color, bool Bot);
 
 /// <summary>GoTick: último tick de la cuenta regresiva; los karts se mueven desde GoTick + 1.</summary>
-public sealed record RaceStartDto(string TrackId, IReadOnlyList<RaceRacerDto> Racers, int GoTick);
+/// <summary>RaceIndex/TotalRaces: número de carrera dentro del torneo (0-based) y cantidad de carreras.</summary>
+public sealed record RaceStartDto(string TrackId, IReadOnlyList<RaceRacerDto> Racers, int GoTick, int RaceIndex = 0, int TotalRaces = 1);
 
 /// <summary>
 /// Snapshot compacto (20/s). R: <see cref="SnapshotLayout.RacerFields"/> floats por kart, en el orden de RaceStartDto.Racers.
@@ -121,4 +124,5 @@ public sealed record ResultsDto(
     int TotalRaces,
     bool Final,
     double NextRaceIn,
-    IReadOnlyList<StandingDto> Standings);
+    IReadOnlyList<StandingDto> Standings,
+    string? NextTrackId = null);

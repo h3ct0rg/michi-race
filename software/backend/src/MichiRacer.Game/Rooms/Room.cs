@@ -54,6 +54,11 @@ public sealed class Room
     private readonly List<(string Id, string Name, int Color, double Skill)> _bots = [];
     private readonly HashSet<string> _votes = [];
     private int _raceIndex;
+    /// <summary>Nombre que eligió el host ("" = "Torneo de {host}") y pistas elegidas en el lobby.</summary>
+    private string _name = "";
+    private List<string> _planned = [.. TournamentRules.Order];
+    /// <summary>Pistas del torneo en curso (copia de _planned al iniciar).</summary>
+    private List<string> _tracks = [.. TournamentRules.Order];
     private DateTime _nextRaceAt;
     private DateTime _now = DateTime.UtcNow;
 
@@ -182,6 +187,18 @@ public sealed class Room
 
     public RoomStateDto SetFillBots(string playerId, bool fill) => OwnerMutate(playerId, () => FillBots = fill);
 
+    /// <summary>El owner nombra el torneo y elige sus pistas, en orden (1 a 4, sin repetir). Solo en el lobby.</summary>
+    public RoomStateDto SetTournament(string playerId, string? name, IReadOnlyList<string>? tracks) =>
+        OwnerMutate(playerId, () =>
+        {
+            if (Phase != RoomPhase.Lobby) throw new RoomException("El torneo ya comenzó.");
+            var list = (tracks ?? []).ToList();
+            if (list.Count is < 1 or > TournamentRules.MaxRaces || list.Distinct().Count() != list.Count || !list.All(BuiltTracks.ContainsKey))
+                throw new RoomException("Elige de 1 a 4 pistas distintas.");
+            _name = TournamentRules.SanitizeName(name);
+            _planned = list;
+        });
+
     public RoomStateDto SetGridSize(string playerId, int size) =>
         OwnerMutate(playerId, () => GridSize = Math.Clamp(size, MinGrid, MaxPlayers));
 
@@ -238,6 +255,7 @@ public sealed class Room
         _votes.Clear();
         _bots.Clear();
         _raceIndex = 0;
+        _tracks = [.. _planned];
         if (FillBots)
         {
             // los bots se eligen una vez y corren todo el torneo (mismos nombres y colores)
@@ -254,7 +272,7 @@ public sealed class Room
     /// <summary>Arma la carrera actual del torneo. Desde la 2ª, la parrilla sigue la tabla (el líder adelante).</summary>
     private RaceStartDto LaunchRace()
     {
-        _track = BuiltTracks[TournamentRules.Order[_raceIndex]];
+        _track = BuiltTracks[_tracks[_raceIndex]];
         var vehicle = Vehicles.Derive(Vehicles.All["michi"].Stats);
         var checkpoints = _track.Def.Checkpoints;
         var entrants = new List<(string Id, string Name, int Color, double? Skill)>();
@@ -275,7 +293,7 @@ public sealed class Room
                 s.Name = e.Name;
                 s.Color = e.Color;
             }
-            else _standings.Add(new Standing(e.Id, e.Name, e.Color, e.Skill is not null, TournamentRules.Order.Length));
+            else _standings.Add(new Standing(e.Id, e.Name, e.Color, e.Skill is not null, _tracks.Count));
         }
         if (_raceIndex > 0)
         {
@@ -297,7 +315,9 @@ public sealed class Room
         _raceStart = new RaceStartDto(
             _track.Def.Id,
             racers.Select(r => new RaceRacerDto(r.Id, r.Name, r.Color, r.Bot is not null)).ToList(),
-            GoTick());
+            GoTick(),
+            _raceIndex,
+            _tracks.Count);
         _snapshotBuffer = new float[racers.Count * SnapshotLayout.RacerFields];
         Phase = RoomPhase.Racing;
         Touch();
@@ -386,7 +406,7 @@ public sealed class Room
             s.Places[_raceIndex] = i + 1;
             rows.Add(new ResultRowDto(r.Id, r.Name, r.Color, s.Bot, i + 1, r.FinishTime, r.BestLap, points, s.Points));
         }
-        var final = _raceIndex >= TournamentRules.Order.Length - 1;
+        var final = _raceIndex >= _tracks.Count - 1;
         Phase = final ? RoomPhase.Podium : RoomPhase.Intermission;
         _nextRaceAt = now + TournamentRules.Intermission;
         _race = null;
@@ -397,8 +417,9 @@ public sealed class Room
             p.InRace = false;
         }
         return new ResultsDto(
-            _track.Def.Name, rows, _raceIndex, TournamentRules.Order.Length, final,
-            final ? 0 : TournamentRules.Intermission.TotalSeconds, StandingDtos());
+            _track.Def.Name, rows, _raceIndex, _tracks.Count, final,
+            final ? 0 : TournamentRules.Intermission.TotalSeconds, StandingDtos(),
+            final ? null : _tracks[_raceIndex + 1]);
     }
 
     /// <summary>Se cancela el torneo (no queda nadie conectado o el host vuelve al lobby).</summary>
@@ -452,9 +473,27 @@ public sealed class Room
                 _track.Def.Id, _track.Def.Name, _track.Laps, FillBots, GridSize, MaxPlayers,
                 _players.Select(p => new PlayerDto(p.Id, p.Name, p.Color, p.Ready, p.Ping, p.Id == OwnerId, p.Connected)).ToList(),
                 Phase == RoomPhase.Lobby ? null : new TournamentDto(
-                    _raceIndex, TournamentRules.Order.Length, TournamentRules.Order, StandingDtos(),
+                    _raceIndex, _tracks.Count, _tracks, StandingDtos(),
                     Phase == RoomPhase.Intermission ? Math.Max(0, (_nextRaceAt - _now).TotalSeconds) : 0,
-                    _votes.ToList(), VotesNeeded()));
+                    _votes.ToList(), VotesNeeded()),
+                _name,
+                Phase == RoomPhase.Lobby ? _planned : _tracks);
+        }
+    }
+
+    /// <summary>Título y descripción de la vista previa del link de invitación (WhatsApp, Telegram...).</summary>
+    public (string Title, string Description) InvitePreview()
+    {
+        lock (_gate)
+        {
+            var host = _players.Find(p => p.Id == OwnerId)?.Name ?? "un amigo";
+            var name = TournamentRules.DisplayName(_name, host);
+            var list = Phase == RoomPhase.Lobby ? _planned : _tracks;
+            var tracks = string.Join(", ", list.Select(id => BuiltTracks[id].Def.Name));
+            var races = list.Count == 1 ? "1 carrera" : $"{list.Count} carreras";
+            return (
+                $"🏁 Te invitaron a {name} · Sala {Code}",
+                $"{host} te invita a su torneo de Michi Racer ({races}: {tracks}). Toca el link para entrar a la parrilla: gratis, sin cuentas y desde el navegador.");
         }
     }
 

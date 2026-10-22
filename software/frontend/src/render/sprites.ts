@@ -36,7 +36,8 @@ const canvas = (w: number, h: number) => {
 };
 
 // Recolorea solo los píxeles saturados (kart, traje, ojos); el pelaje blanco-azulado queda intacto.
-function hueShift(img: Img, degrees: number): Img {
+// keepWarm: además respeta los cafés y cremas (pelaje de gatos como el ragdoll), que sí son algo saturados.
+function hueShift(img: Img, degrees: number, keepWarm = false): Img {
   if (degrees === 0) return img;
   const c = canvas(img.width, img.height);
   const ctx = c.getContext('2d')!;
@@ -47,6 +48,7 @@ function hueShift(img: Img, degrees: number): Img {
     if (px[i + 3] === 0) continue;
     const [h, s, l] = rgbToHsl(px[i], px[i + 1], px[i + 2]);
     if (s < 0.35 || l > 0.9 || l < 0.12) continue;
+    if (keepWarm && h >= 0.02 && h <= 0.14) continue;
     const [r, g, b] = hslToRgb((h + degrees / 360 + 1) % 1, s, l);
     px[i] = r;
     px[i + 1] = g;
@@ -92,8 +94,8 @@ export function mirror(img: Img): HTMLCanvasElement {
   return c;
 }
 
-export async function loadKart(base: string, hue = 0): Promise<KartFrames> {
-  const load = async (name: string) => hueShift(await loadImage(`${base}/${name}.png`), hue);
+export async function loadKart(base: string, hue = 0, keepWarm = false): Promise<KartFrames> {
+  const load = async (name: string) => hueShift(await loadImage(`${base}/${name}.png`), hue, keepWarm);
   const entries = await Promise.all(DIRECTIONS.map(async (d) => [d, await load(d)] as const));
   const dirs = Object.fromEntries(entries) as Record<Direction, Img>;
   const straight = await load('rear-straight');

@@ -232,6 +232,12 @@ export const sfx = {
     audio.tone({ type: 'square', freq: 1568, dur: 0.12, vol: 0.18 });
     audio.tone({ type: 'sine', freq: 784, freqEnd: 392, dur: 0.3, vol: 0.2 });
   },
+  record: () => {
+    // fanfarria corta: arpegio ascendente con brillo
+    [72, 76, 79, 84, 88].forEach((n, i) => audio.tone({ type: 'square', freq: midiToFreq(n), dur: i === 4 ? 0.5 : 0.12, vol: 0.18, delay: i * 0.09 }));
+    audio.tone({ type: 'triangle', freq: midiToFreq(60), dur: 0.8, vol: 0.25, delay: 0.36 });
+    audio.noise({ dur: 0.6, vol: 0.12, filter: 'highpass', freq: 6000, delay: 0.36 });
+  },
   splash: () => {
     // golpe contra el agua + rocío que cae
     audio.noise({ dur: 0.25, vol: 0.5, filter: 'lowpass', freq: 2200, freqEnd: 300 });

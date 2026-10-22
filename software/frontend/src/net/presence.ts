@@ -1,10 +1,8 @@
 // Contadores públicos en Firebase Realtime Database (rama /michiracer):
 // - online/<id>: una entrada por pestaña con el juego abierto; Firebase la borra sola al desconectarse.
 // - totalPlayers: suma 1 la primera vez que entra cada navegador (solo crece).
-// El SDK se carga aparte (import dinámico) para no demorar el arranque del juego.
+import { firebase, ROOT } from './firebase';
 
-const DATABASE_URL = 'https://spud-survival-default-rtdb.firebaseio.com';
-const ROOT = 'michiracer';
 const COUNTED_KEY = 'michi.counted';
 
 export interface PresenceStats {
@@ -14,9 +12,7 @@ export interface PresenceStats {
 
 /** Empieza a registrar la presencia y avisa cada vez que cambian los números. */
 export async function startPresence(onStats: (s: PresenceStats) => void) {
-  const [{ initializeApp }, db] = await Promise.all([import('firebase/app'), import('firebase/database')]);
-  const app = initializeApp({ databaseURL: DATABASE_URL }, 'michiracer');
-  const database = db.getDatabase(app);
+  const { db, database } = await firebase();
   const stats: PresenceStats = { online: null, total: null };
   const emit = () => onStats({ ...stats });
 

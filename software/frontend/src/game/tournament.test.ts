@@ -24,6 +24,15 @@ describe('tournament', () => {
     expect(t.final).toBe(false);
   });
 
+  it('runs only the picked tracks, in the picked order', () => {
+    const t = new LocalTournament(['neon-city', 'green-valley']);
+    expect([t.trackId, t.nextTrackId, t.final]).toEqual(['neon-city', 'green-valley', false]);
+    t.record([racer('a')], () => 0);
+    t.next();
+    expect([t.trackId, t.nextTrackId, t.final]).toEqual(['green-valley', null, true]);
+    expect(t.ranked()[0].places).toEqual([1, 0]);
+  });
+
   it('players who missed races rank after equal points', () => {
     const s = [
       { id: 'late', name: '', color: 0, bot: false, points: 10, places: [0, 6, 0, 0] },

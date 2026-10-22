@@ -35,17 +35,23 @@ export function rankStandings(all: Standing[], raceIndex: number): Standing[] {
     .map((x) => x.s);
 }
 
-/** Torneo de la práctica local (sin servidor). */
+/** Torneo de la práctica local (sin servidor), con las pistas que eligió el jugador. */
 export class LocalTournament {
   raceIndex = 0;
   private standings: Standing[] = [];
 
+  constructor(readonly tracks: string[] = TOURNAMENT_ORDER) {}
+
   get trackId() {
-    return TOURNAMENT_ORDER[this.raceIndex];
+    return this.tracks[this.raceIndex];
+  }
+
+  get nextTrackId(): string | null {
+    return this.tracks[this.raceIndex + 1] ?? null;
   }
 
   get final() {
-    return this.raceIndex >= TOURNAMENT_ORDER.length - 1;
+    return this.raceIndex >= this.tracks.length - 1;
   }
 
   /** Suma la carrera terminada; devuelve los puntos ganados por id. */
@@ -54,7 +60,7 @@ export class LocalTournament {
     ranking.forEach((r, i) => {
       let s = this.standings.find((x) => x.id === r.id);
       if (!s) {
-        s = { id: r.id, name: r.name, color: colorOf(r.id), bot: !!r.bot, points: 0, places: TOURNAMENT_ORDER.map(() => 0) };
+        s = { id: r.id, name: r.name, color: colorOf(r.id), bot: !!r.bot, points: 0, places: this.tracks.map(() => 0) };
         this.standings.push(s);
       }
       const pts = pointsFor(i + 1);

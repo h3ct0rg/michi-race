@@ -1,9 +1,13 @@
+using System.Net;
+using System.Text;
 using MichiRacer.Game.Rooms;
 using MichiRacer.Game.Sim.Tracks;
 using MichiRacer.Server;
 using MichiRacer.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
+// la vista previa de invitaciones viaja en headers con tildes y emojis
+builder.WebHost.ConfigureKestrel(o => o.ResponseHeaderEncodingSelector = _ => Encoding.UTF8);
 
 builder.Services.AddSingleton<RoomManager>();
 builder.Services.AddSingleton<ServerMetrics>();
@@ -36,6 +40,19 @@ app.MapPost("/api/rooms", (RoomManager rooms, string? track) =>
 
 app.MapGet("/api/rooms/{code}", (string code, RoomManager rooms) =>
     rooms.Get(code) is { } room ? Results.Ok(room.State()) : Results.NotFound(new { error = "La sala no existe o ya expiró." }));
+
+// Vista previa del link de invitación: nginx la pide (auth_request) al servir /room/<código> y pone
+// estos textos en los <meta> Open Graph. Siempre 204: si la sala no existe, nginx usa el texto genérico.
+app.MapGet("/api/rooms/{code}/preview", (string code, RoomManager rooms, HttpContext ctx) =>
+{
+    if (rooms.Get(code) is { } room)
+    {
+        var (title, description) = room.InvitePreview();
+        ctx.Response.Headers["X-Og-Title"] = WebUtility.HtmlEncode(title);
+        ctx.Response.Headers["X-Og-Description"] = WebUtility.HtmlEncode(description);
+    }
+    return Results.NoContent();
+});
 
 app.MapGet("/api/tracks", () => Tracks.All.Values.Select(t => new { t.Id, t.Name, t.Laps }));
 

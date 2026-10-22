@@ -4,10 +4,18 @@ import { t } from '../i18n';
 import type { RoomStateDto } from '../net/protocol';
 import { escapeHtml } from './results';
 import { renderTrackCard } from './trackPicker';
+import { renderTrackOrder } from './trackOrder';
 
 const $ = (id: string) => document.getElementById(id)!;
 
-export function renderLobby(room: RoomStateDto, myId: string, rtt: number) {
+/** Nombre visible del torneo: el que puso el host o "Torneo de {host}". */
+export function tournamentTitle(room: Pick<RoomStateDto, 'tournamentName' | 'players'>) {
+  const host = room.players.find((p) => p.isOwner)?.name ?? '';
+  return room.tournamentName || t('tour.default', { name: host });
+}
+
+/** onTournament: el host cambia el nombre o las pistas (solo en el lobby). */
+export function renderLobby(room: RoomStateDto, myId: string, rtt: number, onTournament: (name: string, tracks: string[]) => void) {
   const me = room.players.find((p) => p.id === myId);
   const isOwner = room.ownerId === myId;
   const waiting = room.players.filter((p) => p.id !== room.ownerId && p.connected && !p.ready).length;
@@ -15,14 +23,23 @@ export function renderLobby(room: RoomStateDto, myId: string, rtt: number) {
 
   $('l-code').textContent = room.code;
   $('l-ping').textContent = `${rtt} MS`;
-  // torneo: 4 pistas en orden fijo; se resalta la carrera actual
+  // torneo: nombre y pistas en orden; en el lobby el host los elige, después se muestra la carrera actual
   const tour = room.tournament;
+  const editable = isOwner && room.phase === 'lobby';
   renderTrackCard(
     { img: 'l-track-img', name: 'l-track', tagline: 'l-track-tag', laps: 'l-laps', difficulty: 'l-diff', picker: 'l-tracks' },
-    room.trackId,
+    room.phase === 'lobby' ? room.trackList[0] : room.trackId,
     null,
   );
-  $('l-track-hint').textContent = tour ? t('l.raceOf', { n: tour.race + 1, total: tour.totalRaces }) : t('w.tourPill');
+  renderTrackOrder($('l-tracks'), room.trackList, editable ? (tracks) => onTournament(room.tournamentName, tracks) : null);
+  $('l-tname').textContent = `🏆 ${tournamentTitle(room).toUpperCase()}`;
+  const nameInput = $('l-tname-input') as HTMLInputElement;
+  nameInput.hidden = !editable;
+  if (document.activeElement !== nameInput) nameInput.value = room.tournamentName;
+  nameInput.onchange = () => onTournament(nameInput.value, room.trackList);
+  $('l-track-hint').textContent = tour
+    ? t('l.raceOf', { n: tour.race + 1, total: tour.totalRaces })
+    : `${t('lo.races', { n: room.trackList.length })} · ${t(editable ? 'l.tracksHost' : 'l.tracksGuest')}`;
   $('l-count').textContent = t('l.count', { n: room.players.length, max: room.maxPlayers, grid: Math.max(room.gridSize, room.players.length) });
   const botsInput = $('l-bots') as HTMLInputElement;
   botsInput.checked = room.fillBots;

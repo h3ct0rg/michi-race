@@ -15,7 +15,7 @@ Juego de carreras arcade **multijugador** para navegador, en **2.5D** y **pixel 
 - **Reconexión**: si se cae la red o recargas la página vuelves a tu kart; también puedes entrar como espectador.
 - **Portada animada** con contador de jugadores en línea y totales, **configuración** (brillo, volúmenes) y
   **español / inglés**.
-- **Torneo de 4 carreras** con puntos acumulados y **podio animado** (bronce, plata y copa dorada); al final el host
+- **Torneos con nombre** de 1 a 4 pistas elegidas por el host, con puntos acumulados y **podio animado** (bronce, plata y copa dorada); al final el host
   reinicia o los invitados votan la revancha.
 - **Gameplay**: derrape con mini-turbo, pads de velocidad, choques, checkpoints, 3 vueltas, resultados.
 - **Power-ups**: turbo, escudo, bomba, rayo, imán, hielo y cohete, más obstáculos (aceite, arena, charcos).

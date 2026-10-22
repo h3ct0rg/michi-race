@@ -6,6 +6,7 @@ import { Minimap } from './minimap';
 import { isTouch } from '../device';
 import { ITEM_KEYS } from '../sim/items';
 import { t, type Key } from '../i18n';
+import type { RecordEntry, TrackRecords } from '../net/records';
 
 export const itemIcon = (item: number) => `/assets/items/icon-${ITEM_KEYS[item]}.png`;
 
@@ -29,6 +30,17 @@ export class Hud {
     private readonly getPlayer: () => Racer,
   ) {
     this.minimap = new Minimap($('minimap') as HTMLCanvasElement, race.track);
+  }
+
+  /** Récords mundiales de la pista: "01:32.45 · GASTON". */
+  setRecords(rec: TrackRecords) {
+    const show = (id: string, e: RecordEntry | undefined) => {
+      const el = $(id);
+      el.textContent = e ? `${fmtTime(e.t)} · ${e.n.toUpperCase()}` : '--:--.--';
+      el.title = el.textContent;
+    };
+    show('hud-record', rec.race[0]);
+    show('hud-lap-record', rec.lap[0]);
   }
 
   /** Texto chico bajo la cuenta regresiva (p. ej. "CARRERA 2/4 · COASTAL ROAD"). */

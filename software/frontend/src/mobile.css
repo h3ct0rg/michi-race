@@ -123,6 +123,7 @@ html.touch #hud-hint {
   }
 
   .welcome-grid,
+  .local-grid,
   .lobby-grid,
   .garage-grid {
     gap: 10px;
@@ -135,6 +136,10 @@ html.touch #hud-hint {
 
   .lobby-grid {
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.55fr) minmax(0, 0.8fr);
+  }
+
+  .local-grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr) minmax(0, 0.9fr);
   }
 
   .garage-grid {
@@ -378,6 +383,7 @@ html.touch #hud-hint {
 /* pantallas muy angostas (p. ej. tablet en vertical que no bloqueamos): una sola columna */
 @media (max-width: 560px) {
   .welcome-grid,
+  .local-grid,
   .lobby-grid,
   .garage-grid {
     grid-template-columns: 1fr;

@@ -1,14 +1,27 @@
 namespace MichiRacer.Game.Rooms;
 
 /// <summary>
-/// Reglas del torneo: 4 carreras en orden fijo, puntos estilo Mario Kart que se acumulan.
+/// Reglas del torneo: de 1 a 4 carreras (las elige el host), puntos estilo Mario Kart que se acumulan.
 /// Espejo de frontend/src/game/tournament.ts (la práctica local usa las mismas reglas).
 /// </summary>
 public static class TournamentRules
 {
-    /// <summary>De fácil a difícil.</summary>
+    /// <summary>Pistas por defecto, de fácil a difícil.</summary>
     public static readonly string[] Order = ["green-valley", "coastal-road", "desert-run", "neon-city"];
     public static readonly TimeSpan Intermission = TimeSpan.FromSeconds(8);
+    public const int MaxRaces = 4;
+    public const int MaxNameLength = 24;
+
+    /// <summary>Nombre visible del torneo: el que puso el host o "Torneo de {host}".</summary>
+    public static string DisplayName(string name, string ownerName) => name.Length > 0 ? name : $"Torneo de {ownerName}";
+
+    /// <summary>Nombre limpio: sin caracteres de control, espacios colapsados y como mucho 24 caracteres.</summary>
+    public static string SanitizeName(string? raw)
+    {
+        var clean = string.Join(' ', new string((raw ?? "").Where(c => !char.IsControl(c) && c is not '<' and not '>').ToArray())
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        return clean.Length > MaxNameLength ? clean[..MaxNameLength].TrimEnd() : clean;
+    }
 
     private static readonly int[] Top = [25, 20, 16, 13, 11];
 

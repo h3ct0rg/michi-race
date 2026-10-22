@@ -11,6 +11,7 @@ import { Ticker } from './ticker';
 import { RaceAudio } from '../audio/raceAudio';
 import { HIT, ITEM } from '../sim/items';
 import { t } from '../i18n';
+import { onRecords, recordsOf } from '../net/records';
 
 export class RaceView {
   private session: RaceSession | null = null;
@@ -21,6 +22,7 @@ export class RaceView {
   private readonly ticker = new Ticker(1000 / 60, () => this.session?.pump?.());
   readonly debug = new DebugPanel();
   private readonly audio = new RaceAudio();
+  private stopRecords: () => void = () => {};
   onEvent: (e: RaceEvent) => void = () => {};
   /** Se llama en cada frame (p. ej. para actualizar el botón táctil de ítem). */
   onFrame: (s: RaceSession) => void = () => {};
@@ -33,6 +35,11 @@ export class RaceView {
     this.session = session;
     this.renderer = new Renderer(this.canvas, theme, frames);
     this.hud = new Hud(session.race, () => session.player);
+    // récords mundiales de la pista, en vivo
+    const trackId = session.race.track.def.id;
+    const showRecords = () => this.hud?.setRecords(recordsOf(trackId));
+    showRecords();
+    this.stopRecords = onRecords(showRecords);
     this.last = performance.now();
     this.raf = requestAnimationFrame(this.frame);
     this.ticker.start();
@@ -40,6 +47,7 @@ export class RaceView {
   }
 
   stop() {
+    this.stopRecords();
     cancelAnimationFrame(this.raf);
     this.ticker.stop();
     this.audio.stop();
@@ -83,6 +91,11 @@ export class RaceView {
     this.onFrame(s);
     this.raf = requestAnimationFrame(this.frame);
   };
+
+  /** Mensaje grande temporal en el HUD (p. ej. "¡NUEVO RÉCORD MUNDIAL!"). */
+  flash(text: string, seconds = 3) {
+    this.hud?.flash(text, seconds);
+  }
 
   /** Subtítulo de la largada (p. ej. "CARRERA 2/4 · COASTAL ROAD"). */
   announce(text: string) {

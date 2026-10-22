@@ -55,6 +55,9 @@ public sealed class RaceHub(RoomManager rooms, ServerMetrics metrics, ILogger<Ra
 
     public Task SetGridSize(int size) => Broadcast((room, id) => room.SetGridSize(id, size));
 
+    /// <summary>Nombre del torneo y pistas en orden (solo el host, en el lobby).</summary>
+    public Task SetTournament(string name, string[] tracks) => Broadcast((room, id) => room.SetTournament(id, name, tracks));
+
 
     public Task ReportPing(int ms) => Broadcast((room, id) => room.SetPing(id, ms));
 

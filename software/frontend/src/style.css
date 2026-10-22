@@ -100,6 +100,19 @@ body {
   opacity: 0.85;
 }
 
+/* récords mundiales de la pista (Firebase) */
+.times .rec-row {
+  font-size: 0.85cqw;
+  color: var(--tertiary);
+}
+
+.times .rec-row span:last-child {
+  max-width: 13cqw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .label.best {
   color: var(--tertiary);
 }
@@ -530,4 +543,10 @@ body {
 .item-effects {
   font-size: 0.75cqw;
   color: var(--primary);
+}
+
+.results-tour {
+  font-size: 0.9cqw;
+  letter-spacing: 0.12em;
+  color: var(--tertiary);
 }

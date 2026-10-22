@@ -177,6 +177,57 @@ public class RoomTests
     }
 
     [Fact]
+    public void Host_names_the_tournament_and_picks_the_tracks_in_order()
+    {
+        var room = NewRoom();
+        var a = room.Join("ca", "Gaston");
+        var b = room.Join("cb", "B");
+        Assert.Equal(TournamentRules.Order, room.State().TrackList);
+        Assert.Throws<RoomException>(() => room.SetTournament(b.PlayerId, "Copa", ["neon-city"])); // solo el host
+        Assert.Throws<RoomException>(() => room.SetTournament(a.PlayerId, "Copa", []));
+        Assert.Throws<RoomException>(() => room.SetTournament(a.PlayerId, "Copa", ["neon-city", "neon-city"]));
+        Assert.Throws<RoomException>(() => room.SetTournament(a.PlayerId, "Copa", ["moon-base"]));
+
+        var state = room.SetTournament(a.PlayerId, "  Copa   <b>Gatuna</b> de los michis del barrio  ", ["neon-city", "coastal-road"]);
+        Assert.Equal("Copa bGatuna/b de los mi", state.TournamentName); // sin < >, espacios colapsados, 24 caracteres
+        Assert.Equal(["neon-city", "coastal-road"], state.TrackList);
+
+        var (title, description) = room.InvitePreview();
+        Assert.Contains("Copa bGatuna/b de los mi", title);
+        Assert.Contains("PX-1234", title);
+        Assert.Contains("Gaston", description);
+        Assert.Contains("2 carreras: Neon City, Coastal Road", description);
+    }
+
+    [Fact]
+    public void Default_tournament_name_uses_the_host()
+    {
+        var room = NewRoom();
+        room.Join("ca", "Gaston");
+        Assert.StartsWith("🏁 Te invitaron a Torneo de Gaston", room.InvitePreview().Title);
+    }
+
+    [Fact]
+    public void Tournament_with_two_picked_tracks_ends_after_two_races()
+    {
+        var room = NewRoom();
+        var a = room.Join("ca", "A");
+        room.SetTournament(a.PlayerId, "", ["desert-run", "green-valley"]);
+        var start = room.StartRace(a.PlayerId);
+        Assert.Equal("desert-run", start.TrackId);
+        Assert.Equal((0, 2), (start.RaceIndex, start.TotalRaces));
+        var first = RunToResults(room, a.PlayerId)!;
+        Assert.Equal("green-valley", first.NextTrackId);
+        var next = room.Tick(1, T0 + TournamentRules.Intermission + TimeSpan.FromSeconds(1)).Start!;
+        Assert.Equal(("green-valley", 1, 2), (next.TrackId, next.RaceIndex, next.TotalRaces));
+        var last = RunToResults(room, a.PlayerId)!;
+        Assert.True(last.Final);
+        Assert.Null(last.NextTrackId);
+        Assert.Equal(RoomPhase.Podium, room.Phase);
+        Assert.Throws<RoomException>(() => room.SetTournament(a.PlayerId, "x", ["neon-city"])); // ya no está en el lobby
+    }
+
+    [Fact]
     public void Points_follow_the_mario_kart_style_table()
     {
         Assert.Equal([25, 20, 16, 13, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0],
